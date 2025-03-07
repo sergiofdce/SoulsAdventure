@@ -1,19 +1,44 @@
-// src/player.js
 export default class Player {
     constructor(scene, x, y, texture) {
+        // Configuración Phaser
         this.scene = scene;
         this.sprite = scene.physics.add.sprite(x, y, texture);
         this.sprite.setScale(0.5);
         this.sprite.setCollideWorldBounds(true);
+
+        // Configure hitbox a la escala
+        const scale = this.sprite.scale;
+        const scaledWidth = this.sprite.displayWidth;
+        const scaledHeight = this.sprite.displayHeight;
+
+        // Hitbox en los pies del asset
+        const bodyWidth = scaledWidth * 0.5;
+        const bodyHeight = scaledHeight * 0.3;
+
+        // Offset
+        const offsetX = (scaledWidth - bodyWidth) / 2;
+        const offsetY = scaledHeight * 0.7; // Zona inferior
+
+        this.sprite.body.setSize(bodyWidth / scale, bodyHeight / scale);
+        this.sprite.body.setOffset(offsetX / scale, offsetY / scale);
+
         this.createAnimations(scene);
+
+        // Instanciar habilidades
+        this.health = 100;
+        this.strength = 20;
+        this.energy = 60;
+        this.speed = 30;
+        this.souls = 0;
     }
 
+    // Animación
     createAnimations(scene) {
         scene.anims.create({
             key: "idle",
             frames: scene.anims.generateFrameNumbers("player", {
-            start: 0,
-            end: 5,
+                start: 0,
+                end: 5,
             }),
             frameRate: 10,
             repeat: -1,
@@ -37,6 +62,7 @@ export default class Player {
         });
     }
 
+    // Controles
     update(cursors) {
         let isMoving = false;
 

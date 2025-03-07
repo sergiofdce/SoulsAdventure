@@ -3,12 +3,11 @@ import GameScene from "./src/scenes/GameScene.js";
 import CombatScene from "./src/scenes/CombatScene.js";
 import InventoryScene from "./src/scenes/InventoryScene.js";
 
-
 // Phaser config
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 700,
     physics: {
         default: "arcade",
         arcade: {
@@ -21,6 +20,3 @@ const config = {
 
 // Instanciar juego
 const game = new Phaser.Game(config);
-
-
-
