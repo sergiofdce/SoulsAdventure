@@ -49,13 +49,6 @@ export default class GameScenePrueba extends Phaser.Scene {
         // Instanciar el mapa correctamente
         this.mapManager = new Map(this, "map", "RA_Overworld_Full", "tiles");
 
-        if (!this.mapManager) {
-            console.error("⚠️ Error: El mapa no se instanció correctamente.");
-            return;
-        } else {
-            console.log("✅ Mapa instanciado correctamente:", this.mapManager);
-        }
-
         // Instanciar NPCs
         this.trainer = new Trainer(this, 200, 300, "trainer");
 

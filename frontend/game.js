@@ -7,8 +7,8 @@ import GameScenePrueba from "./src/scenes/GameScenePrueba.js";
 // Phaser config
 const config = {
     type: Phaser.AUTO,
-    width: 900,
-    height: 900,
+    width: window.innerWidth,
+    height: window.innerHeight,
     physics: {
         default: "arcade",
         arcade: {
@@ -16,7 +16,7 @@ const config = {
             debug: false,
         },
     },
-    scene: [GameScenePrueba, CombatScene, InventoryScene],
+    scene: [GameScene, CombatScene, InventoryScene],
 };
 
 // Instanciar juego

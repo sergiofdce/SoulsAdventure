@@ -29,8 +29,8 @@ export default class GameScene extends Phaser.Scene {
         });
 
         // Cargar assets Mapa
-        this.load.tilemapTiledJSON("map", "assets/maps/map.json");
-        this.load.image("tiles", "assets/tilesets/RA_Village.png");
+        this.load.tilemapTiledJSON("map", "assets/maps/mapPruebaColisiones.json");
+        this.load.image("tiles", "assets/tilesets/Tilesets/RA_Overworld_Full.png");
     }
 
     create() {
@@ -45,8 +45,8 @@ export default class GameScene extends Phaser.Scene {
             this.scene.launch("InventoryScene");
         });
 
-        // Instanciar mapa
-        this.mapManager = new Map(this, "map", "RA_Village", "tiles");
+        // Instanciar el mapa correctamente
+        this.mapManager = new Map(this, "map", "RA_Overworld_Full", "tiles");
 
         // Configurar límites del mundo
         this.physics.world.setBounds(
@@ -80,29 +80,48 @@ export default class GameScene extends Phaser.Scene {
     }
 
     setupCollisions() {
-        // Colisiones con el mapa
+        // Colisiones con el mapa (jugador)
         if (this.mapManager.collisionLayer) {
             this.physics.add.collider(
                 this.player.sprite,
                 this.mapManager.collisionLayer
             );
         }
-
+    
+        // Colisiones con el mapa (enemigos)
+        this.enemies.forEach((enemy) => {
+            if (this.mapManager.collisionLayer) {
+                this.physics.add.collider(
+                    enemy.sprite,
+                    this.mapManager.collisionLayer
+                );
+            }
+        });
+    
         // Colisiones con NPCs
         this.trainer.setupCollision(this.player);
-
+    
         // Colisiones con objetos
         this.enemies.forEach((enemy) => {
             enemy.setupCollision(this.player);
         });
-
+    
+        // Colisiones entre enemigos
+        this.enemies.forEach((enemy1) => {
+            this.enemies.forEach((enemy2) => {
+                if (enemy1 !== enemy2) {
+                    this.physics.add.collider(enemy1.sprite, enemy2.sprite);
+                }
+            });
+        });
+    
         // Interactuar
         this.input.keyboard.on("keydown-E", () => {
             // NPCs
             this.trainer.interact(this.player);
             // Objetos
         });
-    }
+    }    
 
     update() {
         this.player.update(this.controls.getCursors());
