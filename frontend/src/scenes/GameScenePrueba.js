@@ -5,9 +5,9 @@ import Map from "../managers/Map.js";
 import { Trainer } from "../entities/characters/Trainer.js";
 import { Enemy001 } from "../entities/enemies/Enemy001.js";
 
-export default class GameScene extends Phaser.Scene {
+export default class GameScenePrueba extends Phaser.Scene {
     constructor() {
-        super({ key: "GameScene" });
+        super({ key: "GameScenePrueba" });
         this.enemies = [];
     }
 
@@ -29,8 +29,8 @@ export default class GameScene extends Phaser.Scene {
         });
 
         // Cargar assets Mapa
-        this.load.tilemapTiledJSON("map", "assets/maps/map.json");
-        this.load.image("tiles", "assets/tilesets/RA_Village.png");
+        this.load.tilemapTiledJSON("map", "assets/maps/mapPruebaColisiones.json");
+        this.load.image("tiles", "assets/tilesets/Tilesets/RA_Overworld_Full.png");
     }
 
     create() {
@@ -39,22 +39,22 @@ export default class GameScene extends Phaser.Scene {
             this.scene.pause();
             this.scene.launch("CombatScene");
         });
+
         // Escena Inventario
         this.input.keyboard.on("keydown-I", () => {
             this.scene.pause();
             this.scene.launch("InventoryScene");
         });
 
-        // Instanciar mapa
-        this.mapManager = new Map(this, "map", "RA_Village", "tiles");
+        // Instanciar el mapa correctamente
+        this.mapManager = new Map(this, "map", "RA_Overworld_Full", "tiles");
 
-        // Configurar límites del mundo
-        this.physics.world.setBounds(
-            0,
-            0,
-            this.mapManager.map.widthInPixels,
-            this.mapManager.map.heightInPixels
-        );
+        if (!this.mapManager) {
+            console.error("⚠️ Error: El mapa no se instanció correctamente.");
+            return;
+        } else {
+            console.log("✅ Mapa instanciado correctamente:", this.mapManager);
+        }
 
         // Instanciar NPCs
         this.trainer = new Trainer(this, 200, 300, "trainer");
@@ -65,7 +65,7 @@ export default class GameScene extends Phaser.Scene {
         this.enemies.push(this.enemy001);
         this.enemies.push(this.enemy002);
 
-        // Instanciar Player (siempre último)
+        // Instanciar Player (siempre el último para estar por encima)
         this.player = new Player(this, 400, 300, "player");
 
         // Colisiones
@@ -100,7 +100,6 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard.on("keydown-E", () => {
             // NPCs
             this.trainer.interact(this.player);
-            // Objetos
         });
     }
 
