@@ -12,6 +12,36 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
+        this.loadAssets();
+    }
+
+    create() {
+        // Configurar controles de entrada
+        this.setupInput();
+
+        // Configurar el mapa y límites del mundo
+        this.setupMap();
+
+        // Generar NPCs en el mapa
+        this.spawnNPCs();
+
+        // Generar enemigos en el mapa
+        this.spawnEnemies();
+
+        // Instanciar el jugador
+        this.spawnPlayer();
+
+        // Configurar colisiones entre objetos
+        this.setupCollisions();
+
+        // Configurar la cámara para seguir al jugador
+        this.setupCamera();
+
+        // Activar modo debug si está habilitado en la configuración
+        this.enableDebugMode();
+    }
+
+    loadAssets() {
         // Cargar assets Player
         this.load.spritesheet("player", "./assets/player.png", {
             frameWidth: 96,
@@ -22,111 +52,87 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 96,
         });
-        // Assets Enemigos
+        // Cargar assets Enemigos
         this.load.spritesheet("enemy001", "./assets/Enemy_001_A.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
-
         // Cargar assets Mapa
         this.load.tilemapTiledJSON("map", "assets/maps/mapPruebaColisiones.json");
         this.load.image("tiles", "assets/tilesets/Tilesets/RA_Overworld_Full.png");
     }
 
-    create() {
-        // Escena combate
+    setupInput() {
         this.input.keyboard.on("keydown-C", () => {
             this.scene.pause();
             this.scene.launch("CombatScene");
         });
-        // Escena Inventario
+
         this.input.keyboard.on("keydown-I", () => {
             this.scene.pause();
             this.scene.launch("InventoryScene");
         });
 
-        // Instanciar el mapa correctamente
-        this.mapManager = new Map(this, "map", "RA_Overworld_Full", "tiles");
+        this.input.keyboard.on("keydown-E", () => {
+            this.trainer.interact(this.player);
+        });
+    }
 
-        // Configurar límites del mundo
+    setupMap() {
+        this.mapManager = new Map(this, "map", "RA_Overworld_Full", "tiles");
         this.physics.world.setBounds(
             0,
             0,
             this.mapManager.map.widthInPixels,
             this.mapManager.map.heightInPixels
         );
+    }
 
-        // Instanciar NPCs
+    spawnNPCs() {
         this.trainer = new Trainer(this, 200, 300, "trainer");
+    }
 
-        // Instanciar Enemigos
-        this.enemy001 = new Enemy001(this, 600, 300);
-        this.enemy002 = new Enemy001(this, 580, 250);
-        this.enemies.push(this.enemy001);
-        this.enemies.push(this.enemy002);
+    spawnEnemies() {
+        const enemyPositions = [
+            { x: 600, y: 300 },
+            { x: 580, y: 250 },
+        ];
 
-        // Instanciar Player (siempre último)
+        enemyPositions.forEach((pos) => {
+            const enemy = new Enemy001(this, pos.x, pos.y);
+            this.enemies.push(enemy);
+        });
+    }
+
+    spawnPlayer() {
         this.player = new Player(this, 400, 300, "player");
-
-        // Colisiones
-        this.setupCollisions();
-
-        // Controles y Cámara
-        this.controls = new Controls(this);
-        this.camera = new Camera(this, this.player, this.mapManager);
-
-        // Modo Debug
-        this.physics.world.createDebugGraphic();
     }
 
     setupCollisions() {
-        // Colisiones con el mapa (jugador)
         if (this.mapManager.collisionLayer) {
             this.physics.add.collider(
                 this.player.sprite,
                 this.mapManager.collisionLayer
             );
         }
-    
-        // Colisiones con el mapa (enemigos)
-        this.enemies.forEach((enemy) => {
-            if (this.mapManager.collisionLayer) {
-                this.physics.add.collider(
-                    enemy.sprite,
-                    this.mapManager.collisionLayer
-                );
-            }
-        });
-    
-        // Colisiones con NPCs
+
         this.trainer.setupCollision(this.player);
-    
-        // Colisiones con objetos
-        this.enemies.forEach((enemy) => {
-            enemy.setupCollision(this.player);
-        });
-    
-        // Colisiones entre enemigos
-        this.enemies.forEach((enemy1) => {
-            this.enemies.forEach((enemy2) => {
-                if (enemy1 !== enemy2) {
-                    this.physics.add.collider(enemy1.sprite, enemy2.sprite);
-                }
-            });
-        });
-    
-        // Interactuar
-        this.input.keyboard.on("keydown-E", () => {
-            // NPCs
-            this.trainer.interact(this.player);
-            // Objetos
-        });
-    }    
+        this.enemies.forEach((enemy) => enemy.setupCollision(this.player));
+    }
+
+    setupCamera() {
+        this.controls = new Controls(this);
+        this.camera = new Camera(this, this.player, this.mapManager);
+    }
+
+    enableDebugMode() {
+        if (this.game.config.physics.arcade.debug) {
+            this.physics.world.createDebugGraphic();
+        }
+    }
 
     update() {
         this.player.update(this.controls.getCursors());
-
-        // Check if any enemies collided with player and need to be removed from array
         this.enemies = this.enemies.filter((enemy) => !enemy.isDestroyed);
     }
 }
