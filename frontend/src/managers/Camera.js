@@ -11,6 +11,7 @@ export default class Camera {
             this.map.map.widthInPixels,
             this.map.map.heightInPixels
         );
+        
         this.scene.cameras.main.startFollow(this.player.sprite, true, 0.09, 0.09);
         this.scene.cameras.main.roundPixels = true;
         this.scene.cameras.main.setZoom(1.5);

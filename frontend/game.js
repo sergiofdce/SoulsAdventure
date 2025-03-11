@@ -6,8 +6,8 @@ import InventoryScene from "./src/scenes/InventoryScene.js";
 // Phaser config
 const config = {
     type: Phaser.AUTO,
-    width: 1000,
-    height: 700,
+    width: window.innerWidth,
+    height: window.innerHeight,
     physics: {
         default: "arcade",
         arcade: {

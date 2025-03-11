@@ -58,8 +58,14 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         // Cargar assets Mapa
-        this.load.tilemapTiledJSON("map", "assets/maps/map.json");
-        this.load.image("tiles", "assets/tilesets/RA_Village.png");
+        this.load.tilemapTiledJSON(
+            "map",
+            "assets/maps/mapPruebaColisiones.json"
+        );
+        this.load.image(
+            "tiles",
+            "assets/tilesets/Tilesets/RA_Overworld_Full.png"
+        );
     }
 
     setupInput() {
@@ -72,14 +78,17 @@ export default class GameScene extends Phaser.Scene {
             this.scene.pause();
             this.scene.launch("InventoryScene");
         });
-
+        // Interactuar
         this.input.keyboard.on("keydown-E", () => {
+            // NPCs
             this.trainer.interact(this.player);
         });
     }
 
     setupMap() {
-        this.mapManager = new Map(this, "map", "RA_Village", "tiles");
+        // Instanciar mapa
+        this.mapManager = new Map(this, "map", "RA_Overworld_Full", "tiles");
+        // Configurar límites del mundo
         this.physics.world.setBounds(
             0,
             0,
@@ -109,6 +118,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     setupCollisions() {
+        // Colisiones con el mapa (jugador)
         if (this.mapManager.collisionLayer) {
             this.physics.add.collider(
                 this.player.sprite,
@@ -116,7 +126,20 @@ export default class GameScene extends Phaser.Scene {
             );
         }
 
+        // Colisiones con el mapa (enemigos)
+        this.enemies.forEach((enemy) => {
+            if (this.mapManager.collisionLayer) {
+                this.physics.add.collider(
+                    enemy.sprite,
+                    this.mapManager.collisionLayer
+                );
+            }
+        });
+
+        // Colisiones con NPC
         this.trainer.setupCollision(this.player);
+
+        // Colisiones con objetos
         this.enemies.forEach((enemy) => enemy.setupCollision(this.player));
     }
 
@@ -126,9 +149,12 @@ export default class GameScene extends Phaser.Scene {
     }
 
     enableDebugMode() {
-        if (this.game.config.physics.arcade.debug) {
-            this.physics.world.createDebugGraphic();
-        }
+        // Crear gráficos de debug directamente sin comprobar la configuración
+        this.physics.world.createDebugGraphic();
+        this.physics.world.drawDebug = true;
+
+        // Mostrar colisiones de cuerpos físicos
+        this.physics.world.debugBodyColor = 0xff00ff;
     }
 
     update() {
