@@ -38,7 +38,7 @@ export default class GameScene extends Phaser.Scene {
         this.setupCamera();
 
         // Activar modo debug si está habilitado en la configuración
-        this.enableDebugMode();
+        //this.enableDebugMode();
     }
 
     loadAssets() {
@@ -58,10 +58,7 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         // Cargar assets Mapa
-        this.load.tilemapTiledJSON(
-            "map",
-            "assets/maps/mapPruebaColisiones.json"
-        );
+        this.load.tilemapTiledJSON("map", "assets/maps/map.json");
         this.load.image(
             "tiles",
             "assets/tilesets/Tilesets/RA_Overworld_Full.png"
@@ -160,5 +157,12 @@ export default class GameScene extends Phaser.Scene {
     update() {
         this.player.update(this.controls.getCursors());
         this.enemies = this.enemies.filter((enemy) => !enemy.isDestroyed);
+
+        // Profundidad assets player y NPC
+        this.player.sprite.depth = this.player.sprite.y;
+        this.trainer.sprite.depth = this.trainer.sprite.y;
+
+        // Profundidad assets player y colisiones
+        // Proximamente xd
     }
 }
