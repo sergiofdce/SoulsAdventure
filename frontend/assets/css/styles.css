@@ -5,3 +5,91 @@ body{
     display: flex;
     overflow: hidden;
 }
+
+/*****************************************************
+MARK: inventory
+*****************************************************/
+#inventory{
+    display: flex;
+    z-index: 10;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, #572a01, #7e3d00);
+    justify-content: center;
+}
+
+.inventory-container {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+#inventory-container-left , #inventory-container-right{
+    width: 49%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.inventory-section {
+    width: 100%;
+}
+
+/******** inventory-equipment ********/
+.inventory-equipment { 
+    height: 58%;
+    background-color: #161616;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.inventory-equipment #inventory-equipment-box{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.inventory-equipment #inventory-equipment-box ul{
+    width: 25%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.inventory-equipment #inventory-equipment-box ul li{
+    max-width: 80px;
+    max-height: 80px;
+    width: 100%;
+    height: 20%;
+    background-color: #252525;
+}
+
+.inventory-equipment #inventory-equipment-box ul li img{
+    width: 100%;
+    height: 100%;
+}
+
+.inventory-equipment img {
+    height: 100%;
+}
+/******** inventory-stats-item ********/
+.inventory-stats-item { 
+    height: 38%;
+    background-color: #b18409;
+}
+
+/******** inventory-items ********/
+.inventory-items {
+    height: 98%;
+    background-color: #082136;
+}
