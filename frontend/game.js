@@ -1,7 +1,7 @@
 // Imports
 import GameScene from "./src/scenes/GameScene.js";
-import CombatScene from "./src/scenes/CombatScene.js";
 import InventoryScene from "./src/scenes/InventoryScene.js";
+import CombatScene from "./src/scenes/CombatScene.js";
 
 // Phaser config
 const config = {

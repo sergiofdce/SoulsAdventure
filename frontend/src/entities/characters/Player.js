@@ -1,3 +1,5 @@
+import itemsData from "../../items/data/itemsData.js";
+
 export default class Player {
     constructor(scene, x, y, texture) {
         // Configuración Phaser
@@ -24,12 +26,75 @@ export default class Player {
 
         this.createAnimations(scene);
 
-        // Instanciar habilidades
+        // Atributos
         this.health = 100;
         this.strength = 20;
         this.energy = 60;
         this.speed = 30;
         this.souls = 0;
+
+        // Inventario
+        this.inventory = {
+            items: {
+                "espada-corta": {
+                    quantity: 1,
+                    twoHanded: false,
+                    equipped: false,
+                },
+                "espada-oscura": {
+                    quantity: 1,
+                    twoHanded: false,
+                    equipped: false,
+                },
+                "escudo-anillos-cristal": {
+                    quantity: 1,
+                    equipped: false,
+                },
+            },
+            maxSize: 20,
+        };
+    }
+
+    // Método para obtener información completa de un item
+    getItemData(itemId) {
+        if (!this.inventory.items[itemId]) {
+            return null;
+        }
+
+        // Combinamos los datos del JSON con los datos específicos del jugador
+        return {
+            ...itemsData[itemId], // Datos generales del JSON (nombre, descripción, etc.)
+            ...this.inventory.items[itemId], // Datos específicos del jugador (cantidad, equipado)
+        };
+    }
+
+    // Inventario - Agregar un ítem
+    addItem(itemId, quantity = 1) {
+        if (itemsData[itemId]) {
+            if (this.inventory.items[itemId]) {
+                this.inventory.items[itemId].quantity += quantity;
+            } else {
+                this.inventory.items[itemId] = {
+                    quantity: quantity,
+                    equipped: false,
+                    twoHanded: itemsData[itemId].category === "weapon" ? false : undefined,
+                };
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // Inventario - Eliminar ítem
+    deleteItem(itemId) {
+        if (this.inventory.items[itemId]) {
+            this.inventory.items[itemId].quantity -= 1;
+
+            // Si la cantidad llega a 0 y está equipado, lo desequipamos
+            if (this.inventory.items[itemId].quantity <= 0 && this.inventory.items[itemId].equipped) {
+                this.inventory.items[itemId].equipped = false;
+            }
+        }
     }
 
     // Animación

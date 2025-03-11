@@ -59,10 +59,7 @@ export default class GameScene extends Phaser.Scene {
         });
         // Cargar assets Mapa
         this.load.tilemapTiledJSON("map", "assets/maps/map.json");
-        this.load.image(
-            "tiles",
-            "assets/tilesets/Tilesets/RA_Overworld_Full.png"
-        );
+        this.load.image("tiles", "assets/tilesets/Tilesets/RA_Overworld_Full.png");
     }
 
     setupInput() {
@@ -73,7 +70,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.input.keyboard.on("keydown-I", () => {
             this.scene.pause();
-            this.scene.launch("InventoryScene");
+            this.scene.launch("InventoryScene", { player: this.player });
         });
         // Interactuar
         this.input.keyboard.on("keydown-E", () => {
@@ -86,12 +83,7 @@ export default class GameScene extends Phaser.Scene {
         // Instanciar mapa
         this.mapManager = new Map(this, "map", "RA_Overworld_Full", "tiles");
         // Configurar límites del mundo
-        this.physics.world.setBounds(
-            0,
-            0,
-            this.mapManager.map.widthInPixels,
-            this.mapManager.map.heightInPixels
-        );
+        this.physics.world.setBounds(0, 0, this.mapManager.map.widthInPixels, this.mapManager.map.heightInPixels);
     }
 
     spawnNPCs() {
@@ -117,19 +109,13 @@ export default class GameScene extends Phaser.Scene {
     setupCollisions() {
         // Colisiones con el mapa (jugador)
         if (this.mapManager.collisionLayer) {
-            this.physics.add.collider(
-                this.player.sprite,
-                this.mapManager.collisionLayer
-            );
+            this.physics.add.collider(this.player.sprite, this.mapManager.collisionLayer);
         }
 
         // Colisiones con el mapa (enemigos)
         this.enemies.forEach((enemy) => {
             if (this.mapManager.collisionLayer) {
-                this.physics.add.collider(
-                    enemy.sprite,
-                    this.mapManager.collisionLayer
-                );
+                this.physics.add.collider(enemy.sprite, this.mapManager.collisionLayer);
             }
         });
 
