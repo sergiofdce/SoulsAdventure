@@ -10,6 +10,7 @@ export default class InventoryScene extends Phaser.Scene {
 
         // Detectar la tecla ESC para cerrar el inventario
         this.input.keyboard.on("keydown-I", () => {
+            inventoryDiv.style.display = "none";
             this.scene.resume("GameScene");
             this.scene.stop("InventoryScene");
         });
