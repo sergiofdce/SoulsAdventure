@@ -13,7 +13,11 @@ html{
     font-family:'enter-the-gungeon-big' !important;
 }
 
-body{
+* {
+    user-select: none;
+}
+
+body {
     display: flex;
     overflow: hidden;
 }

@@ -38,7 +38,7 @@ export default class GameScene extends Phaser.Scene {
         this.setupCamera();
 
         // Activar modo debug si está habilitado en la configuración
-        this.enableDebugMode();
+        //this.enableDebugMode();
     }
 
     loadAssets() {
@@ -58,7 +58,7 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         // Cargar assets Mapa
-        this.load.tilemapTiledJSON("map", "assets/maps/mapPruebaColisiones.json");
+        this.load.tilemapTiledJSON("map", "assets/maps/map.json");
         this.load.image("tiles", "assets/tilesets/Tilesets/RA_Overworld_Full.png");
     }
 
@@ -70,22 +70,20 @@ export default class GameScene extends Phaser.Scene {
 
         this.input.keyboard.on("keydown-I", () => {
             this.scene.pause();
-            this.scene.launch("InventoryScene");
+            this.scene.launch("InventoryScene", { player: this.player });
         });
-
+        // Interactuar
         this.input.keyboard.on("keydown-E", () => {
+            // NPCs
             this.trainer.interact(this.player);
         });
     }
 
     setupMap() {
+        // Instanciar mapa
         this.mapManager = new Map(this, "map", "RA_Overworld_Full", "tiles");
-        this.physics.world.setBounds(
-            0,
-            0,
-            this.mapManager.map.widthInPixels,
-            this.mapManager.map.heightInPixels
-        );
+        // Configurar límites del mundo
+        this.physics.world.setBounds(0, 0, this.mapManager.map.widthInPixels, this.mapManager.map.heightInPixels);
     }
 
     spawnNPCs() {
@@ -109,14 +107,22 @@ export default class GameScene extends Phaser.Scene {
     }
 
     setupCollisions() {
+        // Colisiones con el mapa (jugador)
         if (this.mapManager.collisionLayer) {
-            this.physics.add.collider(
-                this.player.sprite,
-                this.mapManager.collisionLayer
-            );
+            this.physics.add.collider(this.player.sprite, this.mapManager.collisionLayer);
         }
 
+        // Colisiones con el mapa (enemigos)
+        this.enemies.forEach((enemy) => {
+            if (this.mapManager.collisionLayer) {
+                this.physics.add.collider(enemy.sprite, this.mapManager.collisionLayer);
+            }
+        });
+
+        // Colisiones con NPC
         this.trainer.setupCollision(this.player);
+
+        // Colisiones con objetos
         this.enemies.forEach((enemy) => enemy.setupCollision(this.player));
     }
 
@@ -126,13 +132,23 @@ export default class GameScene extends Phaser.Scene {
     }
 
     enableDebugMode() {
-        if (this.game.config.physics.arcade.debug) {
-            this.physics.world.createDebugGraphic();
-        }
+        // Crear gráficos de debug directamente sin comprobar la configuración
+        this.physics.world.createDebugGraphic();
+        this.physics.world.drawDebug = true;
+
+        // Mostrar colisiones de cuerpos físicos
+        this.physics.world.debugBodyColor = 0xff00ff;
     }
 
     update() {
         this.player.update(this.controls.getCursors());
         this.enemies = this.enemies.filter((enemy) => !enemy.isDestroyed);
+
+        // Profundidad assets player y NPC
+        this.player.sprite.depth = this.player.sprite.y;
+        this.trainer.sprite.depth = this.trainer.sprite.y;
+
+        // Profundidad assets player y colisiones
+        // Proximamente xd
     }
 }
