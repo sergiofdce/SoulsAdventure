@@ -4,7 +4,6 @@ import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
 import { Trainer } from "../entities/characters/Trainer.js";
 import { Enemy001 } from "../entities/enemies/Enemy001.js";
-
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameScene" });

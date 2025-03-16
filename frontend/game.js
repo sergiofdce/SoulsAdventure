@@ -2,6 +2,7 @@
 import GameScene from "./src/scenes/GameScene.js";
 import InventoryScene from "./src/scenes/InventoryScene.js";
 import CombatScene from "./src/scenes/CombatScene.js";
+import TrainingScene from "./src/scenes/TrainingScene.js";
 
 // Phaser config
 const config = {
@@ -15,7 +16,7 @@ const config = {
             debug: false,
         },
     },
-    scene: [GameScene, CombatScene, InventoryScene],
+    scene: [GameScene, CombatScene, InventoryScene, TrainingScene],
 };
 
 // Instanciar juego

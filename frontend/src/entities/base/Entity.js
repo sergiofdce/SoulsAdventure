@@ -140,34 +140,6 @@ export class NPC extends Entity {
         this.interactionRadius = 50;
     }
 
-    // Interactuar con NPC
-    interact(player) {
-        const dialogueBox = document.getElementById("dialogueBox");
-        const dialogueText = document.getElementById("dialogueText");
-
-        // Si el diálogo está visible, avanzar al siguiente
-        if (dialogueBox.style.display === "block") {
-            this.currentDialogueIndex++;
-
-            if (this.currentDialogueIndex < this.dialogue.length) {
-                // Mostrar el siguiente diálogo
-                dialogueText.textContent = `${this.name}: ${this.dialogue[this.currentDialogueIndex]}`;
-            } else {
-                // Cerrar el diálogo cuando se han mostrado todos los mensajes
-                dialogueBox.style.display = "none";
-                this.currentDialogueIndex = 0;
-            }
-        }
-        // Si el diálogo no está visible, mostrar el primero
-        else if (this.currentDialogueIndex < this.dialogue.length) {
-            dialogueText.textContent = `${this.name}: ${this.dialogue[this.currentDialogueIndex]}`;
-            dialogueBox.style.display = "block";
-        } else {
-            this.currentDialogueIndex = 0;
-            dialogueBox.style.display = "none";
-        }
-    }
-
     // Colisiones
     setupCollision(player) {
         this.scene.physics.add.collider(this.sprite, player.sprite);
