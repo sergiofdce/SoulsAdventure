@@ -7,12 +7,7 @@ export class Entity {
     }
 
     isInRange(player) {
-        const distance = Phaser.Math.Distance.Between(
-            player.sprite.x,
-            player.sprite.y,
-            this.sprite.x,
-            this.sprite.y
-        );
+        const distance = Phaser.Math.Distance.Between(player.sprite.x, player.sprite.y, this.sprite.x, this.sprite.y);
 
         return distance <= this.interactionRadius;
     }
@@ -85,18 +80,12 @@ export class Enemy extends Entity {
             const directionY = player.sprite.y - this.sprite.y;
 
             // Crear vector
-            const length = Math.sqrt(
-                directionX * directionX + directionY * directionY
-            );
+            const length = Math.sqrt(directionX * directionX + directionY * directionY);
 
             if (length > 0) {
                 // Velocidad
-                this.sprite.setVelocityX(
-                    (directionX / length) * this.followSpeed
-                );
-                this.sprite.setVelocityY(
-                    (directionY / length) * this.followSpeed
-                );
+                this.sprite.setVelocityX((directionX / length) * this.followSpeed);
+                this.sprite.setVelocityY((directionY / length) * this.followSpeed);
 
                 // Sentido
                 if (directionX < 0) {
@@ -153,16 +142,29 @@ export class NPC extends Entity {
 
     // Interactuar con NPC
     interact(player) {
-        if (this.isInRange(player)) {
-            // Iniciar dialogos
+        const dialogueBox = document.getElementById("dialogueBox");
+        const dialogueText = document.getElementById("dialogueText");
+
+        // Si el diálogo está visible, avanzar al siguiente
+        if (dialogueBox.style.display === "block") {
+            this.currentDialogueIndex++;
+
             if (this.currentDialogueIndex < this.dialogue.length) {
-                console.log(
-                    `${this.name}: ${this.dialogue[this.currentDialogueIndex]}`
-                );
-                this.currentDialogueIndex++;
+                // Mostrar el siguiente diálogo
+                dialogueText.textContent = `${this.name}: ${this.dialogue[this.currentDialogueIndex]}`;
             } else {
+                // Cerrar el diálogo cuando se han mostrado todos los mensajes
+                dialogueBox.style.display = "none";
                 this.currentDialogueIndex = 0;
             }
+        }
+        // Si el diálogo no está visible, mostrar el primero
+        else if (this.currentDialogueIndex < this.dialogue.length) {
+            dialogueText.textContent = `${this.name}: ${this.dialogue[this.currentDialogueIndex]}`;
+            dialogueBox.style.display = "block";
+        } else {
+            this.currentDialogueIndex = 0;
+            dialogueBox.style.display = "none";
         }
     }
 

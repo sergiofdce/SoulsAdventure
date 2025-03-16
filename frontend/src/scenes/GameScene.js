@@ -72,10 +72,11 @@ export default class GameScene extends Phaser.Scene {
             this.scene.pause();
             this.scene.launch("InventoryScene", { player: this.player });
         });
-        // Interactuar
+
         this.input.keyboard.on("keydown-E", () => {
-            // NPCs
-            this.trainer.interact(this.player);
+            if (this.trainer.isInRange(this.player)) {
+                this.trainer.interact(this.player);
+            }
         });
     }
 
