@@ -37,21 +37,81 @@ export default class Player {
         this.inventory = {
             items: {
                 "espada-corta": {
-                    quantity: 1,
-                    twoHanded: false,
-                    equipped: false,
+                    image: "./assets/espadaprueba.png",
+                    description: "Una espada fuerte hecha de diamante.",
+                    type: "sword",
+                    damage: 200,
+                    quantity: 2
                 },
                 "espada-oscura": {
-                    quantity: 1,
-                    twoHanded: false,
-                    equipped: false,
+                    image: "./assets/espadaprueba.png",
+                    description: "Una espada Hecha de oscuridad",
+                    type: "sword",
+                    damage: 220,
+                    quantity: 4
                 },
                 "escudo-anillos-cristal": {
-                    quantity: 1,
-                    equipped: false,
+                    image: "./assets/escudoPrueba.png",
+                    description: "Un escudo con detalles de anillos y cristales",
+                    type: "shield",
+                    defense: 40,
+                    quantity: 1
                 },
             },
             maxSize: 20,
+        };
+
+        // Equipamiento
+        this.equipment = {
+            helmet: {
+                name: "Casco de Metal",
+                image: "./assets/cascoPrueba.png",
+                description: "Casco de Metal",
+                type: "Helmet",
+                defense: 30,
+            },chest: {
+                name: "Pechera de hierro",
+                image: "./assets/pecheraPrueba.png",
+                description: "Pechera de hierro",
+                type: "chest",
+                defense: 50,
+            },glove: {
+                name: "Guantes magicos",
+                image: "./assets/guantesPrueba.png",
+                description: "Guantes magicos",
+                type: "glove",
+                defense: 10,
+            },shoes: {
+                name: "Zapatos de montaña",
+                image: "./assets/zapatosPrueba.png",
+                description: "Zapatos de montaña",
+                type: "shoes",
+                defense: 15,
+            },weapon: {
+                name: "Espada muy larga",
+                image: "./assets/espadaprueba.png",
+                description: "Una espada que es muy larga",
+                type: "weapon",
+                damage: 666,
+            },shield: {
+                name: "Escudo de metal",
+                image: "./assets/escudoPrueba.png",
+                description: "Escudo de metal",
+                type: "shield",
+                defense: 100,
+            },accessory1: {
+                name: "Anillo de oro",
+                image: "./assets/anilloPrueba.png",
+                description: "anillo de oro",
+                type: "accessory",
+                defense: 0,
+            },accessory2: {
+                name: "Anillo de oro",
+                image: "./assets/anilloPrueba.png",
+                description: "anillo de oro",
+                type: "accessory",
+                damage: 0,
+            },
         };
     }
 

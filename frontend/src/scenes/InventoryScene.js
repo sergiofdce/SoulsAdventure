@@ -5,240 +5,120 @@ export default class InventoryScene extends Phaser.Scene {
         super({ key: "InventoryScene" });
         this.player = null;
         this.selectedItem = null;
-    }
+    };
 
     init(data) {
         this.player = data.player;
-    }
+    };
 
     create() {
         // Mostrar el inventario en HTML
         const inventoryDiv = document.getElementById("inventory");
         inventoryDiv.style.display = "flex";
 
+        // Llenar el inventario con los datos del jugador
+        this.populateInventory();
+
         // Detectar la tecla I para cerrar el inventario
         this.input.keyboard.on("keydown-I", () => {
             inventoryDiv.style.display = "none";
             this.scene.resume("GameScene");
             this.scene.stop("InventoryScene");
-            this.scene.resume("GameScene");
         });
-    }
+    };
 
-    // displayPlayerInventory() {
-    //     if (!this.player) return;
+    populateInventory() {
+        const inventoryItemsContainer = document.querySelector(".inventory-items ul");
 
-    //     // Obtener el contenedor de items del inventario
-    //     const inventoryItemsContainer = document.getElementById("inventory-items");
-    //     inventoryItemsContainer.innerHTML = ""; // Limpiar contenido anterior
+        // Limpiar el inventario antes de llenarlo
+        inventoryItemsContainer.innerHTML = "";
 
-    //     // Crear lista para los items
-    //     const itemsList = document.createElement("ul");
-    //     itemsList.className = "inventory-list";
+        // Convertir los ítems del objeto en un array y recorrerlos
+        Object.keys(this.player.inventory.items).forEach((key) => {
+            const item = this.player.inventory.items[key]; // Obtener el objeto del ítem
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <img src="${item.image}" alt="${key}">
+                <p>${key.replace(/-/g, " ")}</p>
+                <span>&#9876;</span>
+                <p>X${item.quantity}</p>
+            `;
 
-    //     // Crear elementos HTML para cada ítem en el inventario del jugador
-    //     for (const [itemId, playerItemData] of Object.entries(this.player.inventory.items)) {
-    //         if (playerItemData.quantity > 0) {
-    //             // Obtener la información completa del item (JSON + datos del jugador)
-    //             const itemData = itemsData[itemId];
-    //             if (!itemData) continue; // Si no existe en el JSON, lo saltamos
+            // Evento para mostrar detalles del ítem al hacer clic
+            li.addEventListener("click", () => this.showItemDetails(item, key));
 
-    //             const itemElement = document.createElement("li");
-    //             itemElement.className = "inventory-item";
-    //             itemElement.setAttribute("data-item-id", itemId);
+            inventoryItemsContainer.appendChild(li);
 
-    //             // Contenedor para la imagen
-    //             const imageContainer = document.createElement("div");
-    //             imageContainer.className = "item-image-container";
+        });
 
-    //             // Si tiene imagen en el JSON, la usamos
-    //             if (itemData.image && itemData.image !== "/") {
-    //                 const itemImage = document.createElement("img");
-    //                 itemImage.src = itemData.image;
-    //                 itemImage.className = "item-image";
-    //                 imageContainer.appendChild(itemImage);
-    //             } else {
-    //                 // Si no, mostramos el placeholder
-    //                 const imagePlaceholder = document.createElement("div");
-    //                 imagePlaceholder.className = "item-image-placeholder";
-    //                 imagePlaceholder.textContent = "Imagen";
-    //                 imageContainer.appendChild(imagePlaceholder);
-    //             }
+        this.showEquipment();
+    };
 
-    //             // Contenedor para los detalles del item
-    //             const detailsContainer = document.createElement("div");
-    //             detailsContainer.className = "item-details";
+    showItemDetails(item, key) {
+        document.querySelector(".inventory-stats-item").innerHTML = `<div id="inventory-stats-item-img">
+                        <img src="" alt="">
+                    </div>
+                    <ul>
+                        <li id="inventory-stats-item-name">
+                            <h3></h3>
+                        </li>
+                        <li id="inventory-stats-item-descripcion">
+                            <p></p>
+                        </li>
+                        <li id="inventory-stats-item-type">
+                            <p></p>
+                        </li>
+                        <li id="inventory-stats-item-utility">
+                            <p></p>
+                        </li>
+                    </ul>`;
+        document.querySelector("#inventory-stats-item-img img").src = item.image;
+        document.querySelector("#inventory-stats-item-img img").alt = key;
 
-    //             // Nombre del item desde el JSON
-    //             const itemName = document.createElement("div");
-    //             itemName.className = "item-name";
-    //             itemName.textContent = itemData.name;
+        if (item.name) {
+            document.querySelector("#inventory-stats-item-name h3").textContent = item.name;
+        } else {
+            document.querySelector("#inventory-stats-item-name h3").textContent = key.replace(/-/g, " ");
+        }
 
-    //             // Descripción del item desde el JSON
-    //             const itemDescription = document.createElement("div");
-    //             itemDescription.className = "item-description";
-    //             itemDescription.textContent = itemData.description || "Sin descripción";
+        document.querySelector("#inventory-stats-item-descripcion p").textContent = `Descripción: ${item.description}`;
+        document.querySelector("#inventory-stats-item-type p").textContent = `Tipo: ${item.type}`;
+        if (item.type == "sword"){
+            document.querySelector("#inventory-stats-item-utility p").textContent = `Daño: +${item.damage}`;
+        } else if (item.type == "shield"){
+            document.querySelector("#inventory-stats-item-utility p").textContent = `Armadura: +${item.defense}`;
+        } else {
+            document.querySelector("#inventory-stats-item-utility p").textContent = `Efecto: ${item.effect || 'N/A'}`;
+        }
+    };
 
-    //             // Cantidad del item desde el inventario del jugador
-    //             const itemQuantity = document.createElement("div");
-    //             itemQuantity.className = "item-quantity";
-    //             itemQuantity.textContent = `x${playerItemData.quantity}`;
+    showEquipment() {
+        const equipment = this.player.equipment; // Asegúrate de acceder correctamente a equipment
 
-    //             // Agregar elementos al contenedor de detalles
-    //             detailsContainer.appendChild(itemName);
-    //             detailsContainer.appendChild(itemDescription);
-    //             detailsContainer.appendChild(itemQuantity);
+        for (const slot in equipment) {
+            const item = equipment[slot]; // Obtener el item de ese slot
+            const imgElement = document.querySelector(`#inventory-equipment-box #${slot} img`);
 
-    //             // Agregar contenedores al elemento de lista
-    //             itemElement.appendChild(imageContainer);
-    //             itemElement.appendChild(detailsContainer);
+            if (imgElement) {
+                imgElement.src = item.image;
+                imgElement.alt = item.name;
 
-    //             // Agregar evento de click para equipar
-    //             itemElement.addEventListener("dblclick", () => {
-    //                 this.checkEquippedItem(itemId);
-    //             });
+                // Remover cualquier evento anterior para evitar duplicaciones
+                imgElement.replaceWith(imgElement.cloneNode(true));
+                
+                // Añadir evento de clic para mostrar detalles
+                document.querySelector(`#inventory-equipment-box #${slot}`).addEventListener("click", () => this.showItemDetails(item, slot));
+            }
+        }
 
-    //             // Agregar evento de click para mostrar detalles
-    //             itemElement.addEventListener("click", () => {
-    //                 this.showItemDetails(itemId);
-    //             });
 
-    //             // Agregar el elemento a la lista
-    //             itemsList.appendChild(itemElement);
-    //         }
-    //     }
-
-    //     // Agregar la lista al contenedor de items
-    //     inventoryItemsContainer.appendChild(itemsList);
-
-    //     // Mostrar estadísticas del personaje
-    //     this.displayCharacterStats();
-    // }
-
-    // checkEquippedItem(itemId) {
-    //     const playerItemData = this.player.inventory.items[itemId];
-    //     const jsonItemData = itemsData[itemId];
-    //     const selectedItem = document.querySelector(`.inventory-item[data-item-id="${itemId}"]`);
-
-    //     if (playerItemData && jsonItemData) {
-    //         // Estilo visual
-    //         playerItemData.equipped = !playerItemData.equipped;
-    //         selectedItem.style.borderColor = playerItemData.equipped ? "gold" : "rgba(255, 255, 255, 0.4)";
-
-    //         // Comprobar si tiene arma equipada
-    //         if (jsonItemData.category === "weapon") {
-    //             const hasAnotherWeapon = Object.entries(this.player.inventory.items).some(
-    //                 ([otherItemId, otherItemData]) =>
-    //                     otherItemId !== itemId &&
-    //                     otherItemData.equipped &&
-    //                     itemsData[otherItemId]?.category === "weapon"
-    //             );
-
-    //             if (hasAnotherWeapon) {
-    //                 Object.entries(this.player.inventory.items).forEach(([otherItemId, otherItemData]) => {
-    //                     if (
-    //                         otherItemId !== itemId &&
-    //                         otherItemData.equipped &&
-    //                         itemsData[otherItemId]?.category === "weapon"
-    //                     ) {
-    //                         otherItemData.equipped = false;
-    //                         const weaponElement = document.querySelector(
-    //                             `.inventory-item[data-item-id="${otherItemId}"]`
-    //                         );
-    //                         if (weaponElement) {
-    //                             weaponElement.style.borderColor = "rgba(255, 255, 255, 0.4)";
-    //                         }
-    //                     }
-    //                 });
-    //             }
-
-    //             // Verificar si hay escudo equipado para determinar si es a dos manos
-    //             const hasShieldEquipped = Object.entries(this.player.inventory.items).some(
-    //                 ([shieldId, shieldData]) => shieldData.equipped && itemsData[shieldId]?.category === "shield"
-    //             );
-
-    //             playerItemData.twoHanded = !hasShieldEquipped;
-    //         }
-
-    //         // Comprobar si tiene escudo equipado
-    //         if (jsonItemData.category === "shield") {
-    //             if (playerItemData.equipped) {
-    //                 // Si equipo escudo, arma a 1 mano
-    //                 Object.entries(this.player.inventory.items).forEach(([weaponId, weaponData]) => {
-    //                     if (weaponData.equipped && itemsData[weaponId]?.category === "weapon") {
-    //                         weaponData.twoHanded = false;
-    //                     }
-    //                 });
-    //             } else {
-    //                 // Si me quito escudo, arma a 2 manos
-    //                 Object.entries(this.player.inventory.items).forEach(([weaponId, weaponData]) => {
-    //                     if (weaponData.equipped && itemsData[weaponId]?.category === "weapon") {
-    //                         weaponData.twoHanded = true;
-    //                     }
-    //                 });
-    //             }
-    //         }
-
-    //         this.showItemDetails(itemId);
-    //         this.displayCharacterStats();
-    //     }
-    // }
-
-    // showItemDetails(itemId) {
-    //     if (!this.player || !this.player.inventory.items[itemId]) return;
-
-    //     const playerItemData = this.player.inventory.items[itemId];
-    //     const jsonItemData = itemsData[itemId];
-
-    //     if (!jsonItemData) return;
-
-    //     // Mostrar detalles combinando datos del JSON y datos específicos del jugador
-    //     const detailsContainer = document.getElementById("item-details");
-
-    //     detailsContainer.innerHTML = `
-    //         <h3>${jsonItemData.name}</h3>
-    //         <p>Cantidad: ${playerItemData.quantity}</p>
-    //         <p>Descripción: ${jsonItemData.description || "Sin descripción"}</p>
-    //         <p>Categoría: ${jsonItemData.category}</p>
-    //         ${
-    //             jsonItemData.category === "weapon" && playerItemData.equipped
-    //                 ? `<p>Uso: ${playerItemData.twoHanded ? "A dos manos" : "A una mano"}</p>`
-    //                 : ""
-    //         }
-    //     `;
-
-    //     this.selectedItem = itemId;
-    // }
-
-    // displayCharacterStats() {
-    //     if (!this.player) return;
-
-    //     const statsContainer = document.getElementById("character-stats");
-
-    //     // Armas equipadas
-    //     const equippedWeapons = Object.entries(this.player.inventory.items)
-    //         .filter(([itemId, playerItemData]) => playerItemData.equipped && itemsData[itemId]?.category === "weapon")
-    //         .map(([itemId, playerItemData]) => {
-    //             const weaponName = itemsData[itemId].name;
-    //             let equipTypeText = playerItemData.twoHanded ? "2 manos" : "1 mano";
-    //             return `${weaponName} (${equipTypeText})`;
-    //         })
-    //         .join(", ");
-
-    //     // Escudos equipados
-    //     const equippedShields = Object.entries(this.player.inventory.items)
-    //         .filter(([itemId, playerItemData]) => playerItemData.equipped && itemsData[itemId]?.category === "shield")
-    //         .map(([itemId]) => itemsData[itemId].name)
-    //         .join(", ");
-
-    //     statsContainer.innerHTML = `
-    //         <div>Salud: ${this.player.health}</div>
-    //         <div>Fuerza: ${this.player.strength}</div>
-    //         <div>Energía: ${this.player.energy}</div>
-    //         <div>Velocidad: ${this.player.speed}</div>
-    //         <div>Almas: ${this.player.souls}</div>
-    //         <div>Arma: ${equippedWeapons || "Ninguna"}</div>
-    //         <div>Escudo: ${equippedShields || "Ninguno"}</div>
-    //     `;
-    // }
-}
+        // for (const slot in equipment) {
+        //     const item = equipment[slot];
+        //     const imgElement = document.querySelector(`#inventory-equipment-box #${slot} img`);
+        //     if (imgElement) {
+        //         imgElement.src = item.image;
+        //         imgElement.alt = item.name;
+        //     }
+        // }
+    };
+};
