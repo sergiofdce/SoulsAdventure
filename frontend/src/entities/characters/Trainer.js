@@ -20,6 +20,14 @@ export class Trainer extends NPC {
         if (choice === "Sí") {
             // Iniciar entrenamiento
             dialogueText.textContent = `${this.name}: ¡Comencemos el entrenamiento!`;
+
+            // Cerrar diálogo después de un breve retraso y lanzar la escena de entrenamiento
+            setTimeout(() => {
+                dialogueBox.style.display = "none";
+                this.currentDialogueIndex = 0;
+                this.scene.scene.pause("GameScene");
+                this.scene.scene.launch("TrainingScene", { player: player });
+            }, 1500);
         } else {
             // Rechazar entrenamiento
             dialogueText.textContent = `${this.name}: Entiendo. Vuelve cuando quieras entrenar.`;

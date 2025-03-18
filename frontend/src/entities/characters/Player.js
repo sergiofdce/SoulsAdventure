@@ -1,4 +1,14 @@
 import itemsData from "../../items/data/itemsData.js";
+import {
+    UPGRADE_COST_MULTIPLIER,
+    LEVEL_COST_MULTIPLIER,
+    BASE_SOULS_REQUIREMENT,
+    STAT_UPGRADE_MULTIPLIERS,
+    INITIAL_PLAYER_STATS,
+    TRAINING_CONFIG,
+    BASE_UPGRADE_COST,
+    LEVEL_UPGRADE_COST_MULTIPLIER,
+} from "../../data/constants.js";
 
 export default class Player {
     constructor(scene, x, y, texture) {
@@ -26,21 +36,20 @@ export default class Player {
 
         this.createAnimations(scene);
 
-        // Atributos
-        this.health = 100;
-        this.strength = 20;
-        this.energy = 60;
-        this.speed = 30;
-        this.souls = 0;
+        // Atributos (inicializados desde constantes)
+        this.level = INITIAL_PLAYER_STATS.level;
+        this.souls = INITIAL_PLAYER_STATS.souls;
+        this.reqSouls = this.calculateRequiredSouls(this.level);
+        this.armor = INITIAL_PLAYER_STATS.armor;
+
+        this.health = INITIAL_PLAYER_STATS.health;
+        this.resistance = INITIAL_PLAYER_STATS.resistance;
+        this.strength = INITIAL_PLAYER_STATS.strength;
+        this.speed = INITIAL_PLAYER_STATS.speed;
 
         // Inventario
         this.inventory = {
             items: {
-                "espada-corta": {
-                    quantity: 1,
-                    twoHanded: false,
-                    equipped: false,
-                },
                 "espada-oscura": {
                     quantity: 1,
                     twoHanded: false,
@@ -51,8 +60,27 @@ export default class Player {
                     equipped: false,
                 },
             },
-            maxSize: 20,
         };
+
+        // Seguimiento temporal de mejoras
+        this.pendingUpgrades = {
+            health: 0,
+            resistance: 0,
+            strength: 0,
+            speed: 0,
+        };
+
+        // Inicializar costos de mejora - ahora todos son iguales
+        this.upgradeCost = BASE_UPGRADE_COST;
+
+        // Calcular costo de mejora basado en nivel
+        this.updateUpgradeCost();
+    }
+
+    // Método para calcular todos los costos de mejora
+    calculateAllUpgradeCosts() {
+        // Ya no necesitamos cálculos individuales, todos usan el mismo costo base
+        return BASE_UPGRADE_COST;
     }
 
     // Método para obtener información completa de un item
@@ -158,5 +186,143 @@ export default class Player {
         } else {
             this.sprite.anims.play("idle", true);
         }
+    }
+
+    // Métodos de mejora de estadísticas
+    canUpgradeStat(stat) {
+        return this.souls >= this.upgradeCost;
+    }
+
+    getStatUpgradeCost(stat) {
+        return this.upgradeCost;
+    }
+
+    prepareUpgradeStat(stat) {
+        if (this.canUpgradeStat(stat)) {
+            this.pendingUpgrades[stat]++;
+            this.souls -= this.upgradeCost;
+
+            // Actualizar el costo basado en el nuevo nivel potencial
+            this.updateUpgradeCost(true);
+
+            return true;
+        }
+        return false;
+    }
+
+    confirmUpgrades() {
+        // Calcular la cantidad total de mejoras realizadas
+        const totalUpgrades = Object.values(this.pendingUpgrades).reduce((sum, val) => sum + val, 0);
+
+        // Incrementar el nivel según el total de mejoras si está configurado así
+        if (totalUpgrades > 0 && TRAINING_CONFIG.levelUpPerStat) {
+            this.level += totalUpgrades;
+            this.reqSouls = this.calculateRequiredSouls(this.level);
+            this.updateUpgradeCost();
+        }
+
+        // Aplicar las mejoras con sus multiplicadores correspondientes
+        this.health += Math.ceil(this.health * STAT_UPGRADE_MULTIPLIERS.health * this.pendingUpgrades.health);
+        this.resistance += Math.ceil(
+            this.resistance * STAT_UPGRADE_MULTIPLIERS.resistance * this.pendingUpgrades.resistance
+        );
+        this.strength += Math.ceil(this.strength * STAT_UPGRADE_MULTIPLIERS.strength * this.pendingUpgrades.strength);
+        this.speed += Math.ceil(this.speed * STAT_UPGRADE_MULTIPLIERS.speed * this.pendingUpgrades.speed);
+
+        // Reiniciar mejoras pendientes
+        this.pendingUpgrades = {
+            health: 0,
+            resistance: 0,
+            strength: 0,
+            speed: 0,
+        };
+    }
+
+    cancelUpgrades() {
+        // Reembolsar almas por mejoras pendientes
+        let refundSouls = 0;
+
+        // Necesitamos calcular cuánto costó cada mejora individualmente
+        let currentLevel = this.level;
+        for (let i = 0; i < Object.values(this.pendingUpgrades).reduce((sum, val) => sum + val, 0); i++) {
+            // Calcular el costo para este nivel específico
+            const costForLevel = Math.ceil(
+                BASE_UPGRADE_COST * (1 + (currentLevel - 1) * LEVEL_UPGRADE_COST_MULTIPLIER)
+            );
+            refundSouls += costForLevel;
+            currentLevel++; // Incrementar el nivel para la siguiente mejora
+        }
+
+        this.souls += refundSouls;
+
+        // Reiniciar mejoras pendientes
+        this.pendingUpgrades = {
+            health: 0,
+            resistance: 0,
+            strength: 0,
+            speed: 0,
+        };
+
+        // Restablecer el costo de mejora al nivel actual
+        this.updateUpgradeCost(false);
+    }
+
+    // Cálculo de almas necesarias para subir de nivel
+    calculateRequiredSouls(currentLevel) {
+        // Fórmula: BASE * (1 + MULTIPLIER)^(level)
+        // Para nivel 1: BASE
+        // Para nivel 2: BASE * (1 + MULTIPLIER)
+        // Para nivel 3: BASE * (1 + MULTIPLIER)^2, etc.
+        return Math.ceil(BASE_SOULS_REQUIREMENT * Math.pow(1 + LEVEL_COST_MULTIPLIER, currentLevel - 1));
+    }
+
+    // Obtener valor ajustado de una estadística con las mejoras pendientes
+    getAdjustedStatValue(stat) {
+        const pendingBonus = Math.ceil(this[stat] * STAT_UPGRADE_MULTIPLIERS[stat] * this.pendingUpgrades[stat]);
+        return this[stat] + pendingBonus;
+    }
+
+    // Método para subir de nivel
+    levelUp() {
+        if (this.souls >= this.reqSouls) {
+            this.souls -= this.reqSouls;
+            this.level += 1;
+            this.reqSouls = this.calculateRequiredSouls(this.level);
+            return true;
+        }
+        return false;
+    }
+
+    // Método para obtener información de nivel
+    getLevelInfo() {
+        // Calcular nivel potencial basado en mejoras pendientes
+        const totalPendingUpgrades = Object.values(this.pendingUpgrades).reduce((sum, val) => sum + val, 0);
+        const potentialLevel = this.level + totalPendingUpgrades;
+
+        // Calcular almas requeridas para el nivel potencial actual (no el siguiente)
+        // Esto es más coherente con lo que se muestra en la interfaz
+        const potentialRequiredSouls = this.calculateRequiredSouls(potentialLevel);
+
+        return {
+            level: this.level,
+            potentialLevel: potentialLevel,
+            souls: this.souls,
+            requiredSouls: this.reqSouls,
+            potentialRequiredSouls: potentialRequiredSouls,
+        };
+    }
+
+    // Actualizar el costo de mejora basado en el nivel actual o potencial
+    updateUpgradeCost(usePotentialLevel = false) {
+        let levelToUse = this.level;
+
+        // Si se solicita usar el nivel potencial, calcular la suma de nivel actual + mejoras pendientes
+        if (usePotentialLevel) {
+            const totalPendingUpgrades = Object.values(this.pendingUpgrades).reduce((sum, val) => sum + val, 0);
+            levelToUse = this.level + totalPendingUpgrades;
+        }
+
+        // Fórmula: BASE_COST * (1 + (nivel-1) * MULTIPLIER)
+        this.upgradeCost = Math.ceil(BASE_UPGRADE_COST * (1 + (levelToUse - 1) * LEVEL_UPGRADE_COST_MULTIPLIER));
     }
 }

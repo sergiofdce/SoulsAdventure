@@ -18,6 +18,8 @@
         <div id="choicesContainer"></div>
     </div>
 
+
+
     <div id="inventory-container" class="hidden">
         <div id="inventory">
             <div class="inventory-section red">
@@ -31,6 +33,95 @@
             <div class="inventory-section blue">
                 <div class="inventory-title">Detalles</div>
                 <div id="item-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="trainer-container" class="hidden">
+        <div id="trainer">
+            <div class="trainer-content">
+                <div class="trainer-section upgrade-stats blue">
+                    <div class="section-title">Mejorar Estadísticas</div>
+                    <div id="player-upgrade-container">
+                        <div class="player-level-info">
+                            <div class="stat-row">
+                                <span>Nivel:</span>
+                                <span id="player-level">1</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Almas:</span>
+                                <span id="player-souls">0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Costo:</span>
+                                <span id="required-souls" class="costs-display">-</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-upgrades">
+                            <div class="stat-row">
+                                <span>Salud: </span>
+                                <span id="player-health">100</span>
+                                <button class="upgrade-btn" data-stat="health">+</button>
+                            </div>
+                            <div class="stat-row">
+                                <span>Resistencia: </span>
+                                <span id="player-resistance">10</span>
+                                <button class="upgrade-btn" data-stat="resistance">+</button>
+                            </div>
+                            <div class="stat-row">
+                                <span>Fuerza: </span>
+                                <span id="player-strength">10</span>
+                                <button class="upgrade-btn" data-stat="strength">+</button>
+                            </div>
+                            <div class="stat-row">
+                                <span>Velocidad: </span>
+                                <span id="player-speed">30</span>
+                                <button class="upgrade-btn" data-stat="speed">+</button>
+                            </div>
+                        </div>
+
+                        <button id="accept-upgrades" class="accept-button">Aceptar</button>
+                    </div>
+                </div>
+                <div class="trainer-section player-stats blue">
+                    <div class="section-title">Estadísticas Detalladas</div>
+                    <div id="player-stats-container">
+                        <div class="stat-details">
+                            <div class="stat-header">Valores de estadísticas</div>
+                            <div class="stat-row">
+                                <span>Salud:</span>
+                                <span id="stats-health-base">100</span>
+                                <span class="stat-arrow">→</span>
+                                <span id="stats-health-upgraded" class="upgraded-stat">100</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Resistencia:</span>
+                                <span id="stats-resistance-base">10</span>
+                                <span class="stat-arrow">→</span>
+                                <span id="stats-resistance-upgraded" class="upgraded-stat">10</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Fuerza:</span>
+                                <span id="stats-strength-base">10</span>
+                                <span class="stat-arrow">→</span>
+                                <span id="stats-strength-upgraded" class="upgraded-stat">10</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Velocidad:</span>
+                                <span id="stats-speed-base">30</span>
+                                <span class="stat-arrow">→</span>
+                                <span id="stats-speed-upgraded" class="upgraded-stat">30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="trainer-section stats-info blue">
+                    <div>Información Detallada</div>
+                </div>
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
             </div>
         </div>
     </div>

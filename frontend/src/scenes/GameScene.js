@@ -87,7 +87,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnNPCs() {
-        this.trainer = new Trainer(this, 200, 300, "trainer");
+        this.trainer = new Trainer(this, 400, 200, "trainer");
     }
 
     spawnEnemies() {
