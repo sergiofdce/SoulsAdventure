@@ -9,6 +9,14 @@
 </head>
 
 <body>
+    <div id="accessoryModal" class="modal">
+        <div class="modal-content">
+            <p>Ya tienes dos accesorios equipados. ¿Dónde quieres colocar el nuevo accesorio?</p>
+            <button id="replaceAccessory1">Reemplazar Accesorio 1</button>
+            <button id="replaceAccessory2">Reemplazar Accesorio 2</button>
+            <button id="cancelModal">Cancelar</button>
+        </div>
+    </div>
     <div id="inventory">
         <div class="inventory-container">
             <div id="inventory-container-left">
@@ -16,36 +24,38 @@
                     <div id="inventory-equipment-box">
                         <ul>
                             <li id="helmet">
-                                <img src="./assets/espadaprueba.png" alt="objeto">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
                             </li>
                             <li id="chest">
-                                <img src="./assets/espadaprueba.png" alt="objeto">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
                             </li>
                             <li id="glove">
-                                <img src="./assets/espadaprueba.png" alt="objeto">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
                             </li>
                             <li id="shoes">
-                                <img src="./assets/espadaprueba.png" alt="objeto">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
                             </li>
                         </ul>
+                        <div id="inventory-equipment-box-player">
+                            <img src="#" alt="personaje">
+                        </div>
                         <ul>
                             <li id="weapon">
-                                <img src="./assets/espadaprueba.png" alt="objeto">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
                             </li>
                             <li id="shield">
-                                <img src="./assets/espadaprueba.png" alt="objeto">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
                             </li>
                             <li id="accessory1">
-                                <img src="./assets/espadaprueba.png" alt="objeto">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
                             </li>
                             <li id="accessory2">
-                                <img src="./assets/espadaprueba.png" alt="objeto">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
                             </li>
                         </ul>
                     </div>
-                    <img src="./assets/pruebaimg.png" alt="personaje">
                 </div>
-                <div class="inventory-section inventory-stats-item">
+                <div class="inventory-section inventory-stats">
                 </div>
             </div>
             <div id="inventory-container-right">
@@ -53,6 +63,11 @@
                     <ul>
                     </ul>
                 </div>
+            </div>
+            <div id="inventory-container-bottom">
+                <p>I: Cerrar inventario</p>
+                <p>E: Equipar</p>
+                <p>U: Usar</p>
             </div>
         </div>
     </div>
