@@ -47,6 +47,9 @@ export default class Player {
         this.strength = INITIAL_PLAYER_STATS.strength;
         this.speed = INITIAL_PLAYER_STATS.speed;
 
+        this.img = "./assets/pruebaimg.png";
+        
+
         // Inventario
         this.inventory = {
             items: {
@@ -56,7 +59,45 @@ export default class Player {
                     equipped: false,
                 },
                 "escudo-anillos-cristal": {
+                    quantity: 2,
+                    equipped: false,
+                },
+                "casco-metal": {
                     quantity: 1,
+                    equipped: true,
+                },
+                "pechera-hierro": {
+                    quantity: 1,
+                    equipped: true,
+                },
+                "guantes-magicos": {
+                    quantity: 1,
+                    twoHanded: false,
+                    equipped: true,
+                },
+                "zapatos-montana": {
+                    quantity: 1,
+                    equipped: true,
+                },
+                "espada-muy-larga": {
+                    quantity: 1,
+                    twoHanded: false,
+                    equipped: true,
+                },
+                "escudo-metal": {
+                    quantity: 1,
+                    equipped: true,
+                },
+                "anillo-oro": {
+                    quantity: 2,
+                    accessory1: true,
+                    accessory2: true,
+                    equipped: true,
+                },
+                "anillo-legendario": {
+                    quantity: 1,
+                    accessory1: false,
+                    accessory2: false,
                     equipped: false,
                 },
             },
@@ -75,12 +116,11 @@ export default class Player {
 
         // Calcular costo de mejora basado en nivel
         this.updateUpgradeCost();
-    }
 
-    // Método para calcular todos los costos de mejora
-    calculateAllUpgradeCosts() {
-        // Ya no necesitamos cálculos individuales, todos usan el mismo costo base
-        return BASE_UPGRADE_COST;
+
+        // this.equippedWeapons= [[],[],[],[]]
+        // this.equippedWeapons= [[],[]]
+        // this.equippedWeapons= [[],[]]
     }
 
     // Método para obtener información completa de un item
@@ -119,7 +159,7 @@ export default class Player {
             this.inventory.items[itemId].quantity -= 1;
 
             // Si la cantidad llega a 0 y está equipado, lo desequipamos
-            if (this.inventory.items[itemId].quantity <= 0 && this.inventory.items[itemId].equipped) {
+            if (this.inventory.items[itemId].quantity >= 0 && this.inventory.items[itemId].equipped) {
                 this.inventory.items[itemId].equipped = false;
             }
         }

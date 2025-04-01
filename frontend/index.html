@@ -4,13 +4,11 @@
 <head>
     <title>Souls Adventure</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="assets/css/styles.css">
-    <link rel="stylesheet" href="assets/css/reset.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/reset.css">
 </head>
 
 <body>
-    <div id="game"></div>
 
     <script type="module" src="game.js"></script>
 
@@ -19,22 +17,70 @@
         <div id="choicesContainer"></div>
     </div>
 
-    <div id="inventory-container" class="hidden">
-        <div id="inventory">
-            <div class="inventory-section red">
-                <div class="inventory-title">Personaje</div>
-                <div id="character-stats"></div>
+
+    <div id="accessoryModal" class="modal">
+        <div class="modal-content">
+            <p>Ya tienes dos accesorios equipados. ¿Dónde quieres colocar el nuevo accesorio?</p>
+            <button id="replaceAccessory1">Reemplazar Accesorio 1</button>
+            <button id="replaceAccessory2">Reemplazar Accesorio 2</button>
+            <button id="cancelModal">Cancelar</button>
+        </div>
+    </div>
+    <div id="inventory">
+        <div class="inventory-container">
+            <div id="inventory-container-left">
+                <div class="inventory-section inventory-equipment">
+                    <div id="inventory-equipment-box">
+                        <ul>
+                            <li id="helmet">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                            </li>
+                            <li id="chest">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                            </li>
+                            <li id="glove">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                            </li>
+                            <li id="shoes">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                            </li>
+                        </ul>
+                        <div id="inventory-equipment-box-player">
+                            <img src="#" alt="personaje">
+                        </div>
+                        <ul>
+                            <li id="weapon">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                            </li>
+                            <li id="shield">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                            </li>
+                            <li id="accessory1">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                            </li>
+                            <li id="accessory2">
+                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inventory-section inventory-stats">
+                </div>
             </div>
-            <div class="inventory-section green">
-                <div class="inventory-title">Objetos</div>
-                <div id="inventory-items" class="inventory-items"></div>
+            <div id="inventory-container-right">
+                <div class="inventory-section inventory-items">
+                    <ul>
+                    </ul>
+                </div>
             </div>
-            <div class="inventory-section blue">
-                <div class="inventory-title">Detalles</div>
-                <div id="item-details"></div>
+            <div id="inventory-container-bottom">
+                <p>I: Cerrar inventario</p>
+                <p>E: Equipar</p>
+                <p>U: Usar</p>
             </div>
         </div>
     </div>
+    <div id="game"></div>
 
     <div id="trainer-container" class="scene-container hidden">
         <div class="scene-layout">
