@@ -160,10 +160,10 @@ MARK: Objetos
 }
 
 /*****************************************************
-MARK: Trainer
+MARK: Layout Escenas
 *****************************************************/
 
-#trainer-container {
+.scene-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -175,20 +175,24 @@ MARK: Trainer
     align-items: center;
 }
 
-#trainer {
+.scene-layout {
     display: flex;
     flex-direction: column;
     width: 90%;
     height: 90%;
 }
 
-.trainer-content {
+.scene-content {
     display: flex;
     flex-direction: row;
     height: 90%;
     width: 100%;
     gap: 10px;
 }
+
+/*****************************************************
+MARK: Trainer
+*****************************************************/
 
 .trainer-section {
     padding: 10px;
@@ -434,4 +438,128 @@ MARK: Estadísticas del Jugador
 .upgrade-stats .stat-row {
     display: flex;
     justify-content: space-between;
+}
+
+/*****************************************************
+MARK: Teleport Scene
+*****************************************************/
+
+.teleport-section {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.teleport-instructions {
+    font-size: 20px;
+    color: #ffffff;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.fireplace-list {
+    width: 80%;
+    max-width: 500px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.fireplace-item {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    padding: 15px 25px;
+    text-align: center;
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fireplace-item:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.fireplace-item.selected {
+    background: rgba(255, 215, 0, 0.4);
+    border: 2px solid rgba(255, 215, 0, 0.8);
+    transform: translateY(-2px);
+}
+
+.teleport-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.travel-button,
+.exit-button {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 4px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.travel-button {
+    background: #2b6cb0;
+    color: white;
+}
+
+.travel-button:hover {
+    background: #4299e1;
+    transform: translateY(-2px);
+}
+
+.travel-button:disabled {
+    background: #718096;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.travel-button:disabled:hover {
+    background: #718096;
+    transform: none;
+}
+
+.exit-button {
+    background: #742a2a;
+    color: white;
+}
+
+.exit-button:hover {
+    background: #9b2c2c;
+    transform: translateY(-2px);
+}
+
+.cancel-button {
+    margin-top: 20px;
+    padding: 12px 30px;
+    background: #1a365d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cancel-button:hover {
+    background: #2c5282;
+}
+
+#no-fireplaces-message {
+    color: #ffffff;
+    font-size: 20px;
+    text-align: center;
+    padding: 30px 0;
 }

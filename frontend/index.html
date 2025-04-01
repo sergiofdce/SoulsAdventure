@@ -4,6 +4,7 @@
 <head>
     <title>Souls Adventure</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/reset.css">
 </head>
@@ -17,8 +18,6 @@
         <p id="dialogueText"></p>
         <div id="choicesContainer"></div>
     </div>
-
-
 
     <div id="inventory-container" class="hidden">
         <div id="inventory">
@@ -37,9 +36,9 @@
         </div>
     </div>
 
-    <div id="trainer-container" class="hidden">
-        <div id="trainer">
-            <div class="trainer-content">
+    <div id="trainer-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="scene-content">
                 <div class="trainer-section upgrade-stats blue">
                     <div class="section-title">Mejorar Estadísticas</div>
                     <div id="player-upgrade-container">
@@ -89,25 +88,25 @@
                     <div id="player-stats-container">
                         <div class="stat-details">
                             <div class="stat-header">Valores de estadísticas</div>
-                            <div class="stat-row">
+                            <div class="stat-row" data-stat="health">
                                 <span>Salud:</span>
                                 <span id="stats-health-base">100</span>
                                 <span class="stat-arrow">→</span>
                                 <span id="stats-health-upgraded" class="upgraded-stat">100</span>
                             </div>
-                            <div class="stat-row">
+                            <div class="stat-row" data-stat="resistance">
                                 <span>Resistencia:</span>
                                 <span id="stats-resistance-base">10</span>
                                 <span class="stat-arrow">→</span>
                                 <span id="stats-resistance-upgraded" class="upgraded-stat">10</span>
                             </div>
-                            <div class="stat-row">
+                            <div class="stat-row" data-stat="strength">
                                 <span>Fuerza:</span>
                                 <span id="stats-strength-base">10</span>
                                 <span class="stat-arrow">→</span>
                                 <span id="stats-strength-upgraded" class="upgraded-stat">10</span>
                             </div>
-                            <div class="stat-row">
+                            <div class="stat-row" data-stat="speed">
                                 <span>Velocidad:</span>
                                 <span id="stats-speed-base">30</span>
                                 <span class="stat-arrow">→</span>
@@ -117,7 +116,57 @@
                     </div>
                 </div>
                 <div class="trainer-section stats-info blue">
-                    <div>Información Detallada</div>
+                    <div class="section-title">Información Detallada</div>
+                    <p class="stats-info-message" id="default-message">
+                        Mantén el cursor encima de alguna Estadística
+                        para mostrar información
+                    </p>
+                    <p class="stats-info-message hidden" id="health-message">La Salud es blablabla</p>
+                    <p class="stats-info-message hidden" id="resistance-message">La Resistencia es blablabla</p>
+                    <p class="stats-info-message hidden" id="strength-message">La Fuerza es blablabla</p>
+                    <p class="stats-info-message hidden" id="speed-message">La Velocidad es blablabla</p>
+                </div>
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
+            </div>
+        </div>
+        <script>
+            // Mejorar atributos -> Información detallada
+            $(document).ready(function () {
+                $('.stat-details .stat-row').on('mouseenter', function () {
+                    $('.stats-info-message').addClass('hidden');
+                    let statType = $(this).data('stat');
+                    $('#' + statType + '-message').removeClass('hidden');
+                });
+
+                $('.stat-details .stat-row').on('mouseleave', function () {
+                    $('.stats-info-message').addClass('hidden');
+                    $('#default-message').removeClass('hidden');
+                });
+            });
+        </script>
+    </div>
+
+    <div id="teleport-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="scene-content">
+                <div class="teleport-section blue">
+                    <div class="section-title">VIAJAR ENTRE HOGUERAS</div>
+                    <div class="teleport-instructions">Selecciona una hoguera para viajar</div>
+
+                    <div id="fireplace-list" class="fireplace-list">
+                        <div id="no-fireplaces-message" class="hidden">
+                            No has descubierto ninguna hoguera aún
+                        </div>
+                    </div>
+
+                    <div id="teleport-action-buttons" class="teleport-actions">
+                        <button id="teleport-travel" class="travel-button" disabled>Viajar</button>
+                        <button id="teleport-exit" class="exit-button">Salir</button>
+                    </div>
+
+                    <button id="teleport-cancel" class="cancel-button hidden">Cancelar</button>
                 </div>
             </div>
             <div class="accesibility-buttons">
@@ -125,6 +174,30 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Mejorar atributos -> Información detallada
+        $(document).ready(function () {
+            $('.stat-details .stat-row').on('mouseenter', function () {
+                $('.stats-info-message').addClass('hidden');
+                let statType = $(this).data('stat');
+                $('#' + statType + '-message').removeClass('hidden');
+            });
+
+            $('.stat-details .stat-row').on('mouseleave', function () {
+                $('.stats-info-message').addClass('hidden');
+                $('#default-message').removeClass('hidden');
+            });
+
+            // Teleport
+            $('#teleport-cancel').on('click', function () {
+                $('#teleport-container').addClass('hidden');
+                if (window.game) {
+                    window.game.scene.resume('GameScene');
+                }
+            });
+        });
+    </script>
 
 </body>
 

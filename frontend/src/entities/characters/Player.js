@@ -325,4 +325,12 @@ export default class Player {
         // Fórmula: BASE_COST * (1 + (nivel-1) * MULTIPLIER)
         this.upgradeCost = Math.ceil(BASE_UPGRADE_COST * (1 + (levelToUse - 1) * LEVEL_UPGRADE_COST_MULTIPLIER));
     }
+
+    // Método para establecer la posición del jugador
+    setPosition(x, y) {
+        this.sprite.x = x;
+        this.sprite.y = y;
+
+        return this;
+    }
 }

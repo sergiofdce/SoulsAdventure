@@ -3,11 +3,14 @@ import Controls from "../managers/Controls.js";
 import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
 import { Trainer } from "../entities/characters/Trainer.js";
+import { Fireplace } from "../entities/characters/Fireplace.js";
 import { Enemy001 } from "../entities/enemies/Enemy001.js";
+
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameScene" });
         this.enemies = [];
+        this.fireplaces = []; // Initialize fireplaces array here
     }
 
     preload() {
@@ -26,6 +29,9 @@ export default class GameScene extends Phaser.Scene {
 
         // Generar enemigos en el mapa
         this.spawnEnemies();
+
+        // Generar objetos en el mapa
+        this.spawnObjects();
 
         // Instanciar el jugador
         this.spawnPlayer();
@@ -56,6 +62,13 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 96,
         });
+
+        // Cargar asset hoguera
+        this.load.spritesheet("fireplace", "./assets/player.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+
         // Cargar assets Mapa
         this.load.tilemapTiledJSON("map", "assets/maps/map.json");
         this.load.image("tiles", "assets/tilesets/Tilesets/RA_Overworld_Full.png");
@@ -76,6 +89,13 @@ export default class GameScene extends Phaser.Scene {
             if (this.trainer.isInRange(this.player)) {
                 this.trainer.interact(this.player);
             }
+
+            // Check interaction with all fireplaces
+            this.fireplaces.forEach((fireplace) => {
+                if (fireplace.isInRange(this.player)) {
+                    fireplace.interact(this.player);
+                }
+            });
         });
     }
 
@@ -87,7 +107,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnNPCs() {
-        this.trainer = new Trainer(this, 400, 200, "trainer");
+        this.trainer = new Trainer(this, 350, 200, "trainer");
     }
 
     spawnEnemies() {
@@ -100,6 +120,25 @@ export default class GameScene extends Phaser.Scene {
             const enemy = new Enemy001(this, pos.x, pos.y);
             this.enemies.push(enemy);
         });
+    }
+
+    spawnObjects() {
+        // Hoguera principal cerca del entrenador
+        const fireplace1 = new Fireplace(this, 450, 200, "fireplace");
+        fireplace1.fireplaceName = "Hoguera del Entrenador";
+        fireplace1.sprite.setTint(0xff6b6b);
+        this.fireplaces.push(fireplace1);
+
+        // Otras hogueras en diferentes ubicaciones del mapa
+        const fireplace2 = new Fireplace(this, 700, 350, "fireplace");
+        fireplace2.fireplaceName = "Hoguera del Bosque";
+        fireplace2.sprite.setTint(0xff6b6b);
+        this.fireplaces.push(fireplace2);
+
+        const fireplace3 = new Fireplace(this, 200, 500, "fireplace");
+        fireplace3.fireplaceName = "Hoguera del Lago";
+        fireplace3.sprite.setTint(0xff6b6b);
+        this.fireplaces.push(fireplace3);
     }
 
     spawnPlayer() {
@@ -122,8 +161,13 @@ export default class GameScene extends Phaser.Scene {
         // Colisiones con NPC
         this.trainer.setupCollision(this.player);
 
-        // Colisiones con objetos
+        // Colisiones con enemigos
         this.enemies.forEach((enemy) => enemy.setupCollision(this.player));
+
+        // Colisiones para todas las hogueras
+        this.fireplaces.forEach((fireplace) => {
+            fireplace.setupCollision(this.player);
+        });
     }
 
     setupCamera() {
@@ -148,7 +192,11 @@ export default class GameScene extends Phaser.Scene {
         this.player.sprite.depth = this.player.sprite.y;
         this.trainer.sprite.depth = this.trainer.sprite.y;
 
-        // Profundidad assets player y colisiones
-        // Proximamente xd
+        // Profundidad para todas las hogueras
+        this.fireplaces.forEach((fireplace) => {
+            if (fireplace.sprite) {
+                fireplace.sprite.depth = fireplace.sprite.y;
+            }
+        });
     }
 }
