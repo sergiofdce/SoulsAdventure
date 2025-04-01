@@ -16,9 +16,9 @@ MARK: General
     src: url('../font/Jacquard24-Regular.ttf') format('truetype');
 }
 
-html{
+html {
     /* font-family:'enter-the-gungeon-big' !important; */
-    font-family:'Jacquard 24' !important;
+    font-family: 'Jacquard 24' !important;
 }
 
 * {
@@ -67,17 +67,6 @@ img {
 /*****************************************************
 MARK: inventory
 *****************************************************/
-#inventory{
-    display: none;
-    z-index: 10;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to right, #572a01, #7e3d00);
-    justify-content: center;
-}
 
 .inventory-container {
     width: 100%;
@@ -86,26 +75,28 @@ MARK: inventory
     justify-content: space-evenly;
 }
 
-#inventory-container-left , #inventory-container-right{
-    width: 49%;
-    height: 95%;
+#inventory-container-left,
+#inventory-container-right {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    gap: 10px;
+    /* Using gap instead of margins */
 }
 
-#inventory-container-bottom{
+#inventory-container-bottom {
     width: 100%;
     height: 5%;
+    position: absolute;
+    bottom: 0;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     color: white;
-    margin-right: 1%;
 }
 
 .inventory-section {
-    padding: 20px;
     color: white;
     display: flex;
     justify-content: center;
@@ -114,22 +105,19 @@ MARK: inventory
     font-weight: bold;
 }
 
-
-
 /*****************************************************
 MARK: Objetos
 *****************************************************/
 
 .inventory-title {
     font-size: 24px;
-    margin-bottom: 20px;
     text-align: center;
     width: 100%;
 }
 
 /******** inventory-equipment ********/
-.inventory-equipment { 
-    height: 58%;
+.inventory-equipment {
+    height: 55%;
     background-color: #161616;
     display: flex;
     justify-content: center;
@@ -137,7 +125,7 @@ MARK: Objetos
     position: relative;
 }
 
-.inventory-equipment #inventory-equipment-box{
+.inventory-equipment #inventory-equipment-box {
     position: absolute;
     height: 100%;
     width: 100%;
@@ -145,7 +133,7 @@ MARK: Objetos
     justify-content: space-between;
 }
 
-.inventory-equipment #inventory-equipment-box ul{
+.inventory-equipment #inventory-equipment-box ul {
     width: 25%;
     height: 100%;
     display: flex;
@@ -154,7 +142,7 @@ MARK: Objetos
     align-items: center;
 }
 
-.inventory-equipment #inventory-equipment-box ul li{
+.inventory-equipment #inventory-equipment-box ul li {
     height: 20%;
     width: 70%;
     background-color: #252525;
@@ -167,7 +155,7 @@ MARK: Objetos
     height: 100%;
 } */
 
-.inventory-equipment #inventory-equipment-box-player{
+.inventory-equipment #inventory-equipment-box-player {
     height: 100%;
     width: 50%;
     display: flex;
@@ -175,19 +163,20 @@ MARK: Objetos
     align-items: center;
 }
 
-.inventory-equipment #inventory-equipment-box-player img{
+.inventory-equipment #inventory-equipment-box-player img {
     height: 100%;
     width: 100%;
 }
- 
+
 /******** inventory-stats-item ********/
-.inventory-stats{ 
-    height: 38%;
+.inventory-stats {
+    height: 42%;
+    /* Adjusted to fill space with gap */
     background-color: #b18409;
     display: flex;
 }
 
-.inventory-stats #inventory-stats-item-img{
+.inventory-stats #inventory-stats-item-img {
     width: 50%;
     height: 100%;
     display: flex;
@@ -201,18 +190,18 @@ MARK: Objetos
     object-fit: contain;
 } */
 
-.inventory-stats ul#inventory-stats-item{
+.inventory-stats ul#inventory-stats-item {
     width: 50%;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-.inventory-stats ul#inventory-stats-item li{
+.inventory-stats ul#inventory-stats-item li {
     margin: 2% 0%;
 }
 
-.inventory-stats ul#inventory-stats-player{
+.inventory-stats ul#inventory-stats-player {
     width: 50%;
     margin: 0 auto;
     display: flex;
@@ -220,14 +209,14 @@ MARK: Objetos
     justify-content: center;
 }
 
-.inventory-stats ul#inventory-stats-player li{
+.inventory-stats ul#inventory-stats-player li {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 2% 0;
 }
 
-.inventory-stats ul#inventory-stats-player li p{
+.inventory-stats ul#inventory-stats-player li p {
     font-size: 1.5rem;
 }
 
@@ -237,7 +226,7 @@ MARK: Objetos
     background-color: #082136;
 }
 
-.inventory-items ul{
+.inventory-items ul {
     width: 100%;
     height: 100%;
     overflow-y: auto;
@@ -245,27 +234,33 @@ MARK: Objetos
 
 /* Estilo general de la barra */
 .inventory-items ul::-webkit-scrollbar {
-    width: 8px; /* Ancho de la barra */
+    width: 8px;
+    /* Ancho de la barra */
 }
 
 /* Color de fondo del scrollbar */
 .inventory-items ul::-webkit-scrollbar-track {
-    background: #F4F4F4; /* Gris claro */
-    border-radius: 4px; /* Bordes redondeados */
+    background: #F4F4F4;
+    /* Gris claro */
+    border-radius: 4px;
+    /* Bordes redondeados */
 }
 
 /* Color y diseño del "thumb" (barra que se mueve) */
 .inventory-items ul::-webkit-scrollbar-thumb {
-    background: #7B1FA2; /* Morado intenso */
-    border-radius: 4px; /* Bordes redondeados */
+    background: #7B1FA2;
+    /* Morado intenso */
+    border-radius: 4px;
+    /* Bordes redondeados */
 }
 
 /* Efecto al pasar el mouse */
 .inventory-items ul::-webkit-scrollbar-thumb:hover {
-    background: #FFC300; /* Amarillo vibrante */
+    background: #FFC300;
+    /* Amarillo vibrante */
 }
 
-.inventory-items ul li{
+.inventory-items ul li {
     background-color: brown;
     width: 100%;
     height: 49px;
@@ -278,33 +273,36 @@ MARK: Objetos
     font-size: 1.5rem;
 }
 
-.inventory-items ul li img{
+.inventory-items ul li img {
     width: 15%;
     height: 100%;
 }
 
-.inventory-items ul li p.inventory-items-Name{
+.inventory-items ul li p.inventory-items-Name {
     width: 65%;
 }
 
-.inventory-items ul li span{
+.inventory-items ul li span {
     width: 10%;
     font-size: 2rem;
 }
 
-.inventory-items ul li p.inventory-items-Quantity{
+.inventory-items ul li p.inventory-items-Quantity {
     width: 10%;
 }
 
-.inventory-items ul li img , .inventory-items ul li span, .inventory-items ul li p.inventory-items-Quantity{
+.inventory-items ul li img,
+.inventory-items ul li span,
+.inventory-items ul li p.inventory-items-Quantity {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.inventory-items ul li.inventory-items-equipped{
+.inventory-items ul li.inventory-items-equipped {
     background-color: #5c5c5c;
 }
+
 /***** Pra eleguir posicion anillo *****/
 .modal {
     display: none;
@@ -318,12 +316,14 @@ MARK: Objetos
     justify-content: center;
     align-items: center;
 }
+
 .modal-content {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
     text-align: center;
 }
+
 .modal button {
     margin: 5px;
     padding: 10px 20px;
@@ -372,6 +372,8 @@ MARK: Layout Escenas
     flex-direction: column;
     width: 90%;
     height: 90%;
+    gap: 10px;
+    /* Adding gap between content and buttons */
 }
 
 .scene-content {

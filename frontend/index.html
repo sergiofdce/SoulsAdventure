@@ -4,11 +4,15 @@
 <head>
     <title>Souls Adventure</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
     <link rel="stylesheet" type="text/css" href="assets/css/reset.css">
 </head>
 
 <body>
+
+    <div id="game"></div>
+
 
     <script type="module" src="game.js"></script>
 
@@ -18,6 +22,62 @@
     </div>
 
 
+    <div id="inventory-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="scene-content">
+                <div id="inventory-container-left">
+                    <div class="inventory-section inventory-equipment">
+                        <div id="inventory-equipment-box">
+                            <ul>
+                                <li id="helmet">
+                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                </li>
+                                <li id="chest">
+                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                </li>
+                                <li id="glove">
+                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                </li>
+                                <li id="shoes">
+                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                </li>
+                            </ul>
+                            <div id="inventory-equipment-box-player">
+                                <img src="#" alt="personaje">
+                            </div>
+                            <ul>
+                                <li id="weapon">
+                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                </li>
+                                <li id="shield">
+                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                </li>
+                                <li id="accessory1">
+                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                </li>
+                                <li id="accessory2">
+                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="inventory-section inventory-stats">
+                    </div>
+                </div>
+                <div id="inventory-container-right">
+                    <div class="inventory-section inventory-items">
+                        <ul>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
+            </div>
+        </div>
+    </div>
+
     <div id="accessoryModal" class="modal">
         <div class="modal-content">
             <p>Ya tienes dos accesorios equipados. ¿Dónde quieres colocar el nuevo accesorio?</p>
@@ -26,61 +86,8 @@
             <button id="cancelModal">Cancelar</button>
         </div>
     </div>
-    <div id="inventory">
-        <div class="inventory-container">
-            <div id="inventory-container-left">
-                <div class="inventory-section inventory-equipment">
-                    <div id="inventory-equipment-box">
-                        <ul>
-                            <li id="helmet">
-                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
-                            </li>
-                            <li id="chest">
-                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
-                            </li>
-                            <li id="glove">
-                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
-                            </li>
-                            <li id="shoes">
-                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
-                            </li>
-                        </ul>
-                        <div id="inventory-equipment-box-player">
-                            <img src="#" alt="personaje">
-                        </div>
-                        <ul>
-                            <li id="weapon">
-                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
-                            </li>
-                            <li id="shield">
-                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
-                            </li>
-                            <li id="accessory1">
-                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
-                            </li>
-                            <li id="accessory2">
-                                <img src="./assets/imagenPruebaNada.png" alt="objeto">
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="inventory-section inventory-stats">
-                </div>
-            </div>
-            <div id="inventory-container-right">
-                <div class="inventory-section inventory-items">
-                    <ul>
-                    </ul>
-                </div>
-            </div>
-            <div id="inventory-container-bottom">
-                <p>I: Cerrar inventario</p>
-                <p>E: Equipar</p>
-                <p>U: Usar</p>
-            </div>
-        </div>
-    </div>
-    <div id="game"></div>
+
+
 
     <div id="trainer-container" class="scene-container hidden">
         <div class="scene-layout">
