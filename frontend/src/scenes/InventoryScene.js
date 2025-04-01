@@ -132,7 +132,6 @@ export default class InventoryScene extends Phaser.Scene {
 
     showAttributes() {
         // attributes = this.player.attributes;
-
         document.querySelector(".inventory-stats").innerHTML = `
                     <ul id="inventory-stats-player">
                         <li id="inventory-stats-player-health">
@@ -192,6 +191,9 @@ export default class InventoryScene extends Phaser.Scene {
                 }
 
                 if (item.accessory1) {
+
+                    console.log(`Actualizando imagen de: ${item.name} en ${item.category}`);
+
                     imgElementAccessory1.src = item.image;
                     imgElementAccessory1.alt = key;
 
@@ -207,6 +209,9 @@ export default class InventoryScene extends Phaser.Scene {
                 }
 
                 if (item.accessory2) {
+
+                    console.log(`Actualizando imagen de: ${item.name} en ${item.category}`);
+
                     imgElementAccessory2.src = item.image;
                     imgElementAccessory2.alt = key;
 
@@ -226,128 +231,92 @@ export default class InventoryScene extends Phaser.Scene {
 
     // Equipa arma
     toggleEquipItem(key) {
-        // Filtra los objetos actualmente equipados que pertenecen a la misma categoría del objeto seleccionado
         const equippedItemsData = Object.keys(this.player.inventory.items)
-            .filter(
-                (itemId) =>
-                    this.player.inventory.items[itemId].equipped && // Verifica si está equipado
-                    this.player.getItemData(itemId).category === this.player.getItemData(key).category // Compara la categoría
+            .filter(itemId => 
+                this.player.inventory.items[itemId].equipped &&
+                this.player.getItemData(itemId).category === this.player.getItemData(key).category
             )
             .map((itemId) => ({
                 key: itemId,
-                data: this.player.getItemData(itemId), // Guarda el ID y los datos del objeto equipado
+                data: this.player.getItemData(itemId)
             }));
-
-        // Obtiene los datos del objeto que se quiere equipar/desequipar
+    
         const equippedItemIdData = this.player.inventory.items[key];
-
-        // Verifica que el objeto seleccionado exista en el inventario
+    
         if (this.player.getItemData(key)) {
-            // Verifica que no sea un accesorio
-            if (this.player.getItemData(key).category !== "accessory") {
-                // Verifica que el objeto tenga al menos una unidad y que aún no esté equipado
-                if (equippedItemIdData.quantity > 0 && !equippedItemIdData.equipped) {
-                    // Si hay otro objeto de la misma categoría ya equipado, lo desequipa
-                    if (equippedItemsData.length > 0) {
+            if (equippedItemIdData.quantity > 0 && !equippedItemIdData.equipped) {
+                if (equippedItemsData.length > 0) {
+                    if (this.player.getItemData(key).category === "accessory") {
+                        console.log("Soy un accesorio");
+    
+                        if (equippedItemsData.length === 2) {
+                            console.log("Todos los accesorios ocupados");
+    
+                            const modal = document.getElementById("accessoryModal");
+                            modal.style.display = "flex";
+    
+                            const self = this;
+    
+                            function closeModal() {
+                                modal.style.display = "none";
+                                self.populateInventory();
+                            }
+    
+                            document.getElementById("replaceAccessory1").onclick = () => {
+                                if (self.player.inventory.items[equippedItemsData[0].key].accessory1){
+                                    self.player.inventory.items[equippedItemsData[0].key].accessory1 = false;
+                                    self.player.inventory.items[equippedItemsData[0].key].equipped = false;
+                                } else {
+                                    self.player.inventory.items[equippedItemsData[1].key].accessory1 = false;
+                                    self.player.inventory.items[equippedItemsData[1].key].equipped = false;
+                                }
+                                equippedItemIdData.accessory1 = true;
+                                equippedItemIdData.equipped = true;
+                                closeModal();
+                            };
+    
+                            document.getElementById("replaceAccessory2").onclick = () => {
+                                if (self.player.inventory.items[equippedItemsData[0].key].accessory2){
+                                    self.player.inventory.items[equippedItemsData[0].key].accessory2 = false;
+                                    self.player.inventory.items[equippedItemsData[0].key].equipped = false;
+                                } else {
+                                    self.player.inventory.items[equippedItemsData[1].key].accessory2 = false;
+                                    self.player.inventory.items[equippedItemsData[1].key].equipped = false;
+                                }
+                                equippedItemIdData.accessory2 = true;
+                                equippedItemIdData.equipped = true;
+                                closeModal();
+                            };
+    
+                            document.getElementById("cancelModal").onclick = closeModal;
+                        } else {
+                            if (!equippedItemIdData.accessory1) {
+                                console.log("accessory1 libre");
+                                equippedItemIdData.accessory1 = true;
+                            } else if (!equippedItemIdData.accessory2) {
+                                console.log("accessory2 libre");
+                                equippedItemIdData.accessory2 = true;
+                            }
+                            equippedItemIdData.equipped = true;
+                        }
+                    } else {
                         this.player.inventory.items[equippedItemsData[0].key].equipped = false;
                         equippedItemIdData.equipped = true;
-                    } else {
-                        equippedItemIdData.equipped = true;
                     }
-                }
-                // si es una accesorio
-            } else {
-                // Verifica que el objeto tenga al menos una unidad
-                if (equippedItemIdData.quantity > 0) {
-                    // Si hay otro objeto de la misma categoría ya equipado, lo desequipa
-                    console.log("Numero de objetos: " + equippedItemsData.length);
-                    if (equippedItemsData.length > 0) {
-                        if (equippedItemsData[0].key == key && equippedItemIdData.quantity > 1) {
-                            if (
-                                !this.player.inventory.items[equippedItemsData[0].key].accessory1 &&
-                                this.player.inventory.items[equippedItemsData[0].key].accessory2
-                            ) {
-                                this.player.inventory.items[equippedItemsData[0].key].accessory1 = false;
-
-                                equippedItemIdData.accessory1 = true;
-                                equippedItemIdData.equipped = true;
-                            } else if (
-                                this.player.inventory.items[equippedItemsData[0].key].accessory1 &&
-                                !this.player.inventory.items[equippedItemsData[0].key].accessory2
-                            ) {
-                                this.player.inventory.items[equippedItemsData[0].key].accessory2 = false;
-
-                                equippedItemIdData.accessory2 = true;
-                                equippedItemIdData.equipped = true;
-                            }
-                        } else if (equippedItemsData[0].key !== key) {
-                            if (
-                                !this.player.inventory.items[equippedItemsData[0].key].accessory1 &&
-                                this.player.inventory.items[equippedItemsData[0].key].accessory2
-                            ) {
-                                this.player.inventory.items[equippedItemsData[0].key].accessory1 = false;
-
-                                equippedItemIdData.accessory1 = true;
-                                equippedItemIdData.equipped = true;
-                            } else if (
-                                this.player.inventory.items[equippedItemsData[0].key].accessory1 &&
-                                !this.player.inventory.items[equippedItemsData[0].key].accessory2
-                            ) {
-                                this.player.inventory.items[equippedItemsData[0].key].accessory2 = false;
-
-                                equippedItemIdData.accessory2 = true;
-                                equippedItemIdData.equipped = true;
-                            } else if (
-                                this.player.inventory.items[equippedItemsData[0].key].accessory1 &&
-                                this.player.inventory.items[equippedItemsData[0].key].accessory2
-                            ) {
-                                const modal = document.getElementById("accessoryModal");
-                                modal.style.display = "flex";
-
-                                const self = this; // Guardamos `this` en `self`
-
-                                function closeModal() {
-                                    modal.style.display = "none";
-                                    self.populateInventory(); // Ahora `self` apunta a la clase del juego
-                                }
-
-                                document.getElementById("replaceAccessory1").onclick = () => {
-                                    self.player.inventory.items[equippedItemsData[0].key].accessory1 = false;
-                                    equippedItemIdData.accessory1 = true;
-                                    equippedItemIdData.equipped = true;
-                                    closeModal();
-                                };
-
-                                document.getElementById("replaceAccessory2").onclick = () => {
-                                    self.player.inventory.items[equippedItemsData[0].key].accessory2 = false;
-                                    equippedItemIdData.accessory2 = true;
-                                    equippedItemIdData.equipped = true;
-                                    closeModal();
-                                };
-
-                                document.getElementById("cancelModal").onclick = () => {
-                                    closeModal();
-                                };
-                            }
-                        }
-                        if (
-                            !this.player.inventory.items[equippedItemsData[0].key].accessory1 &&
-                            !this.player.inventory.items[equippedItemsData[0].key].accessory2
-                        ) {
-                            this.player.inventory.items[equippedItemsData[0].key].equipped = false;
-                        }
-                    } else {
+                } else {
+                    if (this.player.getItemData(key).category === "accessory") {
+                        console.log("Todos los accesorios libres");
                         equippedItemIdData.accessory1 = true;
-                        equippedItemIdData.equipped = true;
                     }
+                    equippedItemIdData.equipped = true;
                 }
             }
         }
 
         // Actualiza la interfaz del inventario después de equipar o desequipar
         this.populateInventory();
-    }
-
+    }    
+    
     // Quitar equipo
     removeEquipItem(key, number = 0) {
         const equippedItemIdData = this.player.inventory.items[key];

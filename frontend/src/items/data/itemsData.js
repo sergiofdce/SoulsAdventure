@@ -78,6 +78,20 @@ const itemsData = {
         image: "./assets/anilloprueba2.png",
         defense: 0,
     },
+    "anillo-mitico": {
+        name: "Anillo Mitico",
+        category: "accessory",
+        description: "Un anillo de oro mitico.",
+        image: "./assets/anilloPrueba.png",
+        defense: 0,
+    },
+    "anillo-ceremonial": {
+        name: "Anillo Ceremonial",
+        category: "accessory",
+        description: "Un anillo de uso ceremonial.",
+        image: "./assets/anilloprueba2.png",
+        defense: 0,
+    },
 };
 
 export default itemsData;

@@ -89,12 +89,24 @@ export default class Player {
                     equipped: true,
                 },
                 "anillo-oro": {
-                    quantity: 2,
-                    accessory1: true,
+                    quantity: 1,
+                    accessory1: false,
                     accessory2: true,
                     equipped: true,
                 },
                 "anillo-legendario": {
+                    quantity: 1,
+                    accessory1: true,
+                    accessory2: false,
+                    equipped: true,
+                },
+                "anillo-mitico": {
+                    quantity: 1,
+                    accessory1: false,
+                    accessory2: false,
+                    equipped: false,
+                },
+                "anillo-ceremonial": {
                     quantity: 1,
                     accessory1: false,
                     accessory2: false,
