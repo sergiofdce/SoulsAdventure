@@ -757,3 +757,69 @@ MARK: Teleport Scene
     text-align: center;
     padding: 30px 0;
 }
+
+/*****************************************************
+MARK: HUD
+*****************************************************/
+#hud-container {
+    position: fixed;
+    top: 20px;
+    left: 60px;
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 100;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    align-items: center;
+    gap: 15px;
+    pointer-events: none;
+}
+
+.hud-player-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.hud-player-icon img {
+    width: 90%;
+    height: 90%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+#hud-player-display {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hud-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.hud-label {
+    font-weight: bold;
+    color: #ffcc00;
+    font-size: 14px;
+}
+
+#player-name {
+    color: #7dd3fc;
+}
+
+#health-amount {
+    color: #4ade80;
+}
+
+#souls-amount {
+    color: #c4b5fd;
+}
