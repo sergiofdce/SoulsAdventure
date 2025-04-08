@@ -41,6 +41,65 @@
         <div id="choicesContainer"></div>
     </div>
 
+    <div id="combat-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="combat-background">
+                <div class="combat-section combat-player blue">
+                    <div class="section-title">Jugador</div>
+                    <div id="player-container">
+                        <img id="player-icon" src="./assets/player-icon.png" alt="player icon">
+                        <div class="health-bar-container">
+                            <div class="health-bar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="combat-section combat-enemy blue">
+                    <div class="section-title">Enemigo</div>
+                    <div id="enemy-container">
+                        <img id="monster-icon" src="./assets/monster-icon.png" alt="monster icon">
+                        <div class="health-bar-container">
+                            <div class="health-bar enemy-health-bar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="combat-content">
+                <div class="combat-section combat-movements blue">
+                    <div class="section-title">Movimientos</div>
+                    <div class="combat-buttons">
+                        <button class="combat-button attack-light">
+                            <span class="button-icon">⚔️</span>
+                            Ataque Ligero
+                        </button>
+                        <button class="combat-button attack-heavy">
+                            <span class="button-icon">🗡️</span>
+                            Ataque Pesado
+                        </button>
+                        <button class="combat-button dodge">
+                            <span class="button-icon">💨</span>
+                            Huir
+                        </button>
+                        <button class="combat-button heal">
+                            <span class="button-icon">❤️</span>
+                            Curar
+                        </button>
+
+                    </div>
+                </div>
+                <div class="combat-section combat-console blue">
+                    <div class="section-title">Consola de Combate</div>
+                    <div class="console-output" id="combat-log">
+                        <div class="console-message">Comienza el combate...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
+            </div>
+        </div>
+    </div>
+
 
     <div id="inventory-container" class="scene-container hidden">
         <div class="scene-layout">

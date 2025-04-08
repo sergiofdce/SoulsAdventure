@@ -477,7 +477,6 @@ MARK: Sistema de Mejora de Entrenamiento
 
 .section-title {
     font-size: 24px;
-    margin-bottom: 20px;
     text-align: center;
     color: white;
     width: 100%;
@@ -822,4 +821,220 @@ MARK: HUD
 
 #souls-amount {
     color: #c4b5fd;
+}
+
+/*****************************************************
+MARK: Combate
+*****************************************************/
+
+/* Contenedor principal de combate */
+#combat-container {
+    margin-bottom: 10px;
+}
+
+.combat-background {
+    display: flex;
+    flex-direction: row;
+    height: 43%;
+    gap: 10px;
+}
+
+.combat-content {
+    display: flex;
+    flex-direction: row;
+}
+
+/* Secciones de Combate */
+.combat-section {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    color: white;
+}
+
+/* Secciones de jugador y enemigo */
+.combat-player,
+.combat-enemy {
+    width: 50%;
+    position: relative;
+}
+
+/* Secciones de movimientos y consola */
+.combat-movements,
+.combat-console {
+    width: 50%;
+}
+
+/* Contenedores para jugador y enemigo */
+#player-container,
+#enemy-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/* Nombres y barras de vida */
+#player-name,
+#enemy-name {
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #ffcc00;
+}
+
+#player-container img,
+#enemy-container img {
+    width: auto;
+    height: 60%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Botones de movimientos */
+.combat-movements {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.combat-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 15px;
+    height: calc(100% - 60px);
+    /* Restar el espacio del título */
+    padding: 10px;
+}
+
+.combat-button {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px solid #ffcc00;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.combat-button:hover {
+    background-color: rgba(255, 204, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+.combat-button:active {
+    transform: translateY(1px);
+}
+
+.combat-button .button-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.combat-button.attack-light {
+    border-color: #4ade80;
+    /* Verde */
+}
+
+.combat-button.attack-heavy {
+    border-color: #ef4444;
+    /* Rojo */
+}
+
+.combat-button.heal {
+    border-color: #60a5fa;
+    /* Azul */
+}
+
+.combat-button.dodge {
+    border-color: #a78bfa;
+    /* Púrpura */
+}
+
+/* Estilos para la consola de combate */
+.combat-console {
+    display: flex;
+    flex-direction: column;
+}
+
+.console-output {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 14px;
+    color: white;
+    margin-top: 10px;
+}
+
+.console-message {
+    margin-bottom: 5px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-action {
+    color: #4ade80;
+    /* Verde para acciones del jugador */
+}
+
+.enemy-action {
+    color: #ef4444;
+    /* Rojo para acciones del enemigo */
+}
+
+.heal-action {
+    color: #60a5fa;
+    /* Azul para acciones de curación */
+}
+
+.dodge-action {
+    color: #a78bfa;
+    /* Púrpura para esquivar */
+}
+
+/* Barras de vida */
+.health-bar-container {
+    position: absolute;
+    width: 80%;
+    height: 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#player-container .health-bar-container {
+    bottom: 177px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#enemy-container .health-bar-container {
+    bottom: 177px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.health-bar {
+    height: 100%;
+    background-color: #4ade80;
+    /* Verde */
+    transition: width 0.3s ease;
+}
+
+.enemy-health-bar {
+    background-color: #ef4444;
+    /* Rojo para el enemigo */
 }
