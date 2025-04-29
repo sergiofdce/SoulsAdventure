@@ -1052,14 +1052,3 @@ MARK: Combate
     height: 100%;
 }
 
-#player-anim-game {
-    position: absolute;
-    top: -3%;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-

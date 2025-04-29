@@ -20,6 +20,9 @@ export class EnanoFuego extends Enemy {
         this.strength = 3;
         this.speed = 2;
 
+        // Sprite
+        this.spritesheet = "./assets/enemy-EnanoFuego.png";
+
         // Escala
         const scale = 0.5;
 
@@ -37,7 +40,7 @@ export class EnanoFuego extends Enemy {
         if (!this.scene.anims.exists("enanoFuego-walk")) {
             this.scene.anims.create({
                 key: "enanoFuego-walk",
-                frames: this.scene.anims.generateFrameNumbers("enemy001", {
+                frames: this.scene.anims.generateFrameNumbers("enemy-enanoFuego", {
                     start: 0,
                     end: 5,
                 }),
@@ -47,7 +50,7 @@ export class EnanoFuego extends Enemy {
 
             this.scene.anims.create({
                 key: "enanoFuego-idle",
-                frames: this.scene.anims.generateFrameNumbers("enemy001", {
+                frames: this.scene.anims.generateFrameNumbers("enemy-enanoFuego", {
                     start: 0,
                     end: 0,
                 }),

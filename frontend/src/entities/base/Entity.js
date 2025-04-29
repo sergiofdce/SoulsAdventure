@@ -50,6 +50,7 @@ export class Enemy extends Entity {
 
         // Flags
         this.isDestroyed = false;
+        this.gracePeriodActive = false; // Nuevo flag para período de gracia
 
         this.updateEnemy = () => {
             if (this.sprite && this.scene.player) {
@@ -63,7 +64,8 @@ export class Enemy extends Entity {
                         this.sprite.y
                     );
 
-                    if (distance < 30) {
+                    // Solo iniciar combate si no hay período de gracia activo
+                    if (distance < 30 && !this.gracePeriodActive) {
                         // Pausar la escena actual
                         this.scene.scene.pause("GameScene");
 

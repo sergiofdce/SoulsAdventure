@@ -8,7 +8,6 @@ export default class CombatScene extends Phaser.Scene {
 
         // Variables combate
         this.isPlayerTurn = true;
-        this.turnCount = 0;
         this.combatActive = false;
     }
 
@@ -28,9 +27,6 @@ export default class CombatScene extends Phaser.Scene {
         // Salud Enemy
         this.enemyMaxHealth = this.enemy.health;
         this.enemyCurrentHealth = this.enemy.health;
-
-        // Reiniciar la bandera de victoria
-        this.victoryProcessed = false;
     }
 
     create() {
@@ -45,14 +41,11 @@ export default class CombatScene extends Phaser.Scene {
 
         // Configurar controles de botones
         this.setupButtonListeners();
-
-        console.log(this.enemy.health, this.enemy.health);
     }
 
     startCombat() {
         // Inicializar variables de combate
         this.combatActive = true;
-        this.turnCount = 0;
 
         // Por defecto, desactivar todos los controles hasta determinar quién empieza
         this.disablePlayerControls();
@@ -107,8 +100,11 @@ export default class CombatScene extends Phaser.Scene {
         this.updateHealthBar("player", this.player.health, this.player.maxHealth);
         this.updateHealthBar("enemy", this.enemy.health, this.enemy.health);
 
-        // Animación walk de player
+        // Añadir animaciones de Player
         this.setupPlayerAnimations();
+
+        // Añadir animaciones del enemigo
+        this.setupEnemyAnimations();
     }
 
     // Configurar sistema de animaciones para el jugador
@@ -145,6 +141,7 @@ export default class CombatScene extends Phaser.Scene {
                 mode: Phaser.Scale.RESIZE,
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
+
             scene: {
                 preload: function () {
                     this.load.spritesheet("player-combat", "./assets/player.png", {
@@ -162,7 +159,8 @@ export default class CombatScene extends Phaser.Scene {
                         key: "idle",
                         frames: this.anims.generateFrameNumbers("player-combat", { start: 0, end: 5 }),
                         frameRate: 8,
-                        repeat: 0,
+                        repeat: -1,
+                        repeatDelay: 3000,
                     });
 
                     this.anims.create({
@@ -252,10 +250,160 @@ export default class CombatScene extends Phaser.Scene {
         }
 
         // Reproducir la animación solicitada o la animación por defecto si el tipo no existe
-        const validTypes = ["walk", "hit", "idle", "light-attack", "heavy-attack", "death"];
+        const validTypes = ["hit", "idle", "light-attack", "heavy-attack", "death"];
         const animationType = validTypes.includes(animType) ? animType : "idle"; // Usar idle como fallback
 
         scene.playerSprite.play(animationType);
+    }
+
+    // Configurar sistema de animaciones para el enemigo
+    setupEnemyAnimations() {
+        const animContainer = document.getElementById("enemy-animation-container");
+        // Limpiar cualquier contenido previo
+        while (animContainer.firstChild) {
+            animContainer.removeChild(animContainer.firstChild);
+        }
+
+        // Crear un div para el nuevo juego Phaser
+        const animDiv = document.createElement("div");
+        animDiv.id = "enemy-anim-game";
+
+        // Configurar estilos para que ocupe todo el espacio disponible
+        animDiv.style.display = "flex";
+        animDiv.style.justifyContent = "center";
+        animDiv.style.alignItems = "center";
+
+        animContainer.appendChild(animDiv);
+
+        // Obtener las dimensiones actuales del contenedor
+        const containerWidth = animContainer.clientWidth || 100;
+        const containerHeight = animContainer.clientHeight || 100;
+
+        // Configuración del nuevo juego Phaser
+        const animConfig = {
+            type: Phaser.AUTO,
+            width: containerWidth,
+            height: containerHeight,
+            transparent: true,
+            parent: "enemy-anim-game",
+            scale: {
+                mode: Phaser.Scale.RESIZE,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+            },
+            scene: {
+                preload: function () {
+                    // Usar el spritesheet del enemigo desde su propiedad
+                    this.load.spritesheet("enemy-combat", this.game.mainScene.enemy.spritesheet, {
+                        frameWidth: 96,
+                        frameHeight: 96,
+                    });
+                },
+                create: function () {
+                    // Referencia a la escena principal (para acceder desde métodos)
+                    this.mainScene = this.game.mainScene;
+
+                    // Definir todas las animaciones disponibles
+                    this.anims.create({
+                        key: "idle",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
+                        frameRate: 8,
+                        repeat: -1,
+                    });
+
+                    this.anims.create({
+                        key: "hit",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 18, end: 23 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "light-attack",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "heavy-attack",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "death",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 24, end: 29 }),
+                        frameRate: 5,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "dash",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 6, end: 11 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    // Ajustar el sprite al centro de la escala actual
+                    this.enemySprite = this.add.sprite(
+                        this.cameras.main.width / 2,
+                        this.cameras.main.height / 2,
+                        "enemy-combat"
+                    );
+
+                    // Hacer el sprite considerablemente más grande
+                    this.enemySprite.setScale(1.5);
+
+                    // Voltear el sprite horizontalmente (efecto espejo)
+                    this.enemySprite.flipX = true;
+
+                    // Reproducir animación por defecto
+                    this.enemySprite.play("idle");
+                },
+            },
+        };
+
+        // Iniciar el juego secundario para la animación
+        this.enemyAnimGame = new Phaser.Game(animConfig);
+
+        // Guardar referencia para poder acceder desde los métodos de la escena de combate
+        this.enemyAnimGame.mainScene = this;
+
+        // Agregar un listener para redimensionar el juego si cambia el tamaño del contenedor
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                if (entry.target === animContainer && this.enemyAnimGame) {
+                    this.enemyAnimGame.scale.resize(entry.contentRect.width, entry.contentRect.height);
+                }
+            }
+        });
+
+        // Observar cambios en el contenedor
+        resizeObserver.observe(animContainer);
+    }
+
+    // Método para reproducir una animación específica del enemigo
+    playEnemyAnimation(animType) {
+        // Verificar que el juego de animación esté inicializado
+        if (!this.enemyAnimGame || !this.enemyAnimGame.scene.scenes[0]) {
+            console.warn("El sistema de animación del enemigo no está inicializado");
+            return;
+        }
+
+        const scene = this.enemyAnimGame.scene.scenes[0];
+
+        // Verificar que el sprite del enemigo exista
+        if (!scene.enemySprite) {
+            console.warn("El sprite del enemigo no está inicializado");
+            return;
+        }
+
+        // Reproducir la animación solicitada o la animación por defecto si el tipo no existe
+        const validTypes = ["hit", "idle", "light-attack", "heavy-attack", "death"];
+        const animationType = validTypes.includes(animType) ? animType : "idle"; // Usar idle como fallback
+
+        scene.enemySprite.play(animationType);
     }
 
     // Nuevo método para actualizar las barras de vida
@@ -331,10 +479,18 @@ export default class CombatScene extends Phaser.Scene {
         const dodgeBtn = document.querySelector(".combat-button.dodge");
         if (dodgeBtn) {
             dodgeBtn.addEventListener("click", () => {
-                // La huida se puede intentar incluso si no es el turno del jugador
-                if (this.combatActive && !dodgeBtn.disabled) {
-                    this.handleDodge();
-                }
+                if (!this.isPlayerTurn || !this.combatActive) return;
+
+                // Desactivar controles para evitar múltiples acciones
+                this.disablePlayerControls();
+
+                // Mensaje de intento de huida
+                this.addCombatLogMessage("Has intentado huir del combate.", "player-action");
+
+                // Lógica para huir del combate (por ejemplo, terminar la escena o volver a la escena anterior)
+                this.time.delayedCall(1000, () => {
+                    this.exitCombat();
+                });
             });
         }
     }
@@ -342,66 +498,108 @@ export default class CombatScene extends Phaser.Scene {
     handleAttackLight() {
         if (!this.isPlayerTurn || !this.combatActive) return;
 
-        // Desactivar inmediatamente los controles para evitar doble clic
+        // Desactivar controles para evitar múltiples acciones
         this.disablePlayerControls();
-        const dodgeBtn = document.querySelector(".combat-button.dodge");
-        // Usar el nuevo sistema de ataque ligero
-        this.performLightAttack("player");
 
-        // Finalizar turno con retraso adecuado para todas las animaciones
-        this.time.delayedCall(2000, () => {
-            this.endTurn();
-        });
+        // Reproducir animación de ataque ligero
+        this.playPlayerAnimation("light-attack");
+
+        // Ejecutar ataque ligero
+        this.addCombatLogMessage("Has realizado un ataque ligero.", "player-action");
+        // Calcular y aplicar daño
+        const damage = Math.ceil(8 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
+        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+        this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+
+        // Verificar fin de combate antes de programar la animación de hit
+        if (!this.checkCombatEnd()) {
+            // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
+            this.time.delayedCall(300, () => {
+                if (!this.checkCombatEnd()) {
+                    this.playEnemyAnimation("hit");
+                }
+            });
+
+            // Esperar a que termine la animación antes de finalizar el turno
+            this.time.delayedCall(1000, () => {
+                // Volver a la animación de idle
+                this.playPlayerAnimation("idle");
+                this.playEnemyAnimation("idle");
+                // Finalizar turno después de un momento adicional
+                this.time.delayedCall(500, () => {
+                    this.endTurn();
+                });
+            });
+        }
     }
 
     handleAttackHeavy() {
         if (!this.isPlayerTurn || !this.combatActive) return;
 
-        // Desactivar inmediatamente los controles para evitar doble clic
+        // Desactivar controles para evitar múltiples acciones
         this.disablePlayerControls();
-        // Usar el nuevo sistema de ataque pesado
-        this.performHeavyAttack("player");
 
-        // Finalizar turno con retraso adecuado
-        this.time.delayedCall(2500, () => {
-            this.endTurn();
-        });
+        // Reproducir animación de ataque pesado
+        this.playPlayerAnimation("heavy-attack");
+
+        // Ejecutar ataque pesado
+        this.addCombatLogMessage("Has realizado un ataque pesado.", "player-action");
+        // Calcular y aplicar daño (más alto que el ataque ligero)
+        const damage = Math.ceil(15 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
+        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+        this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+
+        // Verificar fin de combate antes de programar la animación de hit
+        if (!this.checkCombatEnd()) {
+            // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
+            this.time.delayedCall(300, () => {
+                if (!this.checkCombatEnd()) {
+                    this.playEnemyAnimation("hit");
+                }
+            });
+
+            // Esperar a que termine la animación antes de finalizar el turno
+            this.time.delayedCall(1000, () => {
+                // Volver a la animación de idle
+                this.playPlayerAnimation("idle");
+                this.playEnemyAnimation("idle");
+                // Finalizar turno después de un momento adicional
+                this.time.delayedCall(500, () => {
+                    this.endTurn();
+                });
+            });
+        }
     }
 
     handleHeal() {
         if (!this.isPlayerTurn || !this.combatActive) return;
 
-        // Desactivar inmediatamente los controles para evitar doble clic
+        // Desactivar controles para evitar múltiples acciones
         this.disablePlayerControls();
-        this.addCombatLogMessage("Te has curado.", "heal-action");
-        // Implementar la curación
-        this.healCharacter("player");
 
-        // Finalizar turno y pasar al enemigo
-        this.time.delayedCall(500, () => {
-            this.endTurn();
-        });
-    }
+        // Reproducir una animación apropiada para curación (podemos usar dash como aproximación)
+        this.playPlayerAnimation("dash");
 
-    handleDodge() {
-        if (!this.combatActive) return;
+        // Calcular curación basada en resistencia
+        const healPercent = 0.1 + this.player.resistance * 0.005;
+        const healAmount = Math.ceil(this.playerMaxHealth * healPercent);
 
-        this.addCombatLogMessage("Intentas huir del combate...", "dodge-action");
-        this.disablePlayerControls();
-        // Probabilidad de escape basada en la velocidad del jugador
-        // Por ejemplo: 40% base + 2% por cada punto de velocidad por encima de 10
-        const escapeChance = 0.4 + Math.max(0, (this.player.speed - 10) * 0.02);
-        this.healCharacter("player");
-        if (Math.random() < escapeChance) {
-            this.addCombatLogMessage("¡Escapaste con éxito!", "combat-info");
-            this.time.delayedCall(1000, () => this.exitCombat());
-        } else {
-            this.addCombatLogMessage("¡No puedes escapar!", "enemy-action");
-            // Perder turno y pasar al enemigo
+        // Aplicar curación
+        this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);
+        this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+        this.addCombatLogMessage(`Te has curado ${healAmount} puntos de vida.`, "heal-action");
+
+        // Finalizar turno después de que termine la animación
+        this.time.delayedCall(1000, () => {
+            // Volver a la animación de idle
+            this.playPlayerAnimation("idle");
+            // Finalizar turno después de un momento adicional
             this.time.delayedCall(500, () => {
                 this.endTurn();
             });
-        }
+        });
     }
 
     addCombatLogMessage(message, className = "") {
@@ -426,7 +624,6 @@ export default class CombatScene extends Phaser.Scene {
             // Añadir eventos de click a los botones
             button.style.pointerEvents = "auto";
         });
-        this.addCombatLogMessage("Tu turno, elige una acción.", "player-turn");
     }
 
     disablePlayerControls() {
@@ -439,283 +636,72 @@ export default class CombatScene extends Phaser.Scene {
         });
     }
 
-    // Método para calcular probabilidad de esquivar un ataque
-    calculateDodgeChance(attackerSpeed, defenderSpeed, attackType) {
-        // Base de probabilidad de esquivar según el tipo de ataque
-        const baseDodgeChance = attackType === "light" ? 0.15 : 0.3;
-        // Modificador basado en la diferencia de velocidad
-        // Si el defensor es más rápido que el atacante, tiene más posibilidades de esquivar
-        const speedDifference = defenderSpeed - attackerSpeed;
-        const speedModifier = Math.max(0, speedDifference * 0.02);
-        // Probabilidad total de esquivar (entre 0 y 0.75)
-        return Math.min(0.75, baseDodgeChance + speedModifier);
-    }
-
-    // Método para calcular probabilidad de ataque doble (solo para ataques ligeros)
-    calculateDoubleAttackChance(attackerSpeed, defenderSpeed) {
-        // Probabilidad base del 10%
-        const baseDoubleChance = 0.1;
-        // Modificador basado en la ventaja de velocidad
-        // Si el atacante es más rápido que el defensor, tiene más posibilidades de doble ataque
-        const speedAdvantage = Math.max(0, attackerSpeed - defenderSpeed);
-        const speedModifier = speedAdvantage * 0.015;
-        // Probabilidad total de ataque doble (entre 0 y 0.50)
-        return Math.min(0.5, baseDoubleChance + speedModifier);
-    }
-
     enemyAction() {
         if (!this.combatActive) return;
 
-        this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
-        // Probabilidad base del 10%
-        // Añadir retraso antes de elegir acción para mejor legibilidad
-        this.time.delayedCall(1200, () => {
-            // Lógica de IA simple: el enemigo elige una acción aleatoriamente
-            const actions = ["attack-light", "attack-heavy"];
-            const randomAction = actions[Math.floor(Math.random() * actions.length)];
-            switch (randomAction) {
-                case "attack-light":
-                    this.performLightAttack("enemy");
-                    break;
-                case "attack-heavy":
-                    this.performHeavyAttack("enemy");
-                    break;
-            }
-        });
-    }
-
-    // Método para manejar ataques ligeros (tanto de jugador como de enemigo)
-    performLightAttack(attacker) {
-        const attackerSpeed = attacker === "player" ? this.player.speed : this.enemy.speed;
-        const defenderSpeed = attacker === "player" ? this.enemy.speed : this.player.speed;
-        const attackerName = attacker === "player" ? this.player.name : this.enemy.name;
-        const defenderName = attacker === "player" ? this.enemy.name : "tú";
-
-        // Mensaje de ataque
-        this.addCombatLogMessage(
-            attacker === "player"
-                ? "Has realizado un ataque ligero."
-                : `${attackerName} ha realizado un ataque ligero.`,
-            attacker === "player" ? "player-action" : "enemy-action"
-        );
-
-        // Retraso para leer el mensaje de ataque
+        // Añadir retraso para mejorar la legibilidad
         this.time.delayedCall(1000, () => {
-            // Calcular si el defensor esquiva
-            const dodgeChance = this.calculateDodgeChance(attackerSpeed, defenderSpeed, "light");
-            if (Math.random() < dodgeChance) {
-                // Ataque esquivado
-                this.addCombatLogMessage(
-                    attacker === "player"
-                        ? `${defenderName} ha esquivado tu ataque ligero.`
-                        : "Has esquivado el ataque ligero.",
-                    "combat-info"
-                );
-                // Finalizar turno con retraso si no hay más acciones
-                if (attacker === "enemy") {
-                    this.time.delayedCall(1500, () => this.endTurn());
-                }
-            } else {
-                // Ataque exitoso - aplicar daño con retraso para mejor lectura
-                this.time.delayedCall(800, () => {
-                    const combatEnded = this.dealDamage(attacker, "light");
-                    if (combatEnded) return;
-                });
+            this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
 
-                // Calcular si hay un segundo ataque
-                const doubleAttackChance = this.calculateDoubleAttackChance(attackerSpeed, defenderSpeed);
-                if (Math.random() < doubleAttackChance) {
-                    this.time.delayedCall(1200, () => {
-                        this.addCombatLogMessage(
-                            attacker === "player"
-                                ? "¡Tu velocidad te permite un segundo ataque rápido!"
-                                : `¡La velocidad de ${attackerName} le permite un segundo ataque rápido!`,
-                            "combat-info"
-                        );
-                        this.performLightAttack(attacker);
-                    });
+            // Añadir un delay adicional para dar tiempo a leer el mensaje antes de realizar la acción
+            this.time.delayedCall(1500, () => {
+                // El enemigo solo puede elegir entre ataque ligero y pesado
+                const action = Math.random() < 0.5 ? "light" : "heavy";
+
+                if (action === "light") {
+                    // Ataque ligero del enemigo
+                    this.addCombatLogMessage(`${this.enemy.name} ha realizado un ataque ligero.`, "enemy-action");
+                    // Reproducir animación de ataque ligero
+                    this.playEnemyAnimation("light-attack");
+                    // Calcular daño
+                    const baseDamage = 6;
+                    const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
+                    const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
+                    const damage = Math.ceil(baseDamage * enemyStrengthMultiplier * resistanceMultiplier);
+                    // Mostrar animación de jugador recibiendo daño
+                    this.playPlayerAnimation("hit");
+                    // Aplicar daño
+                    this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
+                    this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+                    this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
                 } else {
-                    // Pequeña pausa antes del segundo ataque
-                    this.time.delayedCall(1500, () => {
-                        // Volver a calcular si esquiva el segundo ataque (mayor probabilidad)
-                        const secondDodgeChance = dodgeChance * 1.2; // 20% más fácil esquivar el segundo ataque
-                        if (Math.random() < secondDodgeChance) {
-                            this.addCombatLogMessage(
-                                attacker === "player"
-                                    ? `${defenderName} ha esquivado tu segundo ataque.`
-                                    : "Has esquivado el segundo ataque.",
-                                "combat-info"
-                            );
-                        } else {
-                            // Implementar daño del segundo ataque con retraso
-                            this.time.delayedCall(1000, () => {
-                                // Implementar daño del segundo ataque (70% del daño original)
-                                const secondAttackEnded = this.dealDamage(attacker, "light", 0.7);
-                                if (secondAttackEnded) return;
-                                // Finalizar turno después del doble ataque completo
-                                if (attacker === "enemy") {
-                                    this.time.delayedCall(1800, () => this.endTurn());
-                                }
-                            });
-                        }
-                    });
+                    // Ataque pesado del enemigo
+                    this.addCombatLogMessage(`${this.enemy.name} ha realizado un ataque pesado.`, "enemy-action");
+                    // Reproducir animación de ataque pesado
+                    this.playEnemyAnimation("heavy-attack");
+                    // Calcular daño (mayor al ataque ligero)
+                    const baseDamage = 12;
+                    const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
+                    const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
+                    const damage = Math.ceil(baseDamage * enemyStrengthMultiplier * resistanceMultiplier);
+
+                    // Mostrar animación de jugador recibiendo daño
+                    this.playPlayerAnimation("hit");
+
+                    // Aplicar daño
+                    this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
+                    this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+                    this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
                 }
-            }
-        });
-    }
 
-    // Método para manejar ataques pesados (tanto de jugador como de enemigo)
-    performHeavyAttack(attacker) {
-        const attackerSpeed = attacker === "player" ? this.player.speed : this.enemy.speed;
-        const defenderSpeed = attacker === "player" ? this.enemy.speed : this.player.speed;
-        const attackerName = attacker === "player" ? this.player.name : this.enemy.name;
-        const defenderName = attacker === "player" ? this.enemy.name : "tú";
-
-        // Mensaje de ataque
-        this.addCombatLogMessage(
-            attacker === "player"
-                ? "Has realizado un ataque pesado."
-                : `${attackerName} ha realizado un ataque pesado.`,
-            attacker === "player" ? "player-action" : "enemy-action"
-        );
-
-        // Retraso antes de resolver el ataque pesado
-        this.time.delayedCall(1200, () => {
-            // Calcular si el defensor esquiva
-            const dodgeChance = this.calculateDodgeChance(attackerSpeed, defenderSpeed, "heavy");
-            if (Math.random() < dodgeChance) {
-                // Ataque esquivado
-                this.addCombatLogMessage(
-                    attacker === "player"
-                        ? `${defenderName} ha esquivado tu ataque pesado.`
-                        : `Has esquivado el ataque pesado de ${attackerName}.`,
-                    "combat-info"
-                );
-            } else {
-                // Retraso para el mensaje de pérdida de equilibrio"
-                this.time.delayedCall(1200, () => {
-                    this.addCombatLogMessage(
-                        attacker === "player" ? "¡Pierdes el equilibrio!" : `¡${attackerName} pierde el equilibrio!`,
-                        attacker === "player" ? "player-action" : "enemy-action"
-                    );
-                    // Si el atacante es el jugador, establecer una flag para saltar su siguiente turno
-                    if (attacker === "player") {
-                        this.player.skipNextTurn = true;
-                        // Mayor tiempo de espera para que se pueda leer el mensaje
-                        this.time.delayedCall(1500, () => {
-                            this.addCombatLogMessage(
-                                "Perderás tu próximo turno recuperando el equilibrio.",
-                                "player-action"
-                            );
+                // Verificar fin de combate
+                if (!this.checkCombatEnd()) {
+                    // Esperar a que termine la animación de daño/ataque
+                    this.time.delayedCall(1000, () => {
+                        // Volver a la animación de idle para ambos
+                        this.playPlayerAnimation("idle");
+                        this.playEnemyAnimation("idle");
+                        // Finalizar turno del enemigo
+                        this.time.delayedCall(500, () => {
+                            this.endTurn();
                         });
-                    } else {
-                        this.enemy.skipNextTurn = true;
-                        // Mayor tiempo de espera para que se pueda leer el mensaje
-                        this.time.delayedCall(1500, () => {
-                            this.addCombatLogMessage(
-                                `${attackerName} perderá su próximo turno recuperando el equilibrio.`,
-                                "enemy-action"
-                            );
-                        });
-                    }
-                });
-            }
-
-            // Retraso para aplicar el daño para mejor legibilidad
-            this.time.delayedCall(800, () => {
-                // Ataque exitoso
-                const combatEnded = this.dealDamage(attacker, "heavy");
-                if (combatEnded) return;
-
-                // Finalizar turno con retraso
-                if (attacker === "enemy") {
-                    this.time.delayedCall(1800, () => this.endTurn());
+                    });
                 }
             });
         });
     }
 
-    dealDamage(source, attackType, damageModifier = 1.0) {
-        // Determinar el daño basado en la fuente, tipo de ataque y atributos
-        let damage = 0;
-        if (source === "player") {
-            // El jugador ataca al enemigo - usar la fuerza del jugador
-            let baseDamage = attackType === "light" ? 8 : 15;
-            // Aplicar multiplicador basado en la fuerza del jugador
-            const strengthMultiplier = 1 + Math.max(0, (this.player.strength - 10) * 0.1);
-            // Aplicar el modificador adicional (para ataques dobles, etc.)
-            damage = Math.ceil(baseDamage * strengthMultiplier * damageModifier);
-
-            // Mensaje específico para ataques con modificador (como segundos ataques)
-            const damageMessage =
-                damageModifier < 1.0
-                    ? `Has causado ${damage} puntos de daño adicional al enemigo.`
-                    : `Has causado ${damage} puntos de daño al enemigo.`;
-
-            // Aplicar el daño al enemigo
-            this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
-            // Actualizar la barra de vida del enemigo
-            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-            this.addCombatLogMessage(damageMessage, "combat-info");
-        } else {
-            // El enemigo ataca al jugador - usar la fuerza del enemigo
-            let baseDamage = attackType === "light" ? 6 : 12;
-            // Aplicar multiplicador basado en la fuerza del enemigo
-            const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
-            baseDamage = Math.ceil(baseDamage * enemyStrengthMultiplier);
-            // Reducir el daño basado en la resistencia del jugador
-            // Por ejemplo: 5% menos de daño por cada punto de resistencia por encima de 10
-            const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
-            damage = Math.ceil(baseDamage * resistanceMultiplier);
-
-            // Mensaje específico para ataques con modificador (como segundos ataques)
-            const damageMessage =
-                damageModifier < 1.0
-                    ? `Has causado ${damage} puntos de daño adicional.`
-                    : `Has causado ${damage} puntos de daño.`;
-
-            // Aplicar el daño al jugador
-            this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
-            // Actualizar la barra de vida del jugador
-            this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-            // Actualizar el texto de salud si existe
-            const healthAmount = document.getElementById("health-amount");
-            if (healthAmount) {
-                healthAmount.textContent = this.playerCurrentHealth;
-            }
-            this.addCombatLogMessage(damageMessage, "enemy-action");
-        }
-
-        // Verificar si el combate ha terminado después de aplicar el daño
-        return this.checkCombatEnd();
-    }
-
-    healCharacter(target) {
-        if (target === "player") {
-            // Cantidad de curación basada en resistencia
-            // 10% base + 0.5% por cada punto de resistencia
-            const healPercent = 0.1 + this.player.resistance * 0.005;
-            const healAmount = Math.ceil(this.playerMaxHealth * healPercent);
-            // Aplicar curación
-            this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);
-            this.addCombatLogMessage(`Te has curado ${healAmount} puntos de vida.`, "heal-action");
-            // Actualizar la barra de vida
-            this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-        } else {
-            // Cantidad de curación basada en resistencia
-            // 10% base + 0.5% por cada punto de resistencia
-            const healPercent = 0.1 + this.enemy.resistance * 0.005;
-            const healAmount = Math.ceil(this.enemyMaxHealth * healPercent);
-            // Aplicar curación
-            this.enemyCurrentHealth = Math.min(this.enemyMaxHealth, this.enemyCurrentHealth + healAmount);
-            this.addCombatLogMessage(`El enemigo se ha curado ${healAmount} puntos de vida.`, "enemy-action");
-            // Actualizar la barra de vida
-            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-        }
-    }
-
     endTurn() {
-        this.turnCount++;
         this.isPlayerTurn = !this.isPlayerTurn;
 
         // Verificar si el combate ha terminado antes de continuar
@@ -723,89 +709,52 @@ export default class CombatScene extends Phaser.Scene {
             return;
         }
 
-        // Verificar si el jugador debe saltar su turno
-        if (this.isPlayerTurn && this.player.skipNextTurn) {
-            this.player.skipNextTurn = false; // Restablecer el flag
-            this.addCombatLogMessage("Estás recuperando el equilibrio y pierdes tu turno.", "player-action");
-        }
-
-        // Dar tiempo para leer el mensaje antes de ceder el turno
-        this.time.delayedCall(1500, () => {
-            this.isPlayerTurn = false; // Ceder el turno al enemigo
-            this.time.delayedCall(1000, () => {
-                this.enemyAction();
-            });
-        });
-
-        // Verificar si el enemigo debe saltar su turno
-        if (!this.isPlayerTurn && this.enemy.skipNextTurn) {
-            this.enemy.skipNextTurn = false; // Restablecer el flag
-            this.addCombatLogMessage(
-                `${this.enemy.name} está recuperando el equilibrio y pierde su turno.`,
-                "enemy-action"
-            );
-            // Dar tiempo para leer el mensaje antes de devolver el turno
-            this.time.delayedCall(1500, () => {
-                this.isPlayerTurn = true; // Devolver el turno al jugador
-                this.enablePlayerControls();
-            });
-            return;
-        }
-
-        // Continuar con el siguiente turno normalmente
+        // Continuar con el siguiente turno
         if (this.isPlayerTurn) {
+            this.enablePlayerControls();
             this.addCombatLogMessage("Tu turno, elige una acción.", "player-turn");
         } else {
-            this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
+            this.enemyAction();
         }
     }
 
     checkCombatEnd() {
         // Verificar si el jugador ha muerto
         if (this.playerCurrentHealth <= 0) {
+            // Reproducir animación de muerte
+            this.playPlayerAnimation("death");
             this.addCombatLogMessage("¡Has sido derrotado!", "enemy-action");
-            this.time.delayedCall(1500, () => {
-                // Actualizar la salud del jugador antes de salir (por ejemplo, dejarlo con 1 punto de vida)
-                if (this.player) {
-                    this.player.health = 1;
-                }
+
+            // Tiempo antes de cerrar escena
+            this.time.delayedCall(2500, () => {
                 this.exitCombat();
             });
-            return true;
+
+            return true; // El combate ha terminado
         }
 
         // Verificar si el enemigo ha muerto
         if (this.enemyCurrentHealth <= 0) {
-            // Evitar múltiples mensajes de victoria si la función se llama más de una vez
-            if (!this.victoryProcessed) {
-                this.victoryProcessed = true; // Marcar que ya se procesó la victoria
-                this.addCombatLogMessage("¡Has sido derrotado!", "enemy-action");
-                this.addCombatLogMessage(`¡Has derrotado a ${this.enemy.name}!`, "player-action");
-                // Actualizar la salud del jugador antes de salir (por ejemplo, dejarlo con 1 punto de vida)
-                // Recompensa de almas por victoria
-                const soulsReward = 50;
-                if (this.player && typeof this.player.souls !== "undefined") {
-                    this.player.souls += soulsReward;
-                    this.addCombatLogMessage(`Has ganado ${soulsReward} almas.`, "combat-info");
-                    // Actualizar el texto de almas en el HUD
-                    const soulsAmount = document.getElementById("souls-amount");
-                    if (soulsAmount) {
-                        soulsAmount.textContent = this.player.souls;
-                    }
-                }
-                // Dar tiempo para leer el mensaje antes de salir
-                this.time.delayedCall(2500, () => {
-                    // Actualizar la salud del jugador antes de salir
-                    if (this.player) {
-                        this.player.health = this.playerCurrentHealth;
-                    }
-                    this.exitCombat();
-                });
-            }
-            return true;
+            // Reproducir animación de muerte para el enemigo
+            this.playEnemyAnimation("death");
+            this.addCombatLogMessage(`¡Has derrotado a ${this.enemy.name}!`, "player-action");
+
+            // Recompensa de almas por victoria
+            const soulsReward = 50;
+            this.player.souls += soulsReward;
+            // Actualizar el texto de almas en el HUD
+            document.getElementById("souls-amount").textContent = this.player.souls;
+
+            // Tiempo antes de cerrar escena
+            this.time.delayedCall(2500, () => {
+                this.enemy.kill();
+                this.exitCombat();
+            });
+
+            return true; // El combate ha terminado
         }
 
-        return false;
+        return false; // El combate continúa
     }
 
     exitCombat() {
@@ -833,6 +782,5 @@ export default class CombatScene extends Phaser.Scene {
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
-        this.scene.stop();
     }
 }

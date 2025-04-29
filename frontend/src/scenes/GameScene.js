@@ -42,7 +42,7 @@ export default class GameScene extends Phaser.Scene {
         // Configurar la cámara para seguir al jugador
         this.setupCamera();
 
-        // Activar modo debug si está habilitado en la configuración
+        // Activar modo debug
         //this.enableDebugMode();
     }
 
@@ -58,7 +58,7 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         // Cargar assets Enemigos
-        this.load.spritesheet("enemy001", "./assets/enemy-EnanoFuego.png", {
+        this.load.spritesheet("enemy-enanoFuego", "./assets/enemy-EnanoFuego.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
@@ -111,10 +111,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnEnemies() {
-        const enemyPositions = [
-            { x: 600, y: 300 },
-            { x: 580, y: 250 },
-        ];
+        const enemyPositions = [{ x: 600, y: 300 }];
 
         enemyPositions.forEach((pos) => {
             const enemy = new EnanoFuego(this, pos.x, pos.y);
