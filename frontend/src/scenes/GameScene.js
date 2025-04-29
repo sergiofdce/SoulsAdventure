@@ -4,7 +4,7 @@ import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
 import { Trainer } from "../entities/characters/Trainer.js";
 import { Fireplace } from "../entities/characters/Fireplace.js";
-import { Enemy001 } from "../entities/enemies/Enemy001.js";
+import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -58,7 +58,7 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         // Cargar assets Enemigos
-        this.load.spritesheet("enemy001", "./assets/Enemy_001_A.png", {
+        this.load.spritesheet("enemy001", "./assets/enemy-EnanoFuego.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
@@ -117,7 +117,7 @@ export default class GameScene extends Phaser.Scene {
         ];
 
         enemyPositions.forEach((pos) => {
-            const enemy = new Enemy001(this, pos.x, pos.y);
+            const enemy = new EnanoFuego(this, pos.x, pos.y);
             this.enemies.push(enemy);
         });
     }

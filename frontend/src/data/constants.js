@@ -23,9 +23,10 @@ export const STAT_UPGRADE_MULTIPLIERS = {
 
 // Valores iniciales de atributos del jugador
 export const INITIAL_PLAYER_STATS = {
+    name: "Jugador",
     level: 1,
     souls: 10000,
-    health: 100,
+    health: 50,
     resistance: 10,
     strength: 10,
     speed: 10,

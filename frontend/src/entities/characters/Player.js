@@ -4,7 +4,6 @@ import {
     LEVEL_COST_MULTIPLIER,
     BASE_SOULS_REQUIREMENT,
     STAT_UPGRADE_MULTIPLIERS,
-    INITIAL_PLAYER_STATS,
     TRAINING_CONFIG,
     BASE_UPGRADE_COST,
     LEVEL_UPGRADE_COST_MULTIPLIER,
@@ -36,19 +35,19 @@ export default class Player {
 
         this.createAnimations(scene);
 
-        // Atributos (inicializados desde constantes)
-        this.level = INITIAL_PLAYER_STATS.level;
-        this.souls = INITIAL_PLAYER_STATS.souls;
+        // Atributos
+        this.name = "Segio";
+        this.level = 1;
+        this.souls = 0;
         this.reqSouls = this.calculateRequiredSouls(this.level);
-        this.armor = INITIAL_PLAYER_STATS.armor;
-
-        this.health = INITIAL_PLAYER_STATS.health;
-        this.resistance = INITIAL_PLAYER_STATS.resistance;
-        this.strength = INITIAL_PLAYER_STATS.strength;
-        this.speed = INITIAL_PLAYER_STATS.speed;
+        this.armor = 0;
+        this.maxHealth = 100;
+        this.health = 100;
+        this.resistance = 10;
+        this.strength = 10;
+        this.speed = 10;
 
         this.img = "./assets/pruebaimg.png";
-        
 
         // Inventario
         this.inventory = {
@@ -128,7 +127,6 @@ export default class Player {
 
         // Calcular costo de mejora basado en nivel
         this.updateUpgradeCost();
-
 
         // this.equippedWeapons= [[],[],[],[]]
         // this.equippedWeapons= [[],[]]

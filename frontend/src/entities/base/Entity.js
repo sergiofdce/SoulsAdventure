@@ -64,7 +64,14 @@ export class Enemy extends Entity {
                     );
 
                     if (distance < 30) {
-                        this.kill();
+                        // Pausar la escena actual
+                        this.scene.scene.pause("GameScene");
+
+                        // Lanzar la escena de combate y pasar los datos necesarios
+                        this.scene.scene.launch("CombatScene", {
+                            player: this.scene.player,
+                            enemy: this,
+                        });
                     }
                 }
             }

@@ -8,15 +8,17 @@ export class EnanoFuego extends Enemy {
         texture = "asset-EnanoFuego",
         interactionRadius = 150,
         followSpeed = 180,
-        name = "Enano de fuego",
-        health = 20,
-        strength = 3,
-        speed = 0
+        name = "Enano de fuego"
     ) {
-        super(scene, x, y, texture, name, health, strength, speed);
+        super(scene, x, y, texture, name);
 
         this.interactionRadius = interactionRadius;
         this.followSpeed = followSpeed;
+
+        // Atributos
+        this.health = 20;
+        this.strength = 3;
+        this.speed = 2;
 
         // Escala
         const scale = 0.5;

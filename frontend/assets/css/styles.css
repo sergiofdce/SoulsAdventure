@@ -842,6 +842,7 @@ MARK: Combate
 .combat-content {
     display: flex;
     flex-direction: row;
+    height: 45%;
 }
 
 /* Secciones de Combate */
@@ -868,29 +869,23 @@ MARK: Combate
 /* Contenedores para jugador y enemigo */
 #player-container,
 #enemy-container {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     height: 100%;
+    width: 100%;
+    padding-top: 10px;
 }
 
 /* Nombres y barras de vida */
 #player-name,
 #enemy-name {
     font-size: 18px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-weight: bold;
     color: #ffcc00;
-}
-
-#player-container img,
-#enemy-container img {
-    width: auto;
-    height: 60%;
-    object-fit: cover;
-    border-radius: 10px;
+    text-align: center;
 }
 
 /* Botones de movimientos */
@@ -1004,37 +999,56 @@ MARK: Combate
     /* Púrpura para esquivar */
 }
 
-/* Barras de vida */
+/* Barras de vida - Nueva implementación responsive */
 .health-bar-container {
-    position: absolute;
     width: 80%;
     height: 20px;
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-#player-container .health-bar-container {
-    bottom: 177px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-#enemy-container .health-bar-container {
-    bottom: 177px;
-    left: 50%;
-    transform: translateX(-50%);
+    margin-bottom: 15px;
+    position: relative;
 }
 
 .health-bar {
     height: 100%;
     background-color: #4ade80;
     /* Verde */
-    transition: width 0.3s ease;
+    transition: width 0.3s ease, background-color 0.3s ease;
 }
 
 .enemy-health-bar {
     background-color: #ef4444;
     /* Rojo para el enemigo */
+}
+
+/* Texto sobre la barra de vida */
+.health-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    /* Evita que el texto interfiera con clics */
+    z-index: 2;
+    /* Asegura que el texto esté por encima de la barra de vida */
+}
+
+/* Contenedores de animación - Asegurarse que ocupen el espacio restante */
+#player-animation-container,
+#enemy-animation-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }

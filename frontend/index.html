@@ -15,12 +15,12 @@
 
     <div id="hud-container">
         <div class="hud-player-icon">
-            <img src="./assets/player-icon.png" alt="player icon">
+            <img src="." alt="player icon">
         </div>
         <div id="hud-player-display">
             <div class="hud-item">
                 <span class="hud-label">Nombre:</span>
-                <span id="player-name">Player</span>
+                <span id="hud-player-name">Player</span>
             </div>
             <div class="hud-item">
                 <span class="hud-label">Vida:</span>
@@ -45,22 +45,28 @@
         <div class="scene-layout">
             <div class="combat-background">
                 <div class="combat-section combat-player blue">
-                    <div class="section-title">Jugador</div>
+                    <div id="player-name">Jugador</div>
                     <div id="player-container">
-                        <img id="player-icon" src="./assets/player-icon.png" alt="player icon">
                         <div class="health-bar-container">
-                            <div class="health-bar" style="width: 100%;"></div>
+                            <div class="health-bar"></div>
+                            <div class="health-text"><span id="player-current-health">100</span>/<span
+                                    id="player-max-health">100</span></div>
+                        </div>
+                        <div id="player-animation-container">
+
                         </div>
                     </div>
                 </div>
 
                 <div class="combat-section combat-enemy blue">
-                    <div class="section-title">Enemigo</div>
+                    <div id="enemy-name">Enemigo</div>
                     <div id="enemy-container">
-                        <img id="monster-icon" src="./assets/monster-icon.png" alt="monster icon">
                         <div class="health-bar-container">
-                            <div class="health-bar enemy-health-bar" style="width: 100%;"></div>
+                            <div class="health-bar enemy-health-bar"></div>
+                            <div class="health-text"><span id="enemy-current-health">100</span>/<span
+                                    id="enemy-max-health">100</span></div>
                         </div>
+                        <div id="enemy-animation-container"></div>
                     </div>
                 </div>
             </div>
@@ -90,7 +96,7 @@
                 <div class="combat-section combat-console blue">
                     <div class="section-title">Consola de Combate</div>
                     <div class="console-output" id="combat-log">
-                        <div class="console-message">Comienza el combate...</div>
+                        <p class="console-message"></p>
                     </div>
                 </div>
             </div>
