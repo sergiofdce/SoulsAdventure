@@ -106,6 +106,156 @@ export default class CombatScene extends Phaser.Scene {
         // Actualizar barras de salud
         this.updateHealthBar("player", this.player.health, this.player.maxHealth);
         this.updateHealthBar("enemy", this.enemy.health, this.enemy.health);
+
+        // Animación walk de player
+        this.setupPlayerAnimations();
+    }
+
+    // Configurar sistema de animaciones para el jugador
+    setupPlayerAnimations() {
+        const animContainer = document.getElementById("player-animation-container");
+        // Limpiar cualquier contenido previo
+        while (animContainer.firstChild) {
+            animContainer.removeChild(animContainer.firstChild);
+        }
+
+        // Crear un div para el nuevo juego Phaser
+        const animDiv = document.createElement("div");
+        animDiv.id = "player-anim-game";
+
+        // Configurar estilos para que ocupe todo el espacio disponible
+        animDiv.style.display = "flex";
+        animDiv.style.justifyContent = "center";
+        animDiv.style.alignItems = "center";
+
+        animContainer.appendChild(animDiv);
+
+        // Obtener las dimensiones actuales del contenedor
+        const containerWidth = animContainer.clientWidth || 100;
+        const containerHeight = animContainer.clientHeight || 100;
+
+        // Configuración del nuevo juego Phaser
+        const animConfig = {
+            type: Phaser.AUTO,
+            width: containerWidth,
+            height: containerHeight,
+            transparent: true,
+            parent: "player-anim-game",
+            scale: {
+                mode: Phaser.Scale.RESIZE,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+            },
+            scene: {
+                preload: function () {
+                    this.load.spritesheet("player-combat", "./assets/player.png", {
+                        frameWidth: 96,
+                        frameHeight: 96,
+                    });
+                },
+                create: function () {
+                    // Referencia a la escena principal (para acceder desde métodos)
+                    this.mainScene = this.game.mainScene;
+
+                    // Definir todas las animaciones disponibles
+
+                    this.anims.create({
+                        key: "idle",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 0, end: 5 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "hit",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 48, end: 53 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "light-attack",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 18, end: 23 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "heavy-attack",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 12, end: 17 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "death",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 48, end: 59 }),
+                        frameRate: 5,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "dash",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 60, end: 63 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    // Ajustar el sprite al centro de la escala actual
+                    this.playerSprite = this.add.sprite(
+                        this.cameras.main.width / 2,
+                        this.cameras.main.height / 2,
+                        "player-combat"
+                    );
+
+                    // Hacer el sprite considerablemente más grande
+                    this.playerSprite.setScale(1.5);
+
+                    // Reproducir animación por defecto
+                    this.playerSprite.play("idle");
+                },
+            },
+        };
+
+        // Iniciar el juego secundario para la animación
+        this.playerAnimGame = new Phaser.Game(animConfig);
+
+        // Guardar referencia para poder acceder desde los métodos de la escena de combate
+        this.playerAnimGame.mainScene = this;
+
+        // Agregar un listener para redimensionar el juego si cambia el tamaño del contenedor
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                if (entry.target === animContainer && this.playerAnimGame) {
+                    this.playerAnimGame.scale.resize(entry.contentRect.width, entry.contentRect.height);
+                }
+            }
+        });
+
+        // Observar cambios en el contenedor
+        resizeObserver.observe(animContainer);
+    }
+
+    // Método para reproducir una animación específica
+    playPlayerAnimation(animType) {
+        // Verificar que el juego de animación esté inicializado
+        if (!this.playerAnimGame || !this.playerAnimGame.scene.scenes[0]) {
+            console.warn("El sistema de animación no está inicializado");
+            return;
+        }
+
+        const scene = this.playerAnimGame.scene.scenes[0];
+
+        // Verificar que el sprite del jugador exista
+        if (!scene.playerSprite) {
+            console.warn("El sprite del jugador no está inicializado");
+            return;
+        }
+
+        // Reproducir la animación solicitada o la animación por defecto si el tipo no existe
+        const validTypes = ["walk", "hit", "idle", "light-attack", "heavy-attack", "death"];
+        const animationType = validTypes.includes(animType) ? animType : "idle"; // Usar idle como fallback
+
+        scene.playerSprite.play(animationType);
     }
 
     // Nuevo método para actualizar las barras de vida
@@ -124,10 +274,9 @@ export default class CombatScene extends Phaser.Scene {
         if (healthBar) {
             // Calcular el porcentaje de vida
             const healthPercent = Math.max(0, Math.min((currentHealth / maxHealth) * 100, 100));
-
             // Establecer el ancho de la barra según el porcentaje de vida
             healthBar.style.width = `${healthPercent}%`;
-
+            type === "player";
             // Aplicar un degradado de color basado en el porcentaje de vida
             if (healthPercent > 60) {
                 // Verde a amarillo para vida alta
@@ -195,7 +344,7 @@ export default class CombatScene extends Phaser.Scene {
 
         // Desactivar inmediatamente los controles para evitar doble clic
         this.disablePlayerControls();
-
+        const dodgeBtn = document.querySelector(".combat-button.dodge");
         // Usar el nuevo sistema de ataque ligero
         this.performLightAttack("player");
 
@@ -210,7 +359,6 @@ export default class CombatScene extends Phaser.Scene {
 
         // Desactivar inmediatamente los controles para evitar doble clic
         this.disablePlayerControls();
-
         // Usar el nuevo sistema de ataque pesado
         this.performHeavyAttack("player");
 
@@ -225,7 +373,6 @@ export default class CombatScene extends Phaser.Scene {
 
         // Desactivar inmediatamente los controles para evitar doble clic
         this.disablePlayerControls();
-
         this.addCombatLogMessage("Te has curado.", "heal-action");
         // Implementar la curación
         this.healCharacter("player");
@@ -240,11 +387,11 @@ export default class CombatScene extends Phaser.Scene {
         if (!this.combatActive) return;
 
         this.addCombatLogMessage("Intentas huir del combate...", "dodge-action");
-
+        this.disablePlayerControls();
         // Probabilidad de escape basada en la velocidad del jugador
         // Por ejemplo: 40% base + 2% por cada punto de velocidad por encima de 10
         const escapeChance = 0.4 + Math.max(0, (this.player.speed - 10) * 0.02);
-
+        this.healCharacter("player");
         if (Math.random() < escapeChance) {
             this.addCombatLogMessage("¡Escapaste con éxito!", "combat-info");
             this.time.delayedCall(1000, () => this.exitCombat());
@@ -263,11 +410,9 @@ export default class CombatScene extends Phaser.Scene {
             const messageElement = document.createElement("p");
             messageElement.textContent = message;
             messageElement.classList.add("console-message");
-
             if (className) {
                 messageElement.classList.add(className);
             }
-
             combatLog.appendChild(messageElement);
             combatLog.scrollTop = combatLog.scrollHeight;
         }
@@ -298,12 +443,10 @@ export default class CombatScene extends Phaser.Scene {
     calculateDodgeChance(attackerSpeed, defenderSpeed, attackType) {
         // Base de probabilidad de esquivar según el tipo de ataque
         const baseDodgeChance = attackType === "light" ? 0.15 : 0.3;
-
         // Modificador basado en la diferencia de velocidad
         // Si el defensor es más rápido que el atacante, tiene más posibilidades de esquivar
         const speedDifference = defenderSpeed - attackerSpeed;
         const speedModifier = Math.max(0, speedDifference * 0.02);
-
         // Probabilidad total de esquivar (entre 0 y 0.75)
         return Math.min(0.75, baseDodgeChance + speedModifier);
     }
@@ -312,12 +455,10 @@ export default class CombatScene extends Phaser.Scene {
     calculateDoubleAttackChance(attackerSpeed, defenderSpeed) {
         // Probabilidad base del 10%
         const baseDoubleChance = 0.1;
-
         // Modificador basado en la ventaja de velocidad
         // Si el atacante es más rápido que el defensor, tiene más posibilidades de doble ataque
         const speedAdvantage = Math.max(0, attackerSpeed - defenderSpeed);
         const speedModifier = speedAdvantage * 0.015;
-
         // Probabilidad total de ataque doble (entre 0 y 0.50)
         return Math.min(0.5, baseDoubleChance + speedModifier);
     }
@@ -326,13 +467,12 @@ export default class CombatScene extends Phaser.Scene {
         if (!this.combatActive) return;
 
         this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
-
+        // Probabilidad base del 10%
         // Añadir retraso antes de elegir acción para mejor legibilidad
         this.time.delayedCall(1200, () => {
             // Lógica de IA simple: el enemigo elige una acción aleatoriamente
             const actions = ["attack-light", "attack-heavy"];
             const randomAction = actions[Math.floor(Math.random() * actions.length)];
-
             switch (randomAction) {
                 case "attack-light":
                     this.performLightAttack("enemy");
@@ -371,7 +511,6 @@ export default class CombatScene extends Phaser.Scene {
                         : "Has esquivado el ataque ligero.",
                     "combat-info"
                 );
-
                 // Finalizar turno con retraso si no hay más acciones
                 if (attacker === "enemy") {
                     this.time.delayedCall(1500, () => this.endTurn());
@@ -381,59 +520,46 @@ export default class CombatScene extends Phaser.Scene {
                 this.time.delayedCall(800, () => {
                     const combatEnded = this.dealDamage(attacker, "light");
                     if (combatEnded) return;
+                });
 
-                    // Calcular si hay un segundo ataque
-                    const doubleAttackChance = this.calculateDoubleAttackChance(attackerSpeed, defenderSpeed);
-                    if (Math.random() < doubleAttackChance) {
-                        this.time.delayedCall(1200, () => {
+                // Calcular si hay un segundo ataque
+                const doubleAttackChance = this.calculateDoubleAttackChance(attackerSpeed, defenderSpeed);
+                if (Math.random() < doubleAttackChance) {
+                    this.time.delayedCall(1200, () => {
+                        this.addCombatLogMessage(
+                            attacker === "player"
+                                ? "¡Tu velocidad te permite un segundo ataque rápido!"
+                                : `¡La velocidad de ${attackerName} le permite un segundo ataque rápido!`,
+                            "combat-info"
+                        );
+                        this.performLightAttack(attacker);
+                    });
+                } else {
+                    // Pequeña pausa antes del segundo ataque
+                    this.time.delayedCall(1500, () => {
+                        // Volver a calcular si esquiva el segundo ataque (mayor probabilidad)
+                        const secondDodgeChance = dodgeChance * 1.2; // 20% más fácil esquivar el segundo ataque
+                        if (Math.random() < secondDodgeChance) {
                             this.addCombatLogMessage(
                                 attacker === "player"
-                                    ? "¡Tu velocidad te permite un segundo ataque rápido!"
-                                    : `¡La velocidad de ${attackerName} le permite un segundo ataque rápido!`,
+                                    ? `${defenderName} ha esquivado tu segundo ataque.`
+                                    : "Has esquivado el segundo ataque.",
                                 "combat-info"
                             );
-
-                            // Pequeña pausa antes del segundo ataque
-                            this.time.delayedCall(1500, () => {
-                                // Volver a calcular si esquiva el segundo ataque (mayor probabilidad)
-                                const secondDodgeChance = dodgeChance * 1.2; // 20% más fácil esquivar el segundo ataque
-                                if (Math.random() < secondDodgeChance) {
-                                    this.addCombatLogMessage(
-                                        attacker === "player"
-                                            ? `${defenderName} ha esquivado tu segundo ataque.`
-                                            : "Has esquivado el segundo ataque.",
-                                        "combat-info"
-                                    );
-
-                                    // Finalizar turno después del intento de segundo ataque
-                                    if (attacker === "enemy") {
-                                        this.time.delayedCall(1800, () => this.endTurn());
-                                    }
-                                } else {
-                                    // Implementar daño del segundo ataque con retraso
-                                    this.time.delayedCall(1000, () => {
-                                        // Implementar daño del segundo ataque (70% del daño original)
-                                        const secondAttackEnded = this.dealDamage(attacker, "light", 0.7);
-                                        if (secondAttackEnded) return;
-
-                                        // Finalizar turno después del doble ataque completo
-                                        if (attacker === "enemy") {
-                                            this.time.delayedCall(1800, () => this.endTurn());
-                                        }
-                                    });
+                        } else {
+                            // Implementar daño del segundo ataque con retraso
+                            this.time.delayedCall(1000, () => {
+                                // Implementar daño del segundo ataque (70% del daño original)
+                                const secondAttackEnded = this.dealDamage(attacker, "light", 0.7);
+                                if (secondAttackEnded) return;
+                                // Finalizar turno después del doble ataque completo
+                                if (attacker === "enemy") {
+                                    this.time.delayedCall(1800, () => this.endTurn());
                                 }
                             });
-                        });
-
-                        // Si es jugador, no llamamos a endTurn aquí, se manejará después
-                        if (attacker === "player") return;
-                    } else {
-                        // Sin ataque doble, finalizar turno con retraso
-                        if (attacker === "enemy") {
-                            this.time.delayedCall(1500, () => this.endTurn());
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
@@ -465,14 +591,13 @@ export default class CombatScene extends Phaser.Scene {
                         : `Has esquivado el ataque pesado de ${attackerName}.`,
                     "combat-info"
                 );
-
-                // Retraso para el mensaje de pérdida de equilibrio
+            } else {
+                // Retraso para el mensaje de pérdida de equilibrio"
                 this.time.delayedCall(1200, () => {
                     this.addCombatLogMessage(
                         attacker === "player" ? "¡Pierdes el equilibrio!" : `¡${attackerName} pierde el equilibrio!`,
                         attacker === "player" ? "player-action" : "enemy-action"
                     );
-
                     // Si el atacante es el jugador, establecer una flag para saltar su siguiente turno
                     if (attacker === "player") {
                         this.player.skipNextTurn = true;
@@ -494,38 +619,30 @@ export default class CombatScene extends Phaser.Scene {
                         });
                     }
                 });
-
-                // Finalizar turno con un retraso mayor para leer todos los mensajes
-                if (attacker === "enemy") {
-                    this.time.delayedCall(3500, () => this.endTurn());
-                }
-            } else {
-                // Retraso antes de aplicar el daño para mejor legibilidad
-                this.time.delayedCall(800, () => {
-                    // Ataque exitoso
-                    const combatEnded = this.dealDamage(attacker, "heavy");
-                    if (combatEnded) return;
-
-                    // Finalizar turno con retraso
-                    if (attacker === "enemy") {
-                        this.time.delayedCall(1800, () => this.endTurn());
-                    }
-                });
             }
+
+            // Retraso para aplicar el daño para mejor legibilidad
+            this.time.delayedCall(800, () => {
+                // Ataque exitoso
+                const combatEnded = this.dealDamage(attacker, "heavy");
+                if (combatEnded) return;
+
+                // Finalizar turno con retraso
+                if (attacker === "enemy") {
+                    this.time.delayedCall(1800, () => this.endTurn());
+                }
+            });
         });
     }
 
     dealDamage(source, attackType, damageModifier = 1.0) {
         // Determinar el daño basado en la fuente, tipo de ataque y atributos
         let damage = 0;
-
         if (source === "player") {
             // El jugador ataca al enemigo - usar la fuerza del jugador
             let baseDamage = attackType === "light" ? 8 : 15;
-
             // Aplicar multiplicador basado en la fuerza del jugador
             const strengthMultiplier = 1 + Math.max(0, (this.player.strength - 10) * 0.1);
-
             // Aplicar el modificador adicional (para ataques dobles, etc.)
             damage = Math.ceil(baseDamage * strengthMultiplier * damageModifier);
 
@@ -537,37 +654,36 @@ export default class CombatScene extends Phaser.Scene {
 
             // Aplicar el daño al enemigo
             this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
-
             // Actualizar la barra de vida del enemigo
             this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-
             this.addCombatLogMessage(damageMessage, "combat-info");
         } else {
             // El enemigo ataca al jugador - usar la fuerza del enemigo
             let baseDamage = attackType === "light" ? 6 : 12;
-
             // Aplicar multiplicador basado en la fuerza del enemigo
             const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
             baseDamage = Math.ceil(baseDamage * enemyStrengthMultiplier);
-
             // Reducir el daño basado en la resistencia del jugador
             // Por ejemplo: 5% menos de daño por cada punto de resistencia por encima de 10
             const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
             damage = Math.ceil(baseDamage * resistanceMultiplier);
 
+            // Mensaje específico para ataques con modificador (como segundos ataques)
+            const damageMessage =
+                damageModifier < 1.0
+                    ? `Has causado ${damage} puntos de daño adicional.`
+                    : `Has causado ${damage} puntos de daño.`;
+
             // Aplicar el daño al jugador
             this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
-
             // Actualizar la barra de vida del jugador
             this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-
             // Actualizar el texto de salud si existe
             const healthAmount = document.getElementById("health-amount");
             if (healthAmount) {
                 healthAmount.textContent = this.playerCurrentHealth;
             }
-
-            this.addCombatLogMessage(`${this.enemy.name} te ha causado ${damage} puntos de daño.`, "enemy-action");
+            this.addCombatLogMessage(damageMessage, "enemy-action");
         }
 
         // Verificar si el combate ha terminado después de aplicar el daño
@@ -580,20 +696,21 @@ export default class CombatScene extends Phaser.Scene {
             // 10% base + 0.5% por cada punto de resistencia
             const healPercent = 0.1 + this.player.resistance * 0.005;
             const healAmount = Math.ceil(this.playerMaxHealth * healPercent);
-
             // Aplicar curación
             this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);
-
+            this.addCombatLogMessage(`Te has curado ${healAmount} puntos de vida.`, "heal-action");
             // Actualizar la barra de vida
             this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-
-            // Actualizar el texto de salud si existe
-            const healthAmount = document.getElementById("health-amount");
-            if (healthAmount) {
-                healthAmount.textContent = this.playerCurrentHealth;
-            }
-
-            this.addCombatLogMessage(`Te has curado ${healAmount} puntos de vida.`, "heal-action");
+        } else {
+            // Cantidad de curación basada en resistencia
+            // 10% base + 0.5% por cada punto de resistencia
+            const healPercent = 0.1 + this.enemy.resistance * 0.005;
+            const healAmount = Math.ceil(this.enemyMaxHealth * healPercent);
+            // Aplicar curación
+            this.enemyCurrentHealth = Math.min(this.enemyMaxHealth, this.enemyCurrentHealth + healAmount);
+            this.addCombatLogMessage(`El enemigo se ha curado ${healAmount} puntos de vida.`, "enemy-action");
+            // Actualizar la barra de vida
+            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
         }
     }
 
@@ -610,16 +727,15 @@ export default class CombatScene extends Phaser.Scene {
         if (this.isPlayerTurn && this.player.skipNextTurn) {
             this.player.skipNextTurn = false; // Restablecer el flag
             this.addCombatLogMessage("Estás recuperando el equilibrio y pierdes tu turno.", "player-action");
-
-            // Dar tiempo para leer el mensaje antes de ceder el turno
-            this.time.delayedCall(1500, () => {
-                this.isPlayerTurn = false; // Ceder el turno al enemigo
-                this.time.delayedCall(1000, () => {
-                    this.enemyAction();
-                });
-            });
-            return;
         }
+
+        // Dar tiempo para leer el mensaje antes de ceder el turno
+        this.time.delayedCall(1500, () => {
+            this.isPlayerTurn = false; // Ceder el turno al enemigo
+            this.time.delayedCall(1000, () => {
+                this.enemyAction();
+            });
+        });
 
         // Verificar si el enemigo debe saltar su turno
         if (!this.isPlayerTurn && this.enemy.skipNextTurn) {
@@ -628,7 +744,6 @@ export default class CombatScene extends Phaser.Scene {
                 `${this.enemy.name} está recuperando el equilibrio y pierde su turno.`,
                 "enemy-action"
             );
-
             // Dar tiempo para leer el mensaje antes de devolver el turno
             this.time.delayedCall(1500, () => {
                 this.isPlayerTurn = true; // Devolver el turno al jugador
@@ -639,12 +754,9 @@ export default class CombatScene extends Phaser.Scene {
 
         // Continuar con el siguiente turno normalmente
         if (this.isPlayerTurn) {
-            this.enablePlayerControls();
+            this.addCombatLogMessage("Tu turno, elige una acción.", "player-turn");
         } else {
-            this.disablePlayerControls();
-            this.time.delayedCall(500, () => {
-                this.enemyAction();
-            });
+            this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
         }
     }
 
@@ -667,34 +779,27 @@ export default class CombatScene extends Phaser.Scene {
             // Evitar múltiples mensajes de victoria si la función se llama más de una vez
             if (!this.victoryProcessed) {
                 this.victoryProcessed = true; // Marcar que ya se procesó la victoria
-
+                this.addCombatLogMessage("¡Has sido derrotado!", "enemy-action");
                 this.addCombatLogMessage(`¡Has derrotado a ${this.enemy.name}!`, "player-action");
-
+                // Actualizar la salud del jugador antes de salir (por ejemplo, dejarlo con 1 punto de vida)
                 // Recompensa de almas por victoria
                 const soulsReward = 50;
                 if (this.player && typeof this.player.souls !== "undefined") {
                     this.player.souls += soulsReward;
                     this.addCombatLogMessage(`Has ganado ${soulsReward} almas.`, "combat-info");
-
                     // Actualizar el texto de almas en el HUD
                     const soulsAmount = document.getElementById("souls-amount");
                     if (soulsAmount) {
                         soulsAmount.textContent = this.player.souls;
                     }
                 }
-
+                // Dar tiempo para leer el mensaje antes de salir
                 this.time.delayedCall(2500, () => {
                     // Actualizar la salud del jugador antes de salir
                     if (this.player) {
                         this.player.health = this.playerCurrentHealth;
                     }
-
                     this.exitCombat();
-
-                    // Si el enemigo está en la escena, marcarlo como eliminado
-                    if (this.enemy && typeof this.enemy.kill === "function") {
-                        this.enemy.kill();
-                    }
                 });
             }
             return true;
