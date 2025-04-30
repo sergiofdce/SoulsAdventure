@@ -144,7 +144,7 @@ export default class CombatScene extends Phaser.Scene {
 
             scene: {
                 preload: function () {
-                    this.load.spritesheet("player-combat", "./assets/player.png", {
+                    this.load.spritesheet("player-combat", "./assets/player/player.png", {
                         frameWidth: 96,
                         frameHeight: 96,
                     });

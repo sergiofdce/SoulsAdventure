@@ -14,8 +14,6 @@ export class Entity {
         return distance <= this.interactionRadius;
     }
 
-    setupCollision(player) {}
-
     setupSprite(sprite, scale = 0.5) {
         sprite.setScale(scale);
 
@@ -41,14 +39,32 @@ export class Entity {
 
 // Clase para los enemigos
 export class Enemy extends Entity {
-    constructor(scene, x, y, texture, name) {
+    constructor(scene, x, y, texture, name, options = {}) {
         super(scene, x, y, texture, name);
+
+        // Opciones de configuración con valores por defecto
+        this.hitboxConfig = {
+            widthRatio: options.hitboxWidthRatio || 0.4, // Proporción del ancho del sprite
+            heightRatio: options.hitboxHeightRatio || 0.25, // Proporción del alto del sprite
+            offsetYRatio: options.hitboxOffsetYRatio || 0.75, // Posición vertical del hitbox
+            scale: options.scale || 0.5,
+        };
+
         this.sprite = scene.physics.add.sprite(x, y, texture);
-        this.setupSprite(this.sprite);
+        this.sprite.setOrigin(0.5, 0.5); // Asegurar que el origen está en el centro
+
+        // Primero configuramos el físico antes de ajustar el hitbox
+        this.sprite.body.setCollideWorldBounds(true);
+
+        // Aplicar escalado
+        this.sprite.setScale(this.hitboxConfig.scale);
+
+        // Configurar el hitbox específico para este enemigo
+        this.setupEnemyHitbox();
 
         // Movimiento
-        this.interactionRadius = 100;
-        this.followSpeed = 100;
+        this.interactionRadius = options.interactionRadius || 100;
+        this.followSpeed = options.followSpeed || 100;
 
         // Flags
         this.isDestroyed = false;
@@ -81,6 +97,26 @@ export class Enemy extends Entity {
             }
         };
         this.scene.events.on("update", this.updateEnemy);
+    }
+
+    // Método centralizado para configurar el hitbox del enemigo
+    setupEnemyHitbox() {
+        const scaledWidth = this.sprite.displayWidth;
+        const scaledHeight = this.sprite.displayHeight;
+
+        // Usar la configuración proporcionada para calcular dimensiones
+        const bodyWidth = scaledWidth * this.hitboxConfig.widthRatio;
+        const bodyHeight = scaledHeight * this.hitboxConfig.heightRatio;
+
+        // Calcular offsets
+        const offsetX = (scaledWidth - bodyWidth) / 2;
+        const offsetY = scaledHeight * this.hitboxConfig.offsetYRatio;
+
+        // Aplicar el hitbox, considerando la escala
+        this.sprite.body.setSize(bodyWidth / this.hitboxConfig.scale, bodyHeight / this.hitboxConfig.scale);
+        this.sprite.body.setOffset(offsetX / this.hitboxConfig.scale, offsetY / this.hitboxConfig.scale);
+
+        return this.sprite;
     }
 
     // Seguir a player

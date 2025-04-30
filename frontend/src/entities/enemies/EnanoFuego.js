@@ -1,38 +1,46 @@
 import { Enemy } from "../base/Entity.js";
 
 export class EnanoFuego extends Enemy {
-    constructor(
-        scene,
-        x,
-        y,
-        texture = "asset-EnanoFuego",
-        interactionRadius = 150,
-        followSpeed = 180,
-        name = "Enano de fuego"
-    ) {
-        super(scene, x, y, texture, name);
+    constructor(scene, x, y, texture = "enemy-enanoFuego", name = "Enano de fuego") {
+        // Configurar todas las opciones del enemigo en un único objeto
+        const enemyOptions = {
+            // Propiedades de movimiento
+            interactionRadius: 150,
+            followSpeed: 180,
 
-        this.interactionRadius = interactionRadius;
-        this.followSpeed = followSpeed;
+            // Propiedades de hitbox
+            hitboxWidthRatio: 0.4,
+            hitboxHeightRatio: 0.2,
+            hitboxOffsetYRatio: 0.8,
+            scale: 0.5,
 
-        // Atributos
-        this.health = 20;
-        this.strength = 3;
-        this.speed = 2;
+            // Atributos de combate
+            health: 20,
+            strength: 3,
+            speed: 2,
 
-        // Sprite
-        this.spritesheet = "./assets/enemy-EnanoFuego.png";
+            // Propiedades visuales
+            tint: 0xff9999,
+            spritesheet: "./assets/enemies/enemy-EnanoFuego.png",
+        };
 
-        // Escala
-        const scale = 0.5;
+        super(scene, x, y, texture, name, enemyOptions);
 
-        // Cambiar color
-        this.sprite.setTint(0xff9999);
+        // Asignar valores de opciones a propiedades
+        this.health = enemyOptions.health;
+        this.strength = enemyOptions.strength;
+        this.speed = enemyOptions.speed;
+        this.spritesheet = enemyOptions.spritesheet;
 
-        // Enable physics body
+        // Aplicar tinte si está definido
+        if (enemyOptions.tint) {
+            this.sprite.setTint(enemyOptions.tint);
+        }
+
+        // Activar física
         this.sprite.body.setEnable(true);
 
-        // Create animations
+        // Crear animaciones
         this.createAnimations();
     }
 
@@ -52,7 +60,7 @@ export class EnanoFuego extends Enemy {
                 key: "enanoFuego-idle",
                 frames: this.scene.anims.generateFrameNumbers("enemy-enanoFuego", {
                     start: 0,
-                    end: 0,
+                    end: 5,
                 }),
                 frameRate: 5,
                 repeat: -1,
