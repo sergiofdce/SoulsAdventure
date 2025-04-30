@@ -470,7 +470,7 @@ export default class CombatScene extends Phaser.Scene {
             healBtn.addEventListener("click", () => {
                 // Verificar explícitamente si es el turno del jugador antes de procesar
                 if (this.isPlayerTurn && this.combatActive && !healBtn.disabled) {
-                    this.handleHeal();
+                    //this.handleHeal();
                 }
             });
         }
@@ -478,20 +478,6 @@ export default class CombatScene extends Phaser.Scene {
         // Huir
         const dodgeBtn = document.querySelector(".combat-button.dodge");
         if (dodgeBtn) {
-            dodgeBtn.addEventListener("click", () => {
-                if (!this.isPlayerTurn || !this.combatActive) return;
-
-                // Desactivar controles para evitar múltiples acciones
-                this.disablePlayerControls();
-
-                // Mensaje de intento de huida
-                this.addCombatLogMessage("Has intentado huir del combate.", "player-action");
-
-                // Lógica para huir del combate (por ejemplo, terminar la escena o volver a la escena anterior)
-                this.time.delayedCall(1000, () => {
-                    this.exitCombat();
-                });
-            });
         }
     }
 

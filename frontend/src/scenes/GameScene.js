@@ -86,11 +86,12 @@ export default class GameScene extends Phaser.Scene {
         });
 
         this.input.keyboard.on("keydown-E", () => {
+            // Interacción Trainer
             if (this.trainer.isInRange(this.player)) {
                 this.trainer.interact(this.player);
             }
 
-            // Check interaction with all fireplaces
+            // Interacción hogueras
             this.fireplaces.forEach((fireplace) => {
                 if (fireplace.isInRange(this.player)) {
                     fireplace.interact(this.player);
@@ -122,18 +123,18 @@ export default class GameScene extends Phaser.Scene {
     spawnObjects() {
         // Hoguera principal cerca del entrenador
         const fireplace1 = new Fireplace(this, 450, 200, "fireplace");
-        fireplace1.fireplaceName = "Hoguera del Entrenador";
+        fireplace1.fireplaceName = "01 Hoguera del Entrenador";
         fireplace1.sprite.setTint(0xff6b6b);
         this.fireplaces.push(fireplace1);
 
         // Otras hogueras en diferentes ubicaciones del mapa
         const fireplace2 = new Fireplace(this, 700, 350, "fireplace");
-        fireplace2.fireplaceName = "Hoguera del Bosque";
+        fireplace2.fireplaceName = "02 Hoguera del Bosque";
         fireplace2.sprite.setTint(0xff6b6b);
         this.fireplaces.push(fireplace2);
 
         const fireplace3 = new Fireplace(this, 200, 500, "fireplace");
-        fireplace3.fireplaceName = "Hoguera del Lago";
+        fireplace3.fireplaceName = "03 Hoguera del Lago";
         fireplace3.sprite.setTint(0xff6b6b);
         this.fireplaces.push(fireplace3);
     }

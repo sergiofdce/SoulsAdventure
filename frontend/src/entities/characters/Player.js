@@ -36,7 +36,7 @@ export default class Player {
         this.createAnimations(scene);
 
         // Atributos
-        this.name = "Segio";
+        this.name = "Sergio";
         this.level = 1;
         this.souls = 0;
         this.reqSouls = this.calculateRequiredSouls(this.level);
@@ -45,7 +45,7 @@ export default class Player {
         this.health = 100;
         this.resistance = 10;
         this.strength = 10;
-        this.speed = 10;
+        this.speed = 15;
 
         this.img = "./assets/pruebaimg.png";
 
