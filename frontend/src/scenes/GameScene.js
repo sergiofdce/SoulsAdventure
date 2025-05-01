@@ -36,7 +36,7 @@ export default class GameScene extends Phaser.Scene {
         this.spawnTrainer();
 
         // Generar hogueras
-        //this.spawnFireplaces();
+        this.spawnFireplaces();
 
         // Generar enemigos en el mapa
         //this.spawnEnemies();
