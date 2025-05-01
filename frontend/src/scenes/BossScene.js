@@ -939,10 +939,32 @@ export default class BossScene extends Phaser.Scene {
     }
 
     exitCombat() {
+        // Finalizar el combate activo
+        this.combatActive = false;
+
+        // Limpiar eventos y restablecer variables
+        this.cleanupListeners();
+
+        // Resetear todas las variables de estado
+        this.isBlockWindowActive = false;
+        this.lastAttackTime = 0;
+
+        // Detener la animación de la barra de sincronización si existe
+        if (this.syncTween) {
+            this.syncTween.cancel();
+            this.syncTween = null;
+        }
+
         // Ocultar el contenedor de combate
         const combatContainer = document.getElementById("combat-container");
         if (combatContainer) {
             combatContainer.classList.add("hidden");
+
+            // Eliminar la barra de sincronización si existe
+            const syncBarContainer = document.getElementById("sync-bar-container");
+            if (syncBarContainer) {
+                syncBarContainer.remove();
+            }
         }
 
         // Limpiar el log de combate
@@ -960,6 +982,43 @@ export default class BossScene extends Phaser.Scene {
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
+    }
+
+    cleanupListeners() {
+        // Eliminar listeners de botones
+        const attackLightBtn = document.querySelector(".combat-button.attack-light");
+        const attackHeavyBtn = document.querySelector(".combat-button.attack-heavy");
+        const healBtn = document.querySelector(".combat-button.heal");
+        const blockBtn = document.querySelector(".combat-button.dodge");
+
+        // Clonar y reemplazar cada botón para eliminar todos los listeners asociados
+        if (attackLightBtn) {
+            const newBtn = attackLightBtn.cloneNode(true);
+            attackLightBtn.parentNode.replaceChild(newBtn, attackLightBtn);
+        }
+
+        if (attackHeavyBtn) {
+            const newBtn = attackHeavyBtn.cloneNode(true);
+            attackHeavyBtn.parentNode.replaceChild(newBtn, attackHeavyBtn);
+        }
+
+        if (healBtn) {
+            const newBtn = healBtn.cloneNode(true);
+            healBtn.parentNode.replaceChild(newBtn, healBtn);
+        }
+
+        if (blockBtn) {
+            const newBtn = blockBtn.cloneNode(true);
+            blockBtn.parentNode.replaceChild(newBtn, blockBtn);
+        }
+
+        // Habilitar los botones para el próximo combate
+        const buttons = document.querySelectorAll(".combat-button");
+        buttons.forEach((button) => {
+            button.disabled = false;
+            button.classList.remove("disabled");
+            button.style.pointerEvents = "auto";
+        });
     }
 
     addCombatLogMessage(message, className = "") {

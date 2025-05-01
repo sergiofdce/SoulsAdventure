@@ -773,6 +773,12 @@ export default class CombatScene extends Phaser.Scene {
         // Finalizar el combate activo
         this.combatActive = false;
 
+        // Limpiar eventos y restablecer variables
+        this.cleanupListeners();
+
+        // Resetear variables de estado
+        this.isPlayerTurn = true;
+
         // Ocultar el contenedor de combate
         const combatContainer = document.getElementById("combat-container");
         if (combatContainer) {
@@ -794,5 +800,42 @@ export default class CombatScene extends Phaser.Scene {
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
+    }
+
+    cleanupListeners() {
+        // Eliminar listeners de botones
+        const attackLightBtn = document.querySelector(".combat-button.attack-light");
+        const attackHeavyBtn = document.querySelector(".combat-button.attack-heavy");
+        const healBtn = document.querySelector(".combat-button.heal");
+        const dodgeBtn = document.querySelector(".combat-button.dodge");
+
+        // Clonar y reemplazar cada botón para eliminar todos los listeners asociados
+        if (attackLightBtn) {
+            const newBtn = attackLightBtn.cloneNode(true);
+            attackLightBtn.parentNode.replaceChild(newBtn, attackLightBtn);
+        }
+
+        if (attackHeavyBtn) {
+            const newBtn = attackHeavyBtn.cloneNode(true);
+            attackHeavyBtn.parentNode.replaceChild(newBtn, attackHeavyBtn);
+        }
+
+        if (healBtn) {
+            const newBtn = healBtn.cloneNode(true);
+            healBtn.parentNode.replaceChild(newBtn, healBtn);
+        }
+
+        if (dodgeBtn) {
+            const newBtn = dodgeBtn.cloneNode(true);
+            dodgeBtn.parentNode.replaceChild(newBtn, dodgeBtn);
+        }
+
+        // Habilitar los botones para el próximo combate
+        const buttons = document.querySelectorAll(".combat-button");
+        buttons.forEach((button) => {
+            button.disabled = false;
+            button.classList.remove("disabled");
+            button.style.pointerEvents = "auto";
+        });
     }
 }

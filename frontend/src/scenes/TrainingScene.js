@@ -44,6 +44,9 @@ export default class TrainingScene extends Phaser.Scene {
     }
 
     create() {
+        // Ocultar HUD
+        document.getElementById("hud-container").classList.add("hidden");
+
         // Mostrar HTML
         document.getElementById("trainer-container").classList.remove("hidden");
 
@@ -296,6 +299,10 @@ export default class TrainingScene extends Phaser.Scene {
 
         const acceptButton = document.getElementById("accept-upgrades");
         acceptButton.replaceWith(acceptButton.cloneNode(true));
+
+        // Mostrar HUD
+        document.getElementById("hud-container").classList.remove("hidden");
+
 
         this.scene.resume("GameScene");
         this.scene.stop();

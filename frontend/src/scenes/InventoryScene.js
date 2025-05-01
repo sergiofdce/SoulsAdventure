@@ -1,5 +1,3 @@
-import ItemsDatabase from "../data/items/ItemsDatabase.js";
-
 export default class InventoryScene extends Phaser.Scene {
     constructor() {
         super({ key: "InventoryScene" });
@@ -12,6 +10,9 @@ export default class InventoryScene extends Phaser.Scene {
     }
 
     create() {
+        // Ocultar HUD
+        document.getElementById("hud-container").classList.add("hidden");
+
         // Mostrar el inventario en HTML
         const inventoryDiv = document.getElementById("inventory-container");
         inventoryDiv.classList.remove("hidden");
@@ -24,9 +25,12 @@ export default class InventoryScene extends Phaser.Scene {
         // Llenar el inventario con los datos del jugador
         this.populateInventory();
 
-        // Detectar la tecla I para cerrar el inventario
+        // Detectar la tecla I
         this.input.keyboard.on("keydown-I", () => {
+            // Cerrar Inventario
             inventoryDiv.classList.add("hidden");
+            // Mostrar HUD
+            document.getElementById("hud-container").classList.remove("hidden");
             this.scene.resume("GameScene");
             this.scene.stop("InventoryScene");
         });
