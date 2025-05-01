@@ -312,58 +312,71 @@ export default class CombatScene extends Phaser.Scene {
                         "light-attack": `${enemyType}-light-attack`,
                         "heavy-attack": `${enemyType}-heavy-attack`,
                         death: `${enemyType}-death`,
-                        dash: `${enemyType}-dash`,
                     };
 
-                    // Crear manualmente las animaciones para este contexto específico
-                    this.anims.create({
-                        key: "idle",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
-                        frameRate: 5,
-                        repeat: -1,
-                    });
+                    // Obtener las configuraciones de animación del enemigo si están disponibles
+                    const animConfigs = this.mainScene.enemy.getAnimationConfigs
+                        ? this.mainScene.enemy.getAnimationConfigs()
+                        : null;
 
-                    this.anims.create({
-                        key: "walk",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
-                        frameRate: 10,
-                        repeat: -1,
-                    });
+                    if (animConfigs) {
+                        // Usar las configuraciones específicas del enemigo
+                        Object.keys(animConfigs).forEach((animKey) => {
+                            const config = animConfigs[animKey];
+                            this.anims.create({
+                                key: animKey,
+                                frames: this.anims.generateFrameNumbers("enemy-combat", {
+                                    start: config.start,
+                                    end: config.end,
+                                }),
+                                frameRate: config.frameRate,
+                                repeat: config.repeat,
+                            });
+                        });
+                    } else {
+                        // Fallback con las animaciones genéricas (código anterior)
+                        this.anims.create({
+                            key: "idle",
+                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
+                            frameRate: 5,
+                            repeat: -1,
+                        });
 
-                    this.anims.create({
-                        key: "hit",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 18, end: 23 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
+                        this.anims.create({
+                            key: "walk",
+                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
+                            frameRate: 10,
+                            repeat: -1,
+                        });
 
-                    this.anims.create({
-                        key: "light-attack",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
+                        this.anims.create({
+                            key: "hit",
+                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 18, end: 23 }),
+                            frameRate: 8,
+                            repeat: 0,
+                        });
 
-                    this.anims.create({
-                        key: "heavy-attack",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
+                        this.anims.create({
+                            key: "light-attack",
+                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
+                            frameRate: 8,
+                            repeat: 0,
+                        });
 
-                    this.anims.create({
-                        key: "death",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 24, end: 29 }),
-                        frameRate: 5,
-                        repeat: 0,
-                    });
+                        this.anims.create({
+                            key: "heavy-attack",
+                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
+                            frameRate: 8,
+                            repeat: 0,
+                        });
 
-                    this.anims.create({
-                        key: "dash",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 6, end: 11 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
+                        this.anims.create({
+                            key: "death",
+                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 24, end: 29 }),
+                            frameRate: 5,
+                            repeat: 0,
+                        });
+                    }
 
                     // Ajustar el sprite al centro de la escala actual
                     this.enemySprite = this.add.sprite(
@@ -584,9 +597,6 @@ export default class CombatScene extends Phaser.Scene {
 
         // Desactivar controles para evitar múltiples acciones
         this.disablePlayerControls();
-
-        // Reproducir una animación apropiada para curación (podemos usar dash como aproximación)
-        this.playPlayerAnimation("dash");
 
         // Calcular curación basada en resistencia
         const healPercent = 0.1 + this.player.resistance * 0.005;

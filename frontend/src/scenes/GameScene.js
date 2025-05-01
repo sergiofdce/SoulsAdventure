@@ -33,7 +33,7 @@ export default class GameScene extends Phaser.Scene {
         this.setupMap();
 
         // Generar Trainer
-        //this.spawnTrainer();
+        this.spawnTrainer();
 
         // Generar hogueras
         //this.spawnFireplaces();
@@ -57,7 +57,7 @@ export default class GameScene extends Phaser.Scene {
         this.setupCamera();
 
         // Activar modo debug
-        this.enableDebugMode();
+        //this.enableDebugMode();
     }
 
     loadAssets() {

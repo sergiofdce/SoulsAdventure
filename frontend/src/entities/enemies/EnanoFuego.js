@@ -38,41 +38,17 @@ export class EnanoFuego extends Enemy {
             frameRate: 10,
             repeat: -1,
         });
+    }
 
-        scene.anims.create({
-            key: "enanoFuego-hit",
-            frames: scene.anims.generateFrameNumbers("enemy-enanoFuego", { start: 18, end: 23 }),
-            frameRate: 8,
-            repeat: 0,
-        });
-
-        scene.anims.create({
-            key: "enanoFuego-light-attack",
-            frames: scene.anims.generateFrameNumbers("enemy-enanoFuego", { start: 12, end: 17 }),
-            frameRate: 8,
-            repeat: 0,
-        });
-
-        scene.anims.create({
-            key: "enanoFuego-heavy-attack",
-            frames: scene.anims.generateFrameNumbers("enemy-enanoFuego", { start: 12, end: 17 }),
-            frameRate: 8,
-            repeat: 0,
-        });
-
-        scene.anims.create({
-            key: "enanoFuego-death",
-            frames: scene.anims.generateFrameNumbers("enemy-enanoFuego", { start: 24, end: 29 }),
-            frameRate: 5,
-            repeat: 0,
-        });
-
-        scene.anims.create({
-            key: "enanoFuego-dash",
-            frames: scene.anims.generateFrameNumbers("enemy-enanoFuego", { start: 6, end: 11 }),
-            frameRate: 8,
-            repeat: 0,
-        });
+    getAnimationConfigs() {
+        return {
+            idle: { start: 0, end: 5, frameRate: 5, repeat: -1 },
+            walk: { start: 0, end: 5, frameRate: 10, repeat: -1 },
+            hit: { start: 18, end: 23, frameRate: 8, repeat: 0 },
+            "light-attack": { start: 12, end: 17, frameRate: 8, repeat: 0 },
+            "heavy-attack": { start: 12, end: 17, frameRate: 8, repeat: 0 },
+            death: { start: 24, end: 29, frameRate: 5, repeat: 0 },
+        };
     }
 
     kill() {

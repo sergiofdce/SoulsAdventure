@@ -3,6 +3,10 @@ import {
     STAT_UPGRADE_MULTIPLIERS,
     TRAINING_CONFIG,
     INITIAL_PLAYER_STATS,
+    BASE_UPGRADE_COST,
+    LEVEL_UPGRADE_COST_MULTIPLIER,
+    BASE_SOULS_REQUIREMENT,
+    LEVEL_COST_MULTIPLIER,
 } from "../config/constants.js";
 
 export default class TrainingScene extends Phaser.Scene {
@@ -14,6 +18,29 @@ export default class TrainingScene extends Phaser.Scene {
     // Enviar objeto Player
     init(data) {
         this.player = data.player;
+
+        // Inicializar propiedades de entrenamiento aquí (movidas desde Player)
+        this.pendingUpgrades = {
+            health: 0,
+            resistance: 0,
+            strength: 0,
+            speed: 0,
+        };
+
+        // Calcular almas requeridas para el siguiente nivel
+        this.requiredSouls = this.calculateRequiredSouls(this.player.level);
+
+        // Inicializar costos de mejora
+        this.upgradeCost = this.calculateUpgradeCost(this.player.level);
+
+        // Guardar una copia de almas iniciales para seguimiento
+        this.initialSouls = this.player.souls;
+    }
+
+    // Cálculo de almas necesarias para subir de nivel (movido desde Player)
+    calculateRequiredSouls(currentLevel) {
+        // Fórmula: BASE * (1 + MULTIPLIER)^(level)
+        return Math.ceil(BASE_SOULS_REQUIREMENT * Math.pow(1 + LEVEL_COST_MULTIPLIER, currentLevel - 1));
     }
 
     create() {
@@ -34,14 +61,20 @@ export default class TrainingScene extends Phaser.Scene {
 
     setupUpgradeUI() {
         // Obtener información de nivel actualizada
-        const levelInfo = this.player.getLevelInfo();
+        const levelInfo = this.player.getPlayerInfo();
 
         // Mostrar estadísticas actuales del jugador
         document.getElementById("player-level").textContent = levelInfo.level;
         document.getElementById("player-souls").textContent = levelInfo.souls;
 
-        // Mostrar solo el valor del costo de mejora sin texto adicional
-        document.getElementById("required-souls").textContent = this.player.upgradeCost;
+        // Mostrar costo de mejora inicial y almas requeridas para el siguiente nivel
+        document.getElementById("required-souls").textContent = this.upgradeCost;
+
+        // Actualizar el elemento que muestra las almas requeridas para el siguiente nivel, si existe
+        const requiredSoulsElement = document.getElementById("next-level-souls");
+        if (requiredSoulsElement) {
+            requiredSoulsElement.textContent = this.requiredSouls;
+        }
 
         document.getElementById("player-health").textContent = this.player.health;
         document.getElementById("player-resistance").textContent = this.player.resistance;
@@ -98,31 +131,114 @@ export default class TrainingScene extends Phaser.Scene {
 
         // Botón aceptar
         document.getElementById("accept-upgrades").addEventListener("click", () => {
-            this.player.confirmUpgrades();
+            this.confirmUpgrades();
             this.closeTraining();
         });
     }
 
+    // Métodos movidos desde Player
+    calculateUpgradeCost(level) {
+        return Math.ceil(BASE_UPGRADE_COST * (1 + (level - 1) * LEVEL_UPGRADE_COST_MULTIPLIER));
+    }
+
+    canUpgradeStat(stat) {
+        return this.player.souls >= this.upgradeCost;
+    }
+
+    getAdjustedStatValue(stat) {
+        const pendingBonus = Math.ceil(this.player[stat] * STAT_UPGRADE_MULTIPLIERS[stat] * this.pendingUpgrades[stat]);
+        return this.player[stat] + pendingBonus;
+    }
+
+    prepareUpgradeStat(stat) {
+        if (this.canUpgradeStat(stat)) {
+            // Añadir mejora pendiente
+            this.pendingUpgrades[stat]++;
+
+            // Restar almas al jugador
+            this.player.spendSouls(this.upgradeCost);
+
+            // Actualizar el costo para la siguiente mejora
+            this.updateUpgradeCost(true);
+
+            return true;
+        }
+        return false;
+    }
+
+    updateUpgradeCost(usePotentialLevel = false) {
+        let levelToUse = this.player.level;
+
+        // Si se solicita usar el nivel potencial, calcular la suma de nivel actual + mejoras pendientes
+        if (usePotentialLevel) {
+            const totalPendingUpgrades = Object.values(this.pendingUpgrades).reduce((sum, val) => sum + val, 0);
+            levelToUse = this.player.level + totalPendingUpgrades;
+        }
+
+        // Fórmula: BASE_COST * (1 + (nivel-1) * MULTIPLIER)
+        this.upgradeCost = this.calculateUpgradeCost(levelToUse);
+    }
+
+    confirmUpgrades() {
+        // Calcular la cantidad total de mejoras realizadas
+        const totalUpgrades = Object.values(this.pendingUpgrades).reduce((sum, val) => sum + val, 0);
+
+        // Determinar el aumento de nivel
+        const levelIncrease = TRAINING_CONFIG.levelUpPerStat ? totalUpgrades : 0;
+
+        // Aplicar todas las mejoras al jugador de una vez
+        this.player.applyPlayerStats(this.pendingUpgrades, levelIncrease);
+
+        // Recalcular almas requeridas para el siguiente nivel
+        if (levelIncrease > 0) {
+            this.requiredSouls = this.calculateRequiredSouls(this.player.level);
+        }
+
+        // Reiniciar mejoras pendientes
+        this.pendingUpgrades = {
+            health: 0,
+            resistance: 0,
+            strength: 0,
+            speed: 0,
+        };
+    }
+
+    cancelUpgrades() {
+        if (this.totalUpgradesApplied > 0) {
+            // Calcular almas a reembolsar
+            const soulDifference = this.initialSouls - this.player.souls;
+
+            // Restaurar almas al jugador
+            this.player.addSouls(soulDifference);
+
+            // Reiniciar mejoras pendientes
+            this.pendingUpgrades = {
+                health: 0,
+                resistance: 0,
+                strength: 0,
+                speed: 0,
+            };
+
+            // Restaurar costo inicial
+            this.upgradeCost = this.calculateUpgradeCost(this.player.level);
+        }
+    }
+
+    // Método modificado de la escena original
     upgradeStat(stat) {
-        if (this.player.prepareUpgradeStat(stat)) {
+        if (this.prepareUpgradeStat(stat)) {
             // Incrementar contador de mejoras
             this.totalUpgradesApplied++;
 
             // Actualizar interfaz para la estadística mejorada utilizando el multiplicador
-            const adjustedValue = this.player.getAdjustedStatValue(stat);
+            const adjustedValue = this.getAdjustedStatValue(stat);
             document.getElementById(`player-${stat}`).textContent = adjustedValue;
 
-            // Obtener información actualizada del nivel
-            const levelInfo = this.player.getLevelInfo();
-
             // Actualizar visualización de almas
-            document.getElementById("player-souls").textContent = levelInfo.souls;
+            document.getElementById("player-souls").textContent = this.player.souls;
 
             // Actualizar el costo mostrado ya que ha cambiado
-            document.getElementById("required-souls").textContent = this.player.upgradeCost;
-
-            // El costo de mejora no cambia, así que no necesitamos actualizar
-            // el texto de required-souls en cada mejora
+            document.getElementById("required-souls").textContent = this.upgradeCost;
 
             // Mostrar directamente el nivel potencial sin flechas de transición
             if (TRAINING_CONFIG.showPotentialLevel && TRAINING_CONFIG.levelUpPerStat) {
@@ -131,7 +247,7 @@ export default class TrainingScene extends Phaser.Scene {
             }
 
             // Calcular almas gastadas
-            const spentSouls = INITIAL_PLAYER_STATS.souls - this.player.souls;
+            const spentSouls = this.initialSouls - this.player.souls;
 
             // Verificar si el elemento existe antes de actualizar el contenido
             const spentSoulsElement = document.getElementById("stats-spent-souls");
@@ -140,15 +256,10 @@ export default class TrainingScene extends Phaser.Scene {
             }
 
             // Actualizar la sección de estadísticas con los valores mejorados
-            const adjustedHealth = this.player.getAdjustedStatValue("health");
-            const adjustedResistance = this.player.getAdjustedStatValue("resistance");
-            const adjustedStrength = this.player.getAdjustedStatValue("strength");
-            const adjustedSpeed = this.player.getAdjustedStatValue("speed");
-
-            document.getElementById("stats-health-upgraded").textContent = adjustedHealth;
-            document.getElementById("stats-resistance-upgraded").textContent = adjustedResistance;
-            document.getElementById("stats-strength-upgraded").textContent = adjustedStrength;
-            document.getElementById("stats-speed-upgraded").textContent = adjustedSpeed;
+            document.getElementById("stats-health-upgraded").textContent = this.getAdjustedStatValue("health");
+            document.getElementById("stats-resistance-upgraded").textContent = this.getAdjustedStatValue("resistance");
+            document.getElementById("stats-strength-upgraded").textContent = this.getAdjustedStatValue("strength");
+            document.getElementById("stats-speed-upgraded").textContent = this.getAdjustedStatValue("speed");
 
             // Actualizar estados de los botones
             this.updateUpgradeButtons();
@@ -159,7 +270,7 @@ export default class TrainingScene extends Phaser.Scene {
         const stats = ["health", "resistance", "strength", "speed"];
         stats.forEach((stat) => {
             const button = document.querySelector(`.upgrade-btn[data-stat="${stat}"]`);
-            if (this.player.canUpgradeStat(stat)) {
+            if (this.canUpgradeStat(stat)) {
                 button.disabled = false;
             } else {
                 button.disabled = true;
@@ -168,8 +279,8 @@ export default class TrainingScene extends Phaser.Scene {
     }
 
     closeTraining() {
-        // Reiniciar mejoras pendientes si no se confirmaron
-        this.player.cancelUpgrades();
+        // Cancelar mejoras pendientes y devolver almas
+        this.cancelUpgrades();
 
         // Reiniciar contador de mejoras
         this.totalUpgradesApplied = 0;

@@ -17,7 +17,7 @@ export class Boss extends CombatEntity {
 
     // Lanzar Escena de Combate
     startCombat() {
-        this.scene.scene.launch("CombatScene", {
+        this.scene.scene.launch("BossScene", {
             player: this.scene.player,
             enemy: this,
         });

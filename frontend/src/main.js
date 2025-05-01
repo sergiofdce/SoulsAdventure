@@ -2,6 +2,7 @@
 import GameScene from "./scenes/GameScene.js";
 import InventoryScene from "./scenes/InventoryScene.js";
 import CombatScene from "./scenes/CombatScene.js";
+import BossScene from "./scenes/BossScene.js";
 import TrainingScene from "./scenes/TrainingScene.js";
 import TeleportScene from "./scenes/TeleportScene.js";
 
@@ -17,7 +18,7 @@ const config = {
             debug: false,
         },
     },
-    scene: [GameScene, CombatScene, InventoryScene, TrainingScene, TeleportScene],
+    scene: [GameScene, CombatScene, BossScene, InventoryScene, TrainingScene, TeleportScene],
 };
 
 // Instanciar juego
