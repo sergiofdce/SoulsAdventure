@@ -11,6 +11,9 @@ export default class TeleportScene extends Phaser.Scene {
     }
 
     create() {
+        // Ocultar HUD
+        document.getElementById("hud-container").classList.add("hidden");
+
         // Mostrar la interfaz de teletransporte en HTML y pausar la escena del juego
         document.getElementById("teleport-container").classList.remove("hidden");
         this.populateFireplacesList();
@@ -157,6 +160,9 @@ export default class TeleportScene extends Phaser.Scene {
                 if (container) {
                     container.classList.add("hidden");
                 }
+                // Ocultar HUD
+                document.getElementById("hud-container").classList.remove("hidden");
+
                 this.scene.resume("GameScene");
             };
         }
