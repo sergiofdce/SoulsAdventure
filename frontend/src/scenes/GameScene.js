@@ -1,13 +1,17 @@
+// Managers
 import Player from "../entities/base/Player.js";
 import Controls from "../managers/Controls.js";
 import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
-import { Trainer } from "../entities/npcs/Trainer.js";
-import { Fireplace } from "../entities/npcs/Fireplace.js";
+
 // Enemigos
 import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
 // Bosses
 import { Lobo } from "../entities/bosses/Lobo.js";
+
+// Otros
+import { Trainer } from "../entities/npcs/Trainer.js";
+import { Fireplace } from "../entities/npcs/Fireplace.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -188,6 +192,9 @@ export default class GameScene extends Phaser.Scene {
 
         // Colisiones con enemigos
         this.enemies.forEach((enemy) => enemy.setupCollision(this.player));
+        
+        // Colisiones con bosses
+        this.bosses.forEach((boss) => boss.setupCollision(this.player));
 
         // Colisiones para todas las hogueras
         this.fireplaces.forEach((fireplace) => {
@@ -224,8 +231,8 @@ export default class GameScene extends Phaser.Scene {
         // Controles
         this.player.update(this.controls.getCursors());
 
-        // Mantiene solo los enemigos que no han sido destruidos
-        this.enemies = this.enemies.filter((enemy) => !enemy.isDestroyed);
+        // // Mantiene solo los enemigos que no han sido destruidos
+        // this.enemies = this.enemies.filter((enemy) => !enemy.isDestroyed);
 
         // Profundidad Trainer
         if (this.trainer) {
@@ -237,13 +244,6 @@ export default class GameScene extends Phaser.Scene {
         this.fireplaces.forEach((fireplace) => {
             if (fireplace.sprite) {
                 fireplace.sprite.depth = fireplace.sprite.y;
-            }
-        });
-
-        // Actualizar profundidad para enemigos - permite verlos correctamente en el juego
-        this.enemies.forEach((enemy) => {
-            if (enemy.sprite) {
-                enemy.sprite.depth = enemy.sprite.y;
             }
         });
     }

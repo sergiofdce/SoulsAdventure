@@ -12,7 +12,7 @@ export class Entity {
         return distance <= this.interactionRadius;
     }
 
-    setupSprite(sprite, scale = 0.5) {
+    setupSprite(sprite, scale) {
         sprite.setScale(scale);
 
         // Configuración mejorada del hitbox con alineación vertical adecuada

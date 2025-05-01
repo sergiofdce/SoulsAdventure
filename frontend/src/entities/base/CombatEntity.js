@@ -85,10 +85,18 @@ export class CombatEntity extends Entity {
 
                 // Sentido
                 this.sprite.setFlipX(directionX < 0);
+
+                // Animación caminar
+                if (this.sprite.anims.currentAnim?.key !== `${this.type}-walk`) {
+                    this.sprite.play(`${this.type}-walk`);
+                }
             }
         } else {
-            if (this.sprite) {
-                this.sprite.setVelocity(0);
+            this.sprite.setVelocity(0);
+
+            // Animación idle
+            if (this.sprite.anims.currentAnim?.key !== `${this.type}-idle`) {
+                this.sprite.play(`${this.type}-idle`);
             }
         }
     }
@@ -108,9 +116,7 @@ export class CombatEntity extends Entity {
     }
 
     // Método a implementar por las subclases
-    startCombat() {
-        console.log("Este método debe ser implementado por una subclase");
-    }
+    startCombat() {}
 
     kill() {
         if (this.isDestroyed) return;

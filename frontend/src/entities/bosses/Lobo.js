@@ -2,7 +2,7 @@ import { Boss } from "./Boss.js";
 
 export class Lobo extends Boss {
     constructor(scene, x, y, texture = "boss-Lobo", name = "Lobo") {
-        // Asignar tamaño del sprite 
+        // Asignar tamaño del sprite
         const scale = 1.2;
         super(scene, x, y, texture, name, scale);
 
@@ -19,27 +19,25 @@ export class Lobo extends Boss {
     }
 
     createAnimations() {
-        if (!this.scene.anims.exists("lobo-walk")) {
-            this.scene.anims.create({
-                key: "lobo-walk",
-                frames: this.scene.anims.generateFrameNumbers("boss-Lobo", {
-                    start: 6,
-                    end: 11,
-                }),
-                frameRate: 10,
-                repeat: -1,
-            });
+        this.scene.anims.create({
+            key: "lobo-walk",
+            frames: this.scene.anims.generateFrameNumbers("boss-Lobo", {
+                start: 6,
+                end: 11,
+            }),
+            frameRate: 10,
+            repeat: -1,
+        });
 
-            this.scene.anims.create({
-                key: "lobo-idle",
-                frames: this.scene.anims.generateFrameNumbers("boss-Lobo", {
-                    start: 0,
-                    end: 5,
-                }),
-                frameRate: 5,
-                repeat: -1,
-            });
-        }
+        this.scene.anims.create({
+            key: "lobo-idle",
+            frames: this.scene.anims.generateFrameNumbers("boss-Lobo", {
+                start: 0,
+                end: 5,
+            }),
+            frameRate: 5,
+            repeat: -1,
+        });
     }
 
     // Override the follow method to include animation

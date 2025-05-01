@@ -1,3 +1,4 @@
+import { Entity } from "./Entity.js";
 import itemsData from "../../items/data/itemsData.js";
 import {
     UPGRADE_COST_MULTIPLIER,
@@ -9,123 +10,33 @@ import {
     LEVEL_UPGRADE_COST_MULTIPLIER,
 } from "../../config/constants.js";
 
-export default class Player {
+export default class Player extends Entity {
     constructor(scene, x, y, texture) {
-        // Configuración Phaser
-        this.scene = scene;
+        // Llamamos al constructor de la clase padre
+        super(scene, x, y, texture, "Sergio");
+
+        // Crear sprite con Phaser
         this.sprite = scene.physics.add.sprite(x, y, texture);
+        // Aplicar scale
+        this.setupSprite(this.sprite, 0.5);
 
-        // Opciones del jugador en un único objeto
-        const playerOptions = {
-            // Propiedades visuales y físicas
-            scale: 0.5,
-            hitboxWidthRatio: 0.5,
-            hitboxHeightRatio: 0.3,
-            hitboxOffsetYRatio: 0.7,
+        // Atributos base del jugador
+        this.level = 1;
+        this.souls = 0;
+        this.armor = 0;
+        this.maxHealth = 100;
+        this.health = 100;
+        this.resistance = 10;
+        this.strength = 10;
+        this.speed = 15;
 
-            // Atributos base del jugador
-            name: "Sergio",
-            level: 1,
-            souls: 0,
-            armor: 0,
-            maxHealth: 100,
-            health: 100,
-            resistance: 10,
-            strength: 10,
-            speed: 15,
-
-            // Ruta imagen y spritesheet
-            img: "./assets/pruebaimg.png",
-            spritesheet: "./assets/player/player.png",
-        };
-
-        this.sprite.setScale(playerOptions.scale);
-        this.sprite.setCollideWorldBounds(true);
-
-        // Configure hitbox a la escala
-        const scale = this.sprite.scale;
-        const scaledWidth = this.sprite.displayWidth;
-        const scaledHeight = this.sprite.displayHeight;
-
-        // Hitbox en los pies del asset
-        const bodyWidth = scaledWidth * playerOptions.hitboxWidthRatio;
-        const bodyHeight = scaledHeight * playerOptions.hitboxHeightRatio;
-
-        // Offset
-        const offsetX = (scaledWidth - bodyWidth) / 2;
-        const offsetY = scaledHeight * playerOptions.hitboxOffsetYRatio; // Zona inferior
-
-        this.sprite.body.setSize(bodyWidth / scale, bodyHeight / scale);
-        this.sprite.body.setOffset(offsetX / scale, offsetY / scale);
-
-        // Definir todas las animaciones disponibles
-        this.animationDefinitions = {
-            idle: {
-                key: "player-idle",
-                frames: { start: 0, end: 5 },
-                frameRate: 10,
-                repeat: -1,
-                repeatDelay: 5000,
-            },
-            walk: {
-                key: "player-walk",
-                frames: { start: 6, end: 11 },
-                frameRate: 10,
-                repeat: -1,
-            },
-            turn: {
-                key: "player-turn",
-                frames: [{ key: texture, frame: 0 }],
-                frameRate: 20,
-                repeat: 0,
-            },
-            hit: {
-                key: "player-hit",
-                frames: { start: 48, end: 53 },
-                frameRate: 8,
-                repeat: 0,
-            },
-            "light-attack": {
-                key: "player-light-attack",
-                frames: { start: 18, end: 23 },
-                frameRate: 8,
-                repeat: 0,
-            },
-            "heavy-attack": {
-                key: "player-heavy-attack",
-                frames: { start: 12, end: 17 },
-                frameRate: 8,
-                repeat: 0,
-            },
-            death: {
-                key: "player-death",
-                frames: { start: 48, end: 59 },
-                frameRate: 5,
-                repeat: 0,
-            },
-            dash: {
-                key: "player-dash",
-                frames: { start: 60, end: 63 },
-                frameRate: 8,
-                repeat: 0,
-            },
-        };
-
-        // Asignar valores de opciones a propiedades
-        this.name = playerOptions.name;
-        this.level = playerOptions.level;
-        this.souls = playerOptions.souls;
-        this.armor = playerOptions.armor;
-        this.maxHealth = playerOptions.maxHealth;
-        this.health = playerOptions.health;
-        this.resistance = playerOptions.resistance;
-        this.strength = playerOptions.strength;
-        this.speed = playerOptions.speed;
-        this.img = playerOptions.img;
-        this.spritesheet = playerOptions.spritesheet;
+        // Ruta imagen y spritesheet
+        this.img = "./assets/pruebaimg.png";
+        this.spritesheet = "./assets/player/player.png";
 
         this.reqSouls = this.calculateRequiredSouls(this.level);
 
+        // Animaciones
         this.createAnimations(scene, texture);
 
         // Inventario
@@ -208,74 +119,74 @@ export default class Player {
         this.updateUpgradeCost();
     }
 
-    // Método para crear las animaciones del jugador
     createAnimations(scene, texture) {
-        // Crear animaciones principales para el juego
-        const animsToCreate = ["idle", "walk", "turn"];
-
-        animsToCreate.forEach((animName) => {
-            const animDef = this.animationDefinitions[animName];
-
-            if (!scene.anims.exists(animDef.key)) {
-                if (animName === "turn") {
-                    scene.anims.create({
-                        key: animDef.key,
-                        frames: animDef.frames,
-                        frameRate: animDef.frameRate,
-                        repeat: animDef.repeat,
-                    });
-                } else {
-                    scene.anims.create({
-                        key: animDef.key,
-                        frames: scene.anims.generateFrameNumbers(texture, {
-                            start: animDef.frames.start,
-                            end: animDef.frames.end,
-                        }),
-                        frameRate: animDef.frameRate,
-                        repeat: animDef.repeat,
-                        repeatDelay: animDef.repeatDelay || undefined,
-                    });
-                }
-            }
+        scene.anims.create({
+            key: "player-idle",
+            frames: scene.anims.generateFrameNumbers(texture, {
+                start: 0,
+                end: 5,
+            }),
+            frameRate: 10,
+            repeat: -1,
+            repeatDelay: 5000,
         });
-    }
 
-    // Método para crear animaciones de combate (usado por CombatScene)
-    createCombatAnimations(scene, combatTexture) {
-        // Crear todas las animaciones para combate
-        Object.keys(this.animationDefinitions).forEach((animName) => {
-            const animDef = this.animationDefinitions[animName];
-            const combatKey = animDef.key.replace("player-", ""); // Convertir "player-idle" a "idle" para combate
+        scene.anims.create({
+            key: "player-walk",
+            frames: scene.anims.generateFrameNumbers(texture, {
+                start: 6,
+                end: 11,
+            }),
+            frameRate: 10,
+            repeat: -1,
+        });
 
-            if (!scene.anims.exists(combatKey)) {
-                if (animName === "turn") {
-                    scene.anims.create({
-                        key: combatKey,
-                        frames: [{ key: combatTexture, frame: 0 }],
-                        frameRate: animDef.frameRate,
-                        repeat: animDef.repeat,
-                    });
-                } else {
-                    scene.anims.create({
-                        key: combatKey,
-                        frames: scene.anims.generateFrameNumbers(combatTexture, {
-                            start: animDef.frames.start,
-                            end: animDef.frames.end,
-                        }),
-                        frameRate: animDef.frameRate,
-                        repeat: animDef.repeat,
-                        repeatDelay: animDef.repeatDelay || undefined,
-                    });
-                }
-            }
+        scene.anims.create({
+            key: "player-hit",
+            frames: scene.anims.generateFrameNumbers(texture, {
+                start: 48,
+                end: 53,
+            }),
+            frameRate: 8,
+            repeat: 0,
+        });
+
+        scene.anims.create({
+            key: "player-light-attack",
+            frames: scene.anims.generateFrameNumbers(texture, {
+                start: 18,
+                end: 23,
+            }),
+            frameRate: 8,
+            repeat: 0,
+        });
+
+        scene.anims.create({
+            key: "player-heavy-attack",
+            frames: scene.anims.generateFrameNumbers(texture, {
+                start: 12,
+                end: 17,
+            }),
+            frameRate: 8,
+            repeat: 0,
+        });
+
+        scene.anims.create({
+            key: "player-death",
+            frames: scene.anims.generateFrameNumbers(texture, {
+                start: 48,
+                end: 59,
+            }),
+            frameRate: 5,
+            repeat: 0,
         });
     }
 
     // Método para reproducir animaciones del jugador
     playAnimation(animName) {
-        const animDef = this.animationDefinitions[animName];
-        if (animDef) {
-            this.sprite.anims.play(animDef.key, true);
+        const animKey = `player-${animName}`;
+        if (this.sprite.anims.exists(animKey)) {
+            this.sprite.anims.play(animKey, true);
         }
     }
 
@@ -347,10 +258,11 @@ export default class Player {
             this.sprite.setVelocityY(0);
         }
 
+        // Corregimos la forma de reproducir las animaciones
         if (isMoving) {
-            this.playAnimation("walk");
+                this.sprite.anims.play("player-walk", true);
         } else {
-            this.playAnimation("idle");
+                this.sprite.anims.play("player-idle", true);
         }
     }
 

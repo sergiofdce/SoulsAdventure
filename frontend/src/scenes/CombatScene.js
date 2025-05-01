@@ -144,7 +144,7 @@ export default class CombatScene extends Phaser.Scene {
 
             scene: {
                 preload: function () {
-                    this.load.spritesheet("player-combat", "./assets/player/player.png", {
+                    this.load.spritesheet("player-combat", this.game.mainScene.player.spritesheet, {
                         frameWidth: 96,
                         frameHeight: 96,
                     });
@@ -153,8 +153,49 @@ export default class CombatScene extends Phaser.Scene {
                     // Referencia a la escena principal (para acceder desde métodos)
                     this.mainScene = this.game.mainScene;
 
-                    // Usar el método del jugador para crear las animaciones
-                    this.mainScene.player.createCombatAnimations(this, "player-combat");
+                    // Crear manualmente las animaciones para este contexto específico
+                    this.anims.create({
+                        key: "idle",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 0, end: 5 }),
+                        frameRate: 10,
+                        repeat: -1,
+                        repeatDelay: 5000,
+                    });
+
+                    this.anims.create({
+                        key: "walk",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 6, end: 11 }),
+                        frameRate: 10,
+                        repeat: -1,
+                    });
+
+                    this.anims.create({
+                        key: "hit",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 48, end: 53 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "light-attack",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 18, end: 23 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "heavy-attack",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 12, end: 17 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "death",
+                        frames: this.anims.generateFrameNumbers("player-combat", { start: 48, end: 59 }),
+                        frameRate: 5,
+                        repeat: 0,
+                    });
 
                     // Ajustar el sprite al centro de la escala actual
                     this.playerSprite = this.add.sprite(
@@ -260,8 +301,69 @@ export default class CombatScene extends Phaser.Scene {
                     // Referencia a la escena principal (para acceder desde métodos)
                     this.mainScene = this.game.mainScene;
 
-                    // Usar el método del enemigo para crear las animaciones
-                    this.mainScene.enemy.createCombatAnimations(this, "enemy-combat");
+                    // Crear las animaciones necesarias usando el tipo del enemigo como prefijo
+                    const enemyType = this.mainScene.enemy.type;
+
+                    // Crear mapeo entre las animaciones de combate y las del enemigo
+                    this.animationMap = {
+                        idle: `${enemyType}-idle`,
+                        walk: `${enemyType}-walk`,
+                        hit: `${enemyType}-hit`,
+                        "light-attack": `${enemyType}-light-attack`,
+                        "heavy-attack": `${enemyType}-heavy-attack`,
+                        death: `${enemyType}-death`,
+                        dash: `${enemyType}-dash`,
+                    };
+
+                    // Crear manualmente las animaciones para este contexto específico
+                    this.anims.create({
+                        key: "idle",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
+                        frameRate: 5,
+                        repeat: -1,
+                    });
+
+                    this.anims.create({
+                        key: "walk",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
+                        frameRate: 10,
+                        repeat: -1,
+                    });
+
+                    this.anims.create({
+                        key: "hit",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 18, end: 23 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "light-attack",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "heavy-attack",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "death",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 24, end: 29 }),
+                        frameRate: 5,
+                        repeat: 0,
+                    });
+
+                    this.anims.create({
+                        key: "dash",
+                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 6, end: 11 }),
+                        frameRate: 8,
+                        repeat: 0,
+                    });
 
                     // Ajustar el sprite al centro de la escala actual
                     this.enemySprite = this.add.sprite(
