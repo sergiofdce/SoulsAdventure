@@ -1,9 +1,9 @@
-import Player from "../entities/characters/Player.js";
+import Player from "../entities/base/Player.js";
 import Controls from "../managers/Controls.js";
 import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
-import { Trainer } from "../entities/characters/Trainer.js";
-import { Fireplace } from "../entities/characters/Fireplace.js";
+import { Trainer } from "../entities/npcs/Trainer.js";
+import { Fireplace } from "../entities/npcs/Fireplace.js";
 // Enemigos
 import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
 // Bosses
@@ -144,7 +144,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnEnemies() {
-        const enemyConfigs = [{ type: EnanoFuego, x: 600, y: 300 }];
+        const enemyConfigs = [{ type: EnanoFuego, x: 300, y: 100 }];
 
         enemyConfigs.forEach(({ type, x, y }) => {
             const enemy = new type(this, x, y);

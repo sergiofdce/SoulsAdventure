@@ -1,9 +1,9 @@
 // Imports
-import GameScene from "./src/scenes/GameScene.js";
-import InventoryScene from "./src/scenes/InventoryScene.js";
-import CombatScene from "./src/scenes/CombatScene.js";
-import TrainingScene from "./src/scenes/TrainingScene.js";
-import TeleportScene from "./src/scenes/TeleportScene.js";
+import GameScene from "./scenes/GameScene.js";
+import InventoryScene from "./scenes/InventoryScene.js";
+import CombatScene from "./scenes/CombatScene.js";
+import TrainingScene from "./scenes/TrainingScene.js";
+import TeleportScene from "./scenes/TeleportScene.js";
 
 // Phaser config
 const config = {

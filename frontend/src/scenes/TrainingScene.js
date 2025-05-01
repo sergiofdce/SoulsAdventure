@@ -3,7 +3,7 @@ import {
     STAT_UPGRADE_MULTIPLIERS,
     TRAINING_CONFIG,
     INITIAL_PLAYER_STATS,
-} from "../data/constants.js";
+} from "../config/constants.js";
 
 export default class TrainingScene extends Phaser.Scene {
     constructor() {

@@ -1,4 +1,4 @@
-import { NPC } from "../base/Entity.js";
+import { NPC } from "./Npc.js";
 
 // NPC para subir de nivel
 export class Trainer extends NPC {

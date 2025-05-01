@@ -1,71 +1,109 @@
-import { Enemy } from "../base/Entity.js";
+import { Enemy } from "./Enemy.js";
 
 export class EnanoFuego extends Enemy {
     constructor(scene, x, y, texture = "enemy-enanoFuego", name = "Enano de fuego") {
-        // Configurar todas las opciones del enemigo en un único objeto
-        const enemyOptions = {
-            // Propiedades de movimiento
-            interactionRadius: 150,
-            followSpeed: 180,
+        // Asignar tamaño del sprite
+        const scale = 0.5;
+        super(scene, x, y, texture, name, scale);
 
-            // Propiedades de hitbox
-            hitboxWidthRatio: 0.4,
-            hitboxHeightRatio: 0.2,
-            hitboxOffsetYRatio: 0.8,
-            scale: 0.5,
+        // Atributos específicos
+        this.health = 50;
+        this.strength = 10;
+        this.speed = 5;
 
-            // Atributos de combate
-            health: 20,
-            strength: 3,
-            speed: 2,
+        // Ruta del spritesheet
+        this.spritesheet = "./assets/enemies/enemy-EnanoFuego.png";
 
-            // Propiedades visuales
-            tint: 0xff9999,
-            spritesheet: "./assets/enemies/enemy-EnanoFuego.png",
+        // Definir todas las animaciones disponibles
+        this.animationDefinitions = {
+            idle: {
+                key: "enanoFuego-idle",
+                frames: { start: 0, end: 5 },
+                frameRate: 5,
+                repeat: -1,
+            },
+            walk: {
+                key: "enanoFuego-walk",
+                frames: { start: 0, end: 5 },
+                frameRate: 10,
+                repeat: -1,
+            },
+            hit: {
+                key: "enanoFuego-hit",
+                frames: { start: 18, end: 23 },
+                frameRate: 8,
+                repeat: 0,
+            },
+            "light-attack": {
+                key: "enanoFuego-light-attack",
+                frames: { start: 12, end: 17 },
+                frameRate: 8,
+                repeat: 0,
+            },
+            "heavy-attack": {
+                key: "enanoFuego-heavy-attack",
+                frames: { start: 12, end: 17 },
+                frameRate: 8,
+                repeat: 0,
+            },
+            death: {
+                key: "enanoFuego-death",
+                frames: { start: 24, end: 29 },
+                frameRate: 5,
+                repeat: 0,
+            },
+            dash: {
+                key: "enanoFuego-dash",
+                frames: { start: 6, end: 11 },
+                frameRate: 8,
+                repeat: 0,
+            },
         };
-
-        super(scene, x, y, texture, name, enemyOptions);
-
-        // Asignar valores de opciones a propiedades
-        this.health = enemyOptions.health;
-        this.strength = enemyOptions.strength;
-        this.speed = enemyOptions.speed;
-        this.spritesheet = enemyOptions.spritesheet;
-
-        // Aplicar tinte si está definido
-        if (enemyOptions.tint) {
-            this.sprite.setTint(enemyOptions.tint);
-        }
-
-        // Activar física
-        this.sprite.body.setEnable(true);
-
+        
         // Crear animaciones
         this.createAnimations();
     }
 
     createAnimations() {
-        if (!this.scene.anims.exists("enanoFuego-walk")) {
-            this.scene.anims.create({
-                key: "enanoFuego-walk",
-                frames: this.scene.anims.generateFrameNumbers("enemy-enanoFuego", {
-                    start: 0,
-                    end: 5,
-                }),
-                frameRate: 10,
-                repeat: -1,
-            });
+        // Solo crear las animaciones de movimiento necesarias en el mundo
+        const animsToCreate = ["idle", "walk"];
 
-            this.scene.anims.create({
-                key: "enanoFuego-idle",
-                frames: this.scene.anims.generateFrameNumbers("enemy-enanoFuego", {
-                    start: 0,
-                    end: 5,
-                }),
-                frameRate: 5,
-                repeat: -1,
-            });
-        }
+        animsToCreate.forEach((animName) => {
+            const animDef = this.animationDefinitions[animName];
+
+            if (!this.scene.anims.exists(animDef.key)) {
+                this.scene.anims.create({
+                    key: animDef.key,
+                    frames: this.scene.anims.generateFrameNumbers("enemy-enanoFuego", {
+                        start: animDef.frames.start,
+                        end: animDef.frames.end,
+                    }),
+                    frameRate: animDef.frameRate,
+                    repeat: animDef.repeat,
+                });
+            }
+        });
+    }
+
+    // Método para crear animaciones de combate (usado por CombatScene)
+    createCombatAnimations(scene, combatTexture) {
+        // Crear todas las animaciones para combate
+        Object.keys(this.animationDefinitions).forEach((animName) => {
+            const animDef = this.animationDefinitions[animName];
+            const combatKey = animName; // Usar el nombre de animación directamente (idle, hit, etc.)
+
+            if (!scene.anims.exists(combatKey)) {
+                scene.anims.create({
+                    key: combatKey,
+                    frames: scene.anims.generateFrameNumbers(combatTexture, {
+                        start: animDef.frames.start,
+                        end: animDef.frames.end,
+                    }),
+                    frameRate: animDef.frameRate,
+                    repeat: animDef.repeat,
+                });
+            }
+        });
     }
 
     // Override the follow method to include animation
@@ -74,9 +112,9 @@ export class EnanoFuego extends Enemy {
 
         // Add animation based on movement
         if (this.sprite.body.velocity.x !== 0 || this.sprite.body.velocity.y !== 0) {
-            this.sprite.anims.play("enanoFuego-walk", true);
+            this.sprite.anims.play(this.animationDefinitions.walk.key, true);
         } else {
-            this.sprite.anims.play("enanoFuego-idle", true);
+            this.sprite.anims.play(this.animationDefinitions.idle.key, true);
         }
     }
 

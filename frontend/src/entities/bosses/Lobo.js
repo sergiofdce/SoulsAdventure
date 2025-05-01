@@ -1,44 +1,18 @@
-import { Enemy } from "../base/Entity.js";
+import { Boss } from "./Boss.js";
 
-export class Lobo extends Enemy {
+export class Lobo extends Boss {
     constructor(scene, x, y, texture = "boss-Lobo", name = "Lobo") {
-        // Configurar todas las opciones del boss en un único objeto
-        const bossOptions = {
-            // Propiedades de movimiento
-            interactionRadius: 150,
-            followSpeed: 180,
+        // Asignar tamaño del sprite 
+        const scale = 1.2;
+        super(scene, x, y, texture, name, scale);
 
-            // Propiedades de hitbox
-            hitboxWidthRatio: 0.6, // Hitbox más ancho para el lobo
-            hitboxHeightRatio: 0.3, // Un poco más alto que enemigos normales
-            hitboxOffsetYRatio: 0.7, // Posicionado en la parte inferior
-            scale: 1.2, // Escala más grande para un boss
+        // Atributos específicos
+        this.health = 50;
+        this.strength = 10;
+        this.speed = 5;
 
-            // Atributos de combate
-            health: 20,
-            strength: 3,
-            speed: 2,
-
-            // Propiedades visuales
-            tint: 0xcccccc, // Tinte grisáceo para el lobo
-            spritesheet: "./assets/bosses/boss-Lobo.png",
-        };
-
-        super(scene, x, y, texture, name, bossOptions);
-
-        // Asignar valores de opciones a propiedades
-        this.health = bossOptions.health;
-        this.strength = bossOptions.strength;
-        this.speed = bossOptions.speed;
-        this.spritesheet = bossOptions.spritesheet;
-
-        // Aplicar tinte si está definido
-        if (bossOptions.tint) {
-            this.sprite.setTint(bossOptions.tint);
-        }
-
-        // Activar física
-        this.sprite.body.setEnable(true);
+        // Ruta del spritesheet
+        this.spritesheet = "./assets/bosses/boss-Lobo.png";
 
         // Crear animaciones
         this.createAnimations();
@@ -81,7 +55,6 @@ export class Lobo extends Enemy {
     }
 
     kill() {
-        console.log("lobo killed");
         super.kill();
     }
 }

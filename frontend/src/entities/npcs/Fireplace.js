@@ -1,4 +1,4 @@
-import { NPC } from "../base/Entity.js";
+import { NPC } from "./Npc.js";
 
 export class Fireplace extends NPC {
     constructor(scene, x, y, texture) {

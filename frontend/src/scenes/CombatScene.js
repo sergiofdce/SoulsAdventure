@@ -153,50 +153,8 @@ export default class CombatScene extends Phaser.Scene {
                     // Referencia a la escena principal (para acceder desde métodos)
                     this.mainScene = this.game.mainScene;
 
-                    // Definir todas las animaciones disponibles
-
-                    this.anims.create({
-                        key: "idle",
-                        frames: this.anims.generateFrameNumbers("player-combat", { start: 0, end: 5 }),
-                        frameRate: 8,
-                        repeat: -1,
-                        repeatDelay: 3000,
-                    });
-
-                    this.anims.create({
-                        key: "hit",
-                        frames: this.anims.generateFrameNumbers("player-combat", { start: 48, end: 53 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
-
-                    this.anims.create({
-                        key: "light-attack",
-                        frames: this.anims.generateFrameNumbers("player-combat", { start: 18, end: 23 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
-
-                    this.anims.create({
-                        key: "heavy-attack",
-                        frames: this.anims.generateFrameNumbers("player-combat", { start: 12, end: 17 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
-
-                    this.anims.create({
-                        key: "death",
-                        frames: this.anims.generateFrameNumbers("player-combat", { start: 48, end: 59 }),
-                        frameRate: 5,
-                        repeat: 0,
-                    });
-
-                    this.anims.create({
-                        key: "dash",
-                        frames: this.anims.generateFrameNumbers("player-combat", { start: 60, end: 63 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
+                    // Usar el método del jugador para crear las animaciones
+                    this.mainScene.player.createCombatAnimations(this, "player-combat");
 
                     // Ajustar el sprite al centro de la escala actual
                     this.playerSprite = this.add.sprite(
@@ -302,48 +260,8 @@ export default class CombatScene extends Phaser.Scene {
                     // Referencia a la escena principal (para acceder desde métodos)
                     this.mainScene = this.game.mainScene;
 
-                    // Definir todas las animaciones disponibles
-                    this.anims.create({
-                        key: "idle",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
-                        frameRate: 8,
-                        repeat: -1,
-                    });
-
-                    this.anims.create({
-                        key: "hit",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 18, end: 23 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
-
-                    this.anims.create({
-                        key: "light-attack",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
-
-                    this.anims.create({
-                        key: "heavy-attack",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
-
-                    this.anims.create({
-                        key: "death",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 24, end: 29 }),
-                        frameRate: 5,
-                        repeat: 0,
-                    });
-
-                    this.anims.create({
-                        key: "dash",
-                        frames: this.anims.generateFrameNumbers("enemy-combat", { start: 6, end: 11 }),
-                        frameRate: 8,
-                        repeat: 0,
-                    });
+                    // Usar el método del enemigo para crear las animaciones
+                    this.mainScene.enemy.createCombatAnimations(this, "enemy-combat");
 
                     // Ajustar el sprite al centro de la escala actual
                     this.enemySprite = this.add.sprite(
@@ -726,13 +644,9 @@ export default class CombatScene extends Phaser.Scene {
             this.addCombatLogMessage(`¡Has derrotado a ${this.enemy.name}!`, "player-action");
 
             // Recompensa de almas por victoria
-            const soulsReward = 50;
-            this.player.souls += soulsReward;
-            // Actualizar el texto de almas en el HUD
-            document.getElementById("souls-amount").textContent = this.player.souls;
 
             // Tiempo antes de cerrar escena
-            this.time.delayedCall(2500, () => {
+            this.time.delayedCall(3000, () => {
                 this.enemy.kill();
                 this.exitCombat();
             });
