@@ -10,11 +10,11 @@ export class Lobo extends Boss {
         this.scale = scale;
 
         // Atributos específicos
-        this.health = 50;
+        this.health = 1;
         this.strength = 10;
         this.speed = 5;
 
-        // Patrón de ataque (0 = ataque, 1 = esquive)
+        // Patrón de ataque (0 = ataque, 1 = indefenso)
         this.attackPattern = [0, 0, 1, 0, 1];
         this.currentPatternIndex = 0;
 
@@ -54,7 +54,7 @@ export class Lobo extends Boss {
 
         scene.anims.create({
             key: "lobo-walk",
-            frames: scene.anims.generateFrameNumbers("boss-Lobo", { start: 0, end: 5 }),
+            frames: scene.anims.generateFrameNumbers("boss-Lobo", { start: 6, end: 11 }),
             frameRate: 10,
             repeat: -1,
         });

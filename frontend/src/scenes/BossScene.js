@@ -8,7 +8,7 @@ export default class BossScene extends Phaser.Scene {
 
         // Variables combate
         this.combatActive = false;
-        this.isDodgeWindowActive = false;
+        this.isBlockWindowActive = false; // Cambiado de isDodgeWindowActive
         this.lastAttackTime = 0;
 
         // Variables para la barra de sincronización
@@ -142,24 +142,24 @@ export default class BossScene extends Phaser.Scene {
 
         // Añadir evento para cuando termine la animación
         animation.onfinish = () => {
-            if (this.combatActive && this.isDodgeWindowActive) {
-                this.handleDodgeWindowEnd();
+            if (this.combatActive && this.isBlockWindowActive) {
+                this.handleBlockWindowEnd();
             }
         };
     }
 
-    handleDodgeWindowEnd() {
-        this.isDodgeWindowActive = false;
+    handleBlockWindowEnd() {
+        this.isBlockWindowActive = false;
         if (this.combatActive) {
             this.addCombatLogMessage("¡No has intentado bloquear! Has recibido daño.", "enemy-action");
             this.applyDamageToPlayer();
         }
     }
 
-    handleDodge() {
-        // Si no hay ventana de dodge activa, no hacer nada
-        if (!this.isDodgeWindowActive || !this.combatActive) {
-            this.addCombatLogMessage("Has intentado esquivar, pero no había un ataque que bloquear.", "player-action");
+    handleBlock() {
+        // Si no hay ventana de bloqueo activa, no hacer nada
+        if (!this.isBlockWindowActive || !this.combatActive) {
+            this.addCombatLogMessage("Has intentado bloquear, pero no había un ataque que bloquear.", "player-action");
             return;
         }
 
@@ -178,11 +178,11 @@ export default class BossScene extends Phaser.Scene {
             this.syncTween.cancel();
         }
 
-        // Desactivar la ventana de dodge para evitar múltiples intentos
-        this.isDodgeWindowActive = false;
+        // Desactivar la ventana de bloqueo para evitar múltiples intentos
+        this.isBlockWindowActive = false;
 
         if (markerPosition >= zoneStart && markerPosition <= zoneEnd) {
-            // Dodge perfecto - bloquea completamente el daño
+            // Bloqueo perfecto - evita completamente el daño
             this.addCombatLogMessage("¡Bloqueo perfecto! Has evitado todo el daño.", "player-action");
             this.playPlayerAnimation("walk");
 
@@ -191,7 +191,7 @@ export default class BossScene extends Phaser.Scene {
                 this.playPlayerAnimation("idle");
             });
         } else {
-            // Dodge fallido - recibe el daño completo
+            // Bloqueo fallido - recibe el daño completo
             this.addCombatLogMessage("¡Bloqueo fallido! Has recibido el daño completo.", "enemy-action");
             this.applyDamageToPlayer();
         }
@@ -225,8 +225,8 @@ export default class BossScene extends Phaser.Scene {
         this.addCombatLogMessage("¡El jefe se prepara para atacar!", "enemy-action");
         this.playEnemyAnimation("light-attack");
 
-        // Activar ventana de dodge
-        this.isDodgeWindowActive = true;
+        // Activar ventana de bloqueo
+        this.isBlockWindowActive = true;
         this.lastAttackTime = this.time.now;
 
         // Iniciar animación de la barra de sincronización
@@ -239,7 +239,7 @@ export default class BossScene extends Phaser.Scene {
     handleBossDodge() {
         if (!this.combatActive) return;
 
-        this.addCombatLogMessage("¡El jefe se prepara para esquivar!", "enemy-action");
+        this.addCombatLogMessage("¡El enemigo se encuentra cansado, ataca ahora!", "enemy-action");
         this.playEnemyAnimation("walk");
 
         // Programar siguiente acción
@@ -288,12 +288,12 @@ export default class BossScene extends Phaser.Scene {
             });
         }
 
-        // Dodge
-        const dodgeBtn = document.querySelector(".combat-button.dodge");
-        if (dodgeBtn) {
-            dodgeBtn.addEventListener("click", () => {
+        // Bloqueo
+        const blockBtn = document.querySelector(".combat-button.dodge");
+        if (blockBtn) {
+            blockBtn.addEventListener("click", () => {
                 if (this.combatActive) {
-                    this.handleDodge();
+                    this.handleBlock();
                 }
             });
         }
@@ -721,6 +721,12 @@ export default class BossScene extends Phaser.Scene {
     handleAttackLight() {
         if (!this.combatActive) return;
 
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
+
         // Reproducir animación de ataque ligero
         this.playPlayerAnimation("light-attack");
 
@@ -753,6 +759,12 @@ export default class BossScene extends Phaser.Scene {
     handleAttackHeavy() {
         if (!this.combatActive) return;
 
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
+
         // Reproducir animación de ataque pesado
         this.playPlayerAnimation("heavy-attack");
 
@@ -784,6 +796,12 @@ export default class BossScene extends Phaser.Scene {
 
     handleHeal() {
         if (!this.combatActive) return;
+
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
 
         // Calcular curación basada en resistencia
         const healPercent = 0.1 + this.player.resistance * 0.005;
@@ -899,6 +917,9 @@ export default class BossScene extends Phaser.Scene {
 
         // Verificar si el enemigo ha muerto
         if (this.enemyCurrentHealth <= 0) {
+            // Finalizar el combate activo
+            this.combatActive = false;
+
             // Reproducir animación de muerte para el enemigo
             this.playEnemyAnimation("death");
             this.addCombatLogMessage(`¡Has derrotado a ${this.enemy.name}!`, "player-action");
@@ -918,9 +939,6 @@ export default class BossScene extends Phaser.Scene {
     }
 
     exitCombat() {
-        // Finalizar el combate activo
-        this.combatActive = false;
-
         // Ocultar el contenedor de combate
         const combatContainer = document.getElementById("combat-container");
         if (combatContainer) {
