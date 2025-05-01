@@ -14,14 +14,34 @@ export class Lobo extends Boss {
         this.strength = 10;
         this.speed = 5;
 
-        // Tipo de entidad para animaciones
-        this.type = "lobo";
+        // Patrón de ataque (0 = ataque, 1 = esquive)
+        this.attackPattern = [0, 0, 1, 0, 1];
+        this.currentPatternIndex = 0;
+
+        // Intervalo entre ataques (en milisegundos)
+        this.attackInterval = 2000;
+
+        // Tiempo de ventana para el dodge (en milisegundos)
+        this.dodgeWindow = 500;
 
         // Crear animaciones
         this.createAnimations(scene);
 
+        // Tipo de entidad para animaciones
+        this.type = "lobo";
+
         // Ruta del spritesheet
         this.spritesheet = "./assets/bosses/boss-Lobo.png";
+    }
+
+    getNextAction() {
+        const action = this.attackPattern[this.currentPatternIndex];
+        this.currentPatternIndex = (this.currentPatternIndex + 1) % this.attackPattern.length;
+        return action;
+    }
+
+    getCurrentAction() {
+        return this.attackPattern[this.currentPatternIndex];
     }
 
     createAnimations(scene) {
