@@ -1,6 +1,6 @@
 import { Entity } from "./Entity.js";
-import itemsData from "../../items/data/itemsData.js";
 import { STAT_UPGRADE_MULTIPLIERS } from "../../config/constants.js";
+import Inventory from "../../data/items/Inventory.js";
 
 export default class Player extends Entity {
     constructor(scene, x, y, texture) {
@@ -29,70 +29,8 @@ export default class Player extends Entity {
         // Animaciones
         this.createAnimations(scene, texture);
 
-        // Inventario
-        this.inventory = {
-            items: {
-                "espada-oscura": {
-                    quantity: 1,
-                    twoHanded: false,
-                    equipped: false,
-                },
-                "escudo-anillos-cristal": {
-                    quantity: 2,
-                    equipped: false,
-                },
-                "casco-metal": {
-                    quantity: 1,
-                    equipped: true,
-                },
-                "pechera-hierro": {
-                    quantity: 1,
-                    equipped: true,
-                },
-                "guantes-magicos": {
-                    quantity: 1,
-                    twoHanded: false,
-                    equipped: true,
-                },
-                "zapatos-montana": {
-                    quantity: 1,
-                    equipped: true,
-                },
-                "espada-muy-larga": {
-                    quantity: 1,
-                    twoHanded: false,
-                    equipped: true,
-                },
-                "escudo-metal": {
-                    quantity: 1,
-                    equipped: true,
-                },
-                "anillo-oro": {
-                    quantity: 1,
-                    accessory1: false,
-                    accessory2: true,
-                    equipped: true,
-                },
-                "anillo-legendario": {
-                    quantity: 1,
-                    accessory1: true,
-                    accessory2: false,
-                    equipped: true,
-                },
-                "anillo-mitico": {
-                    quantity: 1,
-                    accessory1: false,
-                    accessory2: false,
-                    equipped: false,
-                },
-                "anillo-ceremonial": {
-                    quantity: 1,
-                    accessory1: false,
-                    accessory2: false,
-                    equipped: false,
-                },
-            },
-        };
+        // Inventario - ahora como objeto independiente
+        this.inventory = new Inventory();
     }
 
     createAnimations(scene, texture) {
@@ -168,44 +106,17 @@ export default class Player extends Entity {
 
     // Método para obtener información completa de un item
     getItemData(itemId) {
-        if (!this.inventory.items[itemId]) {
-            return null;
-        }
-
-        // Combinamos los datos del JSON con los datos específicos del jugador
-        return {
-            ...itemsData[itemId], // Datos generales del JSON (nombre, descripción, etc.)
-            ...this.inventory.items[itemId], // Datos específicos del jugador (cantidad, equipado)
-        };
+        return this.inventory.getItemData(itemId);
     }
 
     // Inventario - Agregar un ítem
     addItem(itemId, quantity = 1) {
-        if (itemsData[itemId]) {
-            if (this.inventory.items[itemId]) {
-                this.inventory.items[itemId].quantity += quantity;
-            } else {
-                this.inventory.items[itemId] = {
-                    quantity: quantity,
-                    equipped: false,
-                    twoHanded: itemsData[itemId].category === "weapon" ? false : undefined,
-                };
-            }
-            return true;
-        }
-        return false;
+        return this.inventory.addItem(itemId, quantity);
     }
 
     // Inventario - Eliminar ítem
     deleteItem(itemId) {
-        if (this.inventory.items[itemId]) {
-            this.inventory.items[itemId].quantity -= 1;
-
-            // Si la cantidad llega a 0 y está equipado, lo desequipamos
-            if (this.inventory.items[itemId].quantity >= 0 && this.inventory.items[itemId].equipped) {
-                this.inventory.items[itemId].equipped = false;
-            }
-        }
+        this.inventory.deleteItem(itemId);
     }
 
     // Controles
@@ -292,5 +203,47 @@ export default class Player extends Entity {
         this.sprite.y = y;
 
         return this;
+    }
+
+    // Método para guardar el estado del jugador (incluyendo inventario)
+    savePlayerData() {
+        const playerData = {
+            level: this.level,
+            souls: this.souls,
+            health: this.health,
+            maxHealth: this.maxHealth,
+            resistance: this.resistance,
+            strength: this.strength,
+            speed: this.speed,
+            inventoryData: this.inventory.data, // Guardamos el objeto data directamente
+        };
+
+        return JSON.stringify(playerData);
+    }
+
+    // Método para cargar el estado del jugador
+    loadPlayerData(jsonString) {
+        try {
+            const data = JSON.parse(jsonString);
+
+            // Cargar atributos base
+            this.level = data.level || this.level;
+            this.souls = data.souls || this.souls;
+            this.health = data.health || this.health;
+            this.maxHealth = data.maxHealth || this.maxHealth;
+            this.resistance = data.resistance || this.resistance;
+            this.strength = data.strength || this.strength;
+            this.speed = data.speed || this.speed;
+
+            // Cargar inventario si existe
+            if (data.inventoryData) {
+                this.inventory.importFromJSON(data.inventoryData);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error al cargar los datos del jugador:", error);
+            return false;
+        }
     }
 }
