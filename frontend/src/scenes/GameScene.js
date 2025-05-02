@@ -155,9 +155,11 @@ export default class GameScene extends Phaser.Scene {
     spawnEnemies() {
         console.log("Limpiando enemigos existentes:", this.enemies.length);
 
-        // Destruir enemigos existentes
+        // Destruir enemigos existentes y limpiar eventos
         this.enemies.forEach((enemy) => {
             if (enemy.sprite) {
+                // Eliminar eventos de actualización antes de destruir
+                this.events.off("update", enemy.updateEntity);
                 enemy.sprite.destroy();
             }
         });
@@ -170,9 +172,38 @@ export default class GameScene extends Phaser.Scene {
         enemyConfigs.forEach(({ type, x, y }) => {
             const enemy = new type(this, x, y);
             this.enemies.push(enemy);
+            console.log(`Enemigo creado: ${enemy.name}`, enemy);
         });
 
         console.log("Nuevos enemigos creados:", this.enemies.length);
+
+        // Configurar colisiones y eventos para los nuevos enemigos
+        if (this.mapManager && this.mapManager.collisionLayer) {
+            this.enemies.forEach((enemy) => {
+                if (enemy.sprite && this.mapManager.collisionLayer) {
+                    // Configurar colisiones con el mapa
+                    this.physics.add.collider(enemy.sprite, this.mapManager.collisionLayer);
+                    console.log(`Configuradas colisiones con mapa para ${enemy.name}`);
+                }
+            });
+        }
+
+        // Configurar colisiones con el jugador si ya existe
+        if (this.player) {
+            this.enemies.forEach((enemy) => {
+                enemy.setupCollision(this.player);
+                console.log(`Configuradas colisiones con jugador para ${enemy.name}`);
+
+                // Asegurarnos de que el evento update está configurado
+                if (enemy.updateEntity) {
+                    // Primero, eliminar el evento si ya existía para evitar duplicados
+                    this.events.off("update", enemy.updateEntity);
+                    // Luego, añadir el nuevo evento
+                    this.events.on("update", enemy.updateEntity);
+                    console.log(`Configurado evento update para ${enemy.name}`);
+                }
+            });
+        }
     }
 
     spawnBosses() {

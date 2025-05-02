@@ -13,6 +13,17 @@ export class Enemy extends CombatEntity {
         };
 
         super(scene, x, y, texture, name, enemyOptions);
+
+        // Extraer el tipo de enemigo del texture para las animaciones
+        // Por ejemplo, de "enemy-enanoFuego" extraemos "enanoFuego"
+        this.type = texture.split("-")[1] || texture;
+        console.log(`Enemigo ${this.name} inicializado con tipo: ${this.type}`);
+    }
+
+    // Sobrescribir setupCollision para añadir más logs
+    setupCollision(player) {
+        console.log(`${this.name} - Configurando colisión con jugador:`, player?.name || "jugador");
+        super.setupCollision(player);
     }
 
     // Lanzar Escena

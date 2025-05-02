@@ -29,31 +29,64 @@ export class CombatEntity extends Entity {
         this.isDestroyed = false;
         this.gracePeriodActive = false;
 
-        // Update function
+        // Asegurarnos de que type esté definido por defecto (se puede sobrescribir en subclases)
+        this.type = texture;
+
+        // Update function - reconfigurada para dar más contexto en logs
         this.updateEntity = () => {
-            if (this.sprite && this.scene && this.scene.player && !this.isDestroyed) {
-                this.follow(this.scene.player);
+            if (!this.sprite || !this.scene) {
+                console.log(`${this.name} - No puede actualizarse: sprite o escena no disponible`);
+                return;
+            }
 
-                if (this.playerRef && !this.isDestroyed) {
-                    const distance = Phaser.Math.Distance.Between(
-                        this.playerRef.sprite.x,
-                        this.playerRef.sprite.y,
-                        this.sprite.x,
-                        this.sprite.y
-                    );
+            if (this.isDestroyed) {
+                console.log(`${this.name} - No puede actualizarse: entidad destruida`);
+                return;
+            }
 
-                    if (distance < 30 && !this.gracePeriodActive) {
-                        this.scene.scene.pause("GameScene");
-                        this.startCombat();
-                    }
+            if (!this.scene.player) {
+                console.log(`${this.name} - No puede actualizarse: jugador no disponible en la escena`);
+                return;
+            }
+
+            // Intentar seguir al jugador
+            this.follow(this.scene.player);
+
+            // Comprobar distancia para iniciar combate
+            if (this.playerRef && !this.isDestroyed) {
+                const distance = Phaser.Math.Distance.Between(
+                    this.playerRef.sprite.x,
+                    this.playerRef.sprite.y,
+                    this.sprite.x,
+                    this.sprite.y
+                );
+
+                console.log(`${this.name} - Distancia al jugador para combate: ${distance}`);
+
+                if (distance < 30 && !this.gracePeriodActive) {
+                    console.log(`${this.name} - Iniciando combate, distancia: ${distance}`);
+                    this.scene.scene.pause("GameScene");
+                    this.startCombat();
                 }
             }
         };
 
-        // Esperar a que la escena esté lista antes de añadir el listener
-        scene.events.once("create", () => {
-            scene.events.on("update", this.updateEntity);
-        });
+        // Configurar el evento update inmediatamente si la escena ya está lista
+        if (scene.events) {
+            // Si la escena está en el evento create o después
+            if (scene.sys.settings.status >= Phaser.Scenes.CREATING) {
+                scene.events.on("update", this.updateEntity);
+                console.log(`${this.name} - Evento update configurado inmediatamente`);
+            } else {
+                // Si la escena aún no está lista, esperar al evento create
+                scene.events.once("create", () => {
+                    scene.events.on("update", this.updateEntity);
+                    console.log(`${this.name} - Evento update configurado después de create`);
+                });
+            }
+        } else {
+            console.error(`${this.name} - No se pudo configurar el evento update: scene.events no disponible`);
+        }
     }
 
     // Método centralizado para configurar el hitbox
