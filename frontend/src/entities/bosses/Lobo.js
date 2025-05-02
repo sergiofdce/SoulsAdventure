@@ -24,7 +24,7 @@ export class Lobo extends Boss {
         this.attackInterval = 2000;
 
         // Tiempo de ventana para el dodge (en milisegundos)
-        this.dodgeWindow = 500;
+        this.dodgeWindow = 2500;
 
         // Crear animaciones
         this.createAnimations(scene);
