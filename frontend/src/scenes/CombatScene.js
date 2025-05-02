@@ -457,7 +457,7 @@ export default class CombatScene extends Phaser.Scene {
             const healthPercent = Math.max(0, Math.min((currentHealth / maxHealth) * 100, 100));
             // Establecer el ancho de la barra según el porcentaje de vida
             healthBar.style.width = `${healthPercent}%`;
-            type === "player";
+
             // Aplicar un degradado de color basado en el porcentaje de vida
             if (healthPercent > 60) {
                 // Verde a amarillo para vida alta
@@ -755,7 +755,17 @@ export default class CombatScene extends Phaser.Scene {
             this.playEnemyAnimation("death");
             this.addCombatLogMessage(`¡Has derrotado a ${this.enemy.name}!`, "player-action");
 
-            // Recompensa de almas por victoria
+            // Otorgar almas al jugador
+            this.player.souls += this.enemy.souls;
+
+            // Actualizar el HUD de almas
+            const soulsAmount = document.getElementById("souls-amount");
+            if (soulsAmount) {
+                soulsAmount.textContent = this.player.souls;
+            }
+
+            // Mostrar mensaje de recompensa en amarillo
+            this.addCombatLogMessage(`¡Has obtenido ${this.enemy.souls} almas!`, "souls-reward");
 
             // Tiempo antes de cerrar escena
             this.time.delayedCall(3000, () => {
@@ -778,6 +788,27 @@ export default class CombatScene extends Phaser.Scene {
 
         // Resetear variables de estado
         this.isPlayerTurn = true;
+
+        // Asegurarse de que la vida actual del jugador esté actualizada en el objeto del jugador
+        if (this.player) {
+            this.player.health = this.playerCurrentHealth;
+
+            // Actualizar el HUD con la vida actual del jugador
+            const healthAmount = document.getElementById("health-amount");
+            if (healthAmount) {
+                healthAmount.textContent = this.playerCurrentHealth;
+            }
+
+            // Actualizar la barra de progreso del HUD
+            const hudProgressBar = document.querySelector(".hud-progress");
+            if (hudProgressBar) {
+                const healthPercent = Math.max(
+                    0,
+                    Math.min((this.playerCurrentHealth / this.playerMaxHealth) * 100, 100)
+                );
+                hudProgressBar.style.width = `${healthPercent}%`;
+            }
+        }
 
         // Ocultar el contenedor de combate
         const combatContainer = document.getElementById("combat-container");

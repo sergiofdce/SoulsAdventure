@@ -11,6 +11,8 @@ export class EnanoFuego extends Enemy {
         this.strength = 3;
         this.speed = 5;
 
+        this.souls= 20;
+
         // Animaciones
         this.createAnimations(scene);
 

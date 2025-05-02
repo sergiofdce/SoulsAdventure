@@ -44,7 +44,7 @@ export default class GameScene extends Phaser.Scene {
         this.spawnEnemies();
 
         // Generar Bosses
-        //this.spawnBosses();
+        this.spawnBosses();
 
         // Generar objetos en el mapa
         this.spawnObjects();

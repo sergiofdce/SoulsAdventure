@@ -3201,6 +3201,14 @@ MARK: Combate
     text-shadow: 0 0 5px rgba(167, 139, 250, 0.5);
 }
 
+.souls-reward {
+    color: #FFD700;
+    /* Amarillo dorado */
+    font-weight: bold;
+    text-shadow: 0 0 3px rgba(255, 215, 0, 0.5);
+}
+
+
 #sync-bar-container {
     position: absolute;
     right: 20px;
