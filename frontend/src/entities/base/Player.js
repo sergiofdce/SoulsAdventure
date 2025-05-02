@@ -17,7 +17,7 @@ export default class Player extends Entity {
         this.strength = 5;
         this.speed = 233;
 
-        // Atributos equipación 
+        // Atributos equipación
         this.damage = 0;
         this.defense = 0;
 
@@ -163,38 +163,11 @@ export default class Player extends Entity {
         return equipped;
     }
 
-    // Controles
+    // Controles - actualizamos el método para usar Controls
     update(cursors) {
-        let isMoving = false;
-
-        if (cursors.left.isDown) {
-            this.sprite.setVelocityX(-160);
-            this.sprite.setFlipX(true);
-            isMoving = true;
-        } else if (cursors.right.isDown) {
-            this.sprite.setVelocityX(160);
-            this.sprite.setFlipX(false);
-            isMoving = true;
-        } else {
-            this.sprite.setVelocityX(0);
-        }
-
-        if (cursors.up.isDown) {
-            this.sprite.setVelocityY(-160);
-            isMoving = true;
-        } else if (cursors.down.isDown) {
-            this.sprite.setVelocityY(160);
-            isMoving = true;
-        } else {
-            this.sprite.setVelocityY(0);
-        }
-
-        // Corregimos la forma de reproducir las animaciones
-        if (isMoving) {
-            this.sprite.anims.play("player-walk", true);
-        } else {
-            this.sprite.anims.play("player-idle", true);
-        }
+        // Este método ya no maneja directamente los controles
+        // Ahora solo recibe información del controlador externo
+        // La lógica de movimiento se ha trasladado a la clase Controls
     }
 
     getPlayerInfo() {

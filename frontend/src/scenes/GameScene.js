@@ -35,24 +35,16 @@ export default class GameScene extends Phaser.Scene {
         this.setupMap();
 
         // Generar Trainer
-        this.spawnTrainer();
+        //this.spawnTrainer();
 
         // Generar hogueras
-        this.spawnFireplaces();
-        // Generar Trainer
-        this.spawnTrainer();
-
-        // Generar hogueras
-        this.spawnFireplaces();
+        //this.spawnFireplaces();
 
         // Generar enemigos en el mapa
-        this.spawnEnemies();
+        //this.spawnEnemies();
 
         // Generar Bosses
-        this.spawnBosses();
-
-        // Generar Bosses
-        this.spawnBosses();
+        //this.spawnBosses();
 
         // Generar objetos en el mapa
         this.spawnObjects();
@@ -76,27 +68,18 @@ export default class GameScene extends Phaser.Scene {
     loadAssets() {
         // Cargar assets Player
         this.load.spritesheet("player", "./assets/player/player.png", {
-        this.load.spritesheet("player", "./assets/player/player.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
         // Cargar assets NPCs
-        this.load.spritesheet("trainer", "./assets/player/player.png", {
         this.load.spritesheet("trainer", "./assets/player/player.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
         // Cargar assets Enemigos
         this.load.spritesheet("enemy-enanoFuego", "./assets/enemies/enemy-EnanoFuego.png", {
-        this.load.spritesheet("enemy-enanoFuego", "./assets/enemies/enemy-EnanoFuego.png", {
             frameWidth: 96,
             frameHeight: 96,
-        });
-
-        // Cargar assets Bosses
-        this.load.spritesheet("boss-Lobo", "./assets/bosses/boss-Lobo.png", {
-            frameWidth: 64,
-            frameHeight: 64,
         });
 
         // Cargar assets Bosses
@@ -107,30 +90,28 @@ export default class GameScene extends Phaser.Scene {
 
         // Cargar asset hoguera
         this.load.spritesheet("fireplace", "./assets/player/player.png", {
-        this.load.spritesheet("fireplace", "./assets/player/player.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
 
         // Cargar assets Mapa
         this.load.tilemapTiledJSON("map", "assets/maps/Map.json");
-        this.load.image('RA_Overworld_Full', 'assets/tilesets/Tilesets/RA_Overworld_Full.png');
-        this.load.image('RA_Beast', 'assets/tilesets/Tilesets/RA_Beast.png');
-        this.load.image('RA_Cavern_Full', 'assets/tilesets/Tilesets/RA_Cavern_Full.png');
-        this.load.image('RA_Hell', 'assets/tilesets/Tilesets/RA_Hell.png');
-        this.load.image('RA_Jungle', 'assets/tilesets/Tilesets/RA_Jungle.png');
-        this.load.image('RA_Village', 'assets/tilesets/Tilesets/RA_Village.png');
-        this.load.image('RA_Wasteland_Water', 'assets/tilesets/Tilesets/RA_Wasteland_Water.png');
-        this.load.image('RA_Animated_Water', 'assets/tilesets/Tilesets/RA_Animated_Water.png');
-        this.load.image('tree03_s_01_animation', 'assets/tilesets/Tilesets/tree03_s_01_animation.png');
-        this.load.image('RA_Pyramid', 'assets/tilesets/Tilesets/RA_Pyramid.png');
-        this.load.image('RA_Ruins', 'assets/tilesets/Tilesets/RA_Ruins.png');
-        this.load.image('RA_Ship', 'assets/tilesets/Tilesets/RA_Ship.png');
-        this.load.image('RA_Hell_Animations', 'assets/tilesets/Tilesets/RA_Hell_Animations.png');
+        this.load.image("RA_Overworld_Full", "assets/tilesets/Tilesets/RA_Overworld_Full.png");
+        this.load.image("RA_Beast", "assets/tilesets/Tilesets/RA_Beast.png");
+        this.load.image("RA_Cavern_Full", "assets/tilesets/Tilesets/RA_Cavern_Full.png");
+        this.load.image("RA_Hell", "assets/tilesets/Tilesets/RA_Hell.png");
+        this.load.image("RA_Jungle", "assets/tilesets/Tilesets/RA_Jungle.png");
+        this.load.image("RA_Village", "assets/tilesets/Tilesets/RA_Village.png");
+        this.load.image("RA_Wasteland_Water", "assets/tilesets/Tilesets/RA_Wasteland_Water.png");
+        this.load.image("RA_Animated_Water", "assets/tilesets/Tilesets/RA_Animated_Water.png");
+        this.load.image("tree03_s_01_animation", "assets/tilesets/Tilesets/tree03_s_01_animation.png");
+        this.load.image("RA_Pyramid", "assets/tilesets/Tilesets/RA_Pyramid.png");
+        this.load.image("RA_Ruins", "assets/tilesets/Tilesets/RA_Ruins.png");
+        this.load.image("RA_Ship", "assets/tilesets/Tilesets/RA_Ship.png");
+        this.load.image("RA_Hell_Animations", "assets/tilesets/Tilesets/RA_Hell_Animations.png");
     }
 
     setupInput() {
-        // Mostrar Inventario
         // Mostrar Inventario
         this.input.keyboard.on("keydown-I", () => {
             this.scene.pause();
@@ -138,9 +119,7 @@ export default class GameScene extends Phaser.Scene {
         });
 
         // Interactuar
-        // Interactuar
         this.input.keyboard.on("keydown-E", () => {
-            // Trainer
             // Trainer
             if (this.trainer.isInRange(this.player)) {
                 this.trainer.interact(this.player);
@@ -200,20 +179,96 @@ export default class GameScene extends Phaser.Scene {
         this.fireplaces.push(fireplace3);
     }
 
+    spawnEnemies() {
+        console.log("Limpiando enemigos existentes:", this.enemies.length);
+
+        // Destruir enemigos existentes y limpiar eventos
+        this.enemies.forEach((enemy) => {
+            if (enemy.sprite) {
+                // Eliminar eventos de actualización antes de destruir
+                this.events.off("update", enemy.updateEntity);
+                enemy.sprite.destroy();
+            }
+        });
+
+        // Limpiar el array de enemigos
+        this.enemies = [];
+
+        const enemyConfigs = [{ type: EnanoFuego, x: 300, y: 100 }];
+
+        enemyConfigs.forEach(({ type, x, y }) => {
+            const enemy = new type(this, x, y);
+            this.enemies.push(enemy);
+            console.log(`Enemigo creado: ${enemy.name}`, enemy);
+        });
+
+        console.log("Nuevos enemigos creados:", this.enemies.length);
+
+        // Configurar colisiones y eventos para los nuevos enemigos
+        if (this.mapManager && this.mapManager.collisionLayer) {
+            this.enemies.forEach((enemy) => {
+                if (enemy.sprite && this.mapManager.collisionLayer) {
+                    // Configurar colisiones con el mapa
+                    this.physics.add.collider(enemy.sprite, this.mapManager.collisionLayer);
+                    console.log(`Configuradas colisiones con mapa para ${enemy.name}`);
+                }
+            });
+        }
+
+        // Configurar colisiones con el jugador si ya existe
+        if (this.player) {
+            this.enemies.forEach((enemy) => {
+                enemy.setupCollision(this.player);
+                console.log(`Configuradas colisiones con jugador para ${enemy.name}`);
+
+                // Asegurarnos de que el evento update está configurado
+                if (enemy.updateEntity) {
+                    // Primero, eliminar el evento si ya existía para evitar duplicados
+                    this.events.off("update", enemy.updateEntity);
+                    // Luego, añadir el nuevo evento
+                    this.events.on("update", enemy.updateEntity);
+                    console.log(`Configurado evento update para ${enemy.name}`);
+                }
+            });
+        }
+    }
+
+    spawnBosses() {
+        const bossConfigs = [{ type: Lobo, x: 200, y: 200 }];
+
+        bossConfigs.forEach(({ type, x, y }) => {
+            const boss = new type(this, x, y);
+            this.bosses.push(boss);
+        });
+    }
+
+    spawnObjects() {
+        // Aquí habrán armas tiradas en el suelo
+    }
+
     spawnPlayer() {
-        this.player = new Player(this, 400, 300, "player");
+        this.player = new Player(this, 630, 630, "player");
+
+        // Usamos el inventario del jugador para el gameState
+        this.gameState.inventory = this.player.inventory;
     }
 
     setupCollisions() {
-        // Colisiones con el mapa (jugador)
-        if (this.mapManager.collisionLayer) {
-            this.physics.add.collider(this.player.sprite, this.mapManager.collisionLayer);
-        }
+        // Colisiones con las capas de colisión del mapa
+        [
+            this.mapManager.collisionLayer1,
+            this.mapManager.collisionLayer2,
+            this.mapManager.collisionLayer3,
+            this.mapManager.perspectiveLayer,
+        ].forEach((layer) => {
+            if (layer) {
+                // Colisión para el jugador
+                this.physics.add.collider(this.player.sprite, layer);
 
-        // Colisiones con el mapa (enemigos)
-        this.enemies.forEach((enemy) => {
-            if (this.mapManager.collisionLayer) {
-                this.physics.add.collider(enemy.sprite, this.mapManager.collisionLayer);
+                // Colisión para enemigos y bosses
+                [...this.enemies, ...this.bosses].forEach((entity) => {
+                    this.physics.add.collider(entity.sprite, layer);
+                });
             }
         });
 
@@ -224,6 +279,9 @@ export default class GameScene extends Phaser.Scene {
 
         // Colisiones con enemigos
         this.enemies.forEach((enemy) => enemy.setupCollision(this.player));
+
+        // Colisiones con bosses
+        this.bosses.forEach((boss) => boss.setupCollision(this.player));
 
         // Colisiones para todas las hogueras
         this.fireplaces.forEach((fireplace) => {
@@ -270,6 +328,11 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update() {
+        // Actualizar controles del jugador a través del objeto Controls
+        if (this.controls && this.player) {
+            this.controls.update(this.player);
+        }
+
         // Controles
         this.player.update(this.controls.getCursors());
 
