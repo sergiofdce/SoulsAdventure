@@ -3,7 +3,7 @@
  * Organizado por categorías: armas, escudos, armaduras, consumibles, accesorios
  */
 
-import { Weapon, Shield, Armor, Edible, Accessory } from "../../items/base/Item.js";
+import { Weapon, Shield, Armor, Accessory, Consumable } from "../../items/base/Item.js";
 
 const ItemsDatabase = {
     // ARMAS
@@ -13,162 +13,189 @@ const ItemsDatabase = {
             "Espada Oscura",
             "Una espada forjada con metal oscurecido por magia arcana.",
             "./assets/items/weapons/espada-oscura.png",
-            15
+            25
         ),
-        "espada-muy-larga": new Weapon(
-            "espada-muy-larga",
-            "Espada Muy Larga",
+        "espada-larga": new Weapon(
+            "espada-larga",
+            "Espada Larga",
             "Una espada de alcance extraordinario, requiere gran destreza.",
-            "./assets/items/weapons/espada-muy-larga.png",
-            25,
-            0,
-            false,
-            true // twoHanded
-        ),
-        "hacha-de-guerra": new Weapon(
-            "hacha-de-guerra",
-            "Hacha de Guerra",
-            "Un hacha pesada diseñada para destrozar armaduras.",
-            "./assets/items/weapons/hacha-guerra.png",
-            30,
-            0,
-            false,
-            true // twoHanded
-        ),
-        "daga-rapida": new Weapon(
-            "daga-rapida",
-            "Daga Rápida",
-            "Una daga ligera que permite ataques veloces.",
-            "./assets/items/weapons/daga-rapida.png",
-            8
+            "./assets/items/weapons/espada-larga.png",
+            10
         ),
     },
 
     // ESCUDOS
     shields: {
-        "escudo-metal": new Shield(
-            "escudo-metal",
-            "Escudo de Metal",
-            "Un resistente escudo de metal que ofrece buena protección.",
-            "./assets/items/shields/escudo-metal.png",
-            10,
-            25
-        ),
-        "escudo-anillos-cristal": new Shield(
-            "escudo-anillos-cristal",
-            "Escudo de Anillos y Cristal",
-            "Escudo ligero con cristales mágicos que mejoran su capacidad de bloqueo.",
-            "./assets/items/shields/escudo-anillos-cristal.png",
-            5,
-            35
-        ),
         "escudo-torre": new Shield(
             "escudo-torre",
             "Escudo Torre",
             "Un gran escudo que cubre casi todo el cuerpo, pero limita la movilidad.",
             "./assets/items/shields/escudo-torre.png",
-            20,
             50
+        ),
+        "escudo-dragon": new Shield(
+            "escudo-dragon",
+            "Escudo del Dragón",
+            "Forjado con escamas de dragón, este escudo ofrece protección contra elementos mágicos.",
+            "./assets/items/shields/escudo-dragon.png",
+            40
         ),
     },
 
     // ARMADURAS
     armor: {
-        // Cascos
-        "casco-metal": new Armor(
-            "casco-metal",
-            "Casco de Metal",
-            "helmet",
-            "Un casco de metal resistente.",
-            "./assets/items/armor/casco-metal.png",
-            30
-        ),
+        // Cuero
         "casco-cuero": new Armor(
             "casco-cuero",
             "Casco de Cuero",
             "helmet",
-            "Un casco ligero pero con poca protección.",
+            "Un casco ligero elaborado con cuero tratado, ofrece protección básica.",
             "./assets/items/armor/casco-cuero.png",
-            10
-        ),
-
-        // Pecheras
-        "pechera-hierro": new Armor(
-            "pechera-hierro",
-            "Pechera de hierro",
-            "chest",
-            "Una pechera de hierro resistente.",
-            "./assets/items/armor/pechera-hierro.png",
-            50
+            12
         ),
         "pechera-cuero": new Armor(
             "pechera-cuero",
             "Pechera de Cuero",
             "chest",
-            "Una pechera ligera que permite mayor movilidad.",
+            "Armadura ligera pero resistente, perfecta para moverse con agilidad.",
             "./assets/items/armor/pechera-cuero.png",
             20
         ),
-
-        // Guantes
-        "guantes-magicos": new Armor(
-            "guantes-magicos",
-            "Guantes mágicos",
+        "guantes-cuero": new Armor(
+            "guantes-cuero",
+            "Guantes de Cuero",
             "glove",
-            "Guantes encantados con magia.",
-            "./assets/items/armor/guantes-magicos.png",
+            "Guantes flexibles que permiten gran destreza manual.",
+            "./assets/items/armor/guantes-cuero.png",
+            8
+        ),
+        "botas-cuero": new Armor(
+            "botas-cuero",
+            "Botas de Cuero",
+            "shoes",
+            "Botas resistentes y silenciosas, ideales para moverse sin ser detectado.",
+            "./assets/items/armor/botas-cuero.png",
             10
         ),
-        "guantes-hierro": new Armor(
-            "guantes-hierro",
-            "Guantes de Hierro",
-            "glove",
-            "Guantes robustos que protegen manos y antebrazos.",
-            "./assets/items/armor/guantes-hierro.png",
+
+        // Vagabundo
+        "casco-vagabundo": new Armor(
+            "casco-vagabundo",
+            "Capucha de Vagabundo",
+            "helmet",
+            "Una desgastada capucha que ha visto incontables caminos y travesías.",
+            "./assets/items/armor/casco-vagabundo.png",
+            8
+        ),
+        "pechera-vagabundo": new Armor(
+            "pechera-vagabundo",
+            "Túnica de Vagabundo",
+            "chest",
+            "Una túnica andrajosa pero sorprendentemente resistente, perfecta para largos viajes.",
+            "./assets/items/armor/pechera-vagabundo.png",
             15
+        ),
+        "guantes-vagabundo": new Armor(
+            "guantes-vagabundo",
+            "Vendajes de Vagabundo",
+            "glove",
+            "Simples vendajes que protegen las manos durante largos viajes.",
+            "./assets/items/armor/guantes-vagabundo.png",
+            5
+        ),
+        "botas-vagabundo": new Armor(
+            "botas-vagabundo",
+            "Sandalias de Vagabundo",
+            "shoes",
+            "Simples pero duraderas sandalias, perfectas para caminar largas distancias.",
+            "./assets/items/armor/botas-vagabundo.png",
+            7
         ),
 
-        // Botas
-        "zapatos-montana": new Armor(
-            "zapatos-montana",
-            "Zapatos de montaña",
-            "shoes",
-            "Zapatos resistentes ideales para montañas.",
-            "./assets/items/armor/zapatos-montana.png",
-            15
+        // Vigilante
+        "casco-vigilante": new Armor(
+            "casco-vigilante",
+            "Yelmo del Vigilante",
+            "helmet",
+            "Yelmo reforzado diseñado para proteger a quienes custodian los reinos fronterizos.",
+            "./assets/items/armor/casco-vigilante.png",
+            35
         ),
-        "botas-viajero": new Armor(
-            "botas-viajero",
-            "Botas del Viajero",
+        "pechera-vigilante": new Armor(
+            "pechera-vigilante",
+            "Coraza del Vigilante",
+            "chest",
+            "Pesada armadura que ha resistido innumerables batallas en defensa del reino.",
+            "./assets/items/armor/pechera-vigilante.png",
+            55
+        ),
+        "guantes-vigilante": new Armor(
+            "guantes-vigilante",
+            "Guanteletes del Vigilante",
+            "glove",
+            "Robustos guanteletes diseñados para proteger las manos en el combate.",
+            "./assets/items/armor/guantes-vigilante.png",
+            25
+        ),
+        "botas-vigilante": new Armor(
+            "botas-vigilante",
+            "Grebas del Vigilante",
             "shoes",
-            "Botas ligeras y cómodas para largas caminatas.",
-            "./assets/items/armor/botas-viajero.png",
-            8
+            "Pesadas botas de metal diseñadas para mantener firme la posición en batalla.",
+            "./assets/items/armor/botas-vigilante.png",
+            30
+        ),
+
+        // Demonio
+        "casco-demonio": new Armor(
+            "casco-demonio",
+            "Cráneo Demoníaco",
+            "helmet",
+            "Un aterrador casco forjado a partir de huesos de criaturas del inframundo.",
+            "./assets/items/armor/casco-demonio.png",
+            40
+        ),
+        "pechera-demonio": new Armor(
+            "pechera-demonio",
+            "Coraza Demoníaca",
+            "chest",
+            "Una armadura forjada en las llamas del inframundo, emana un aura de maldad.",
+            "./assets/items/armor/pechera-demonio.png",
+            65
+        ),
+        "guantes-demonio": new Armor(
+            "guantes-demonio",
+            "Garras Demoníacas",
+            "glove",
+            "Guantes con garras afiladas capaces de desgarrar armaduras.",
+            "./assets/items/armor/guantes-demonio.png",
+            30
+        ),
+        "botas-demonio": new Armor(
+            "botas-demonio",
+            "Pezuñas Demoníacas",
+            "shoes",
+            "Botas que transforman los pies del portador en temibles pezuñas demoníacas.",
+            "./assets/items/armor/botas-demonio.png",
+            35
         ),
     },
 
     // CONSUMIBLES
     consumables: {
-        "pocion-curacion": new Edible(
-            "pocion-curacion",
-            "Poción de Curación",
+        "pocion-salud": new Consumable(
+            "pocion-salud",
+            "Poción de Salud",
             "Restaura 50 puntos de vida al instante.",
-            "./assets/items/consumables/pocion-curacion.png",
+            "./assets/items/consumables/pocion-salud.png",
             "restore-health-50"
         ),
-        "pocion-resistencia": new Edible(
-            "pocion-resistencia",
-            "Poción de Resistencia",
-            "Aumenta la resistencia en un 20% durante 60 segundos.",
-            "./assets/items/consumables/pocion-resistencia.png",
-            "boost-resistance-20-60"
-        ),
-        "pocion-fuerza": new Edible(
-            "pocion-fuerza",
-            "Poción de Fuerza",
-            "Aumenta la fuerza en un 15% durante 45 segundos.",
-            "./assets/items/consumables/pocion-fuerza.png",
-            "boost-strength-15-45"
+        "frasco-almas": new Consumable(
+            "frasco-almas",
+            "Frasco de Almas",
+            "Aumenta las Almas de forma aleatoria",
+            "./assets/items/consumables/frasco-almas.png",
+            "boost-souls-20-60"
         ),
     },
 
@@ -181,33 +208,12 @@ const ItemsDatabase = {
             "./assets/items/accessories/anillo-oro.png",
             5
         ),
-        "anillo-legendario": new Accessory(
-            "anillo-legendario",
-            "Anillo Legendario",
-            "Un anillo de gran poder que aumenta significativamente tus atributos.",
-            "./assets/items/accessories/anillo-legendario.png",
-            15
-        ),
-        "anillo-mitico": new Accessory(
-            "anillo-mitico",
-            "Anillo Mítico",
-            "Un anillo creado por dioses antiguos con propiedades asombrosas.",
-            "./assets/items/accessories/anillo-mitico.png",
-            25
-        ),
         "anillo-ceremonial": new Accessory(
             "anillo-ceremonial",
             "Anillo Ceremonial",
             "Un anillo utilizado en ceremonias ancestrales.",
             "./assets/items/accessories/anillo-ceremonial.png",
             10
-        ),
-        "collar-dragon": new Accessory(
-            "collar-dragon",
-            "Collar del Dragón",
-            "Un collar forjado con escamas de dragón que aumenta tu resistencia al fuego.",
-            "./assets/items/accessories/collar-dragon.png",
-            12
         ),
     },
 

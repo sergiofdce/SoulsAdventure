@@ -10,12 +10,16 @@ export default class Player extends Entity {
         // Atributos base del jugador
         this.level = 1;
         this.souls = 1000000;
-        this.armor = 0;
+
         this.maxHealth = 100;
         this.health = 100;
-        this.resistance = 10;
-        this.strength = 10;
-        this.speed = 15;
+        this.resistance = 3;
+        this.strength = 5;
+        this.speed = 2;
+
+        // Atributos equipación 
+        this.damage = 0;
+        this.defense = 0;
 
         // Crear sprite con Phaser
         this.sprite = scene.physics.add.sprite(x, y, texture);
@@ -31,6 +35,11 @@ export default class Player extends Entity {
 
         // Inventario - ahora como objeto independiente
         this.inventory = new Inventory();
+        // Conectar el inventario con el jugador
+        this.inventory.setPlayer(this);
+
+        // Después de crear el inventario, calculamos los stats iniciales basados en equipamiento
+        this.inventory.recalculatePlayerStats();
     }
 
     createAnimations(scene, texture) {
@@ -119,6 +128,41 @@ export default class Player extends Entity {
         this.inventory.deleteItem(itemId);
     }
 
+    // Métodos para equipar/desequipar ítems
+    equipItem(itemId) {
+        const result = this.inventory.equipItem(itemId);
+        if (result) {
+            // Recalcular stats basados en equipamiento
+            this.inventory.recalculatePlayerStats();
+            console.log(`Ítem equipado: ${itemId}`);
+        }
+        return result;
+    }
+
+    unequipItem(itemId) {
+        const result = this.inventory.unequipItem(itemId);
+        if (result) {
+            // Recalcular stats basados en equipamiento
+            this.inventory.recalculatePlayerStats();
+            console.log(`Ítem desequipado: ${itemId}`);
+        }
+        return result;
+    }
+
+    // Método para obtener ítems equipados
+    getEquippedItems() {
+        const equipped = {};
+        const inventoryItems = this.inventory.getInventory();
+
+        for (const itemId in inventoryItems) {
+            if (inventoryItems[itemId].equipped) {
+                equipped[itemId] = this.inventory.getItemData(itemId);
+            }
+        }
+
+        return equipped;
+    }
+
     // Controles
     update(cursors) {
         let isMoving = false;
@@ -161,23 +205,21 @@ export default class Player extends Entity {
     }
 
     applyPlayerStats(statUpgrades, totalLevels) {
-        // Vida
-        if (statUpgrades.health) {
-            this.health += Math.ceil(this.health * STAT_UPGRADE_MULTIPLIERS.health * statUpgrades.health);
+        // MaxHealth (en lugar de health) - incremento porcentual
+        if (statUpgrades.maxHealth) {
+            this.maxHealth += Math.ceil(this.maxHealth * STAT_UPGRADE_MULTIPLIERS.maxHealth * statUpgrades.maxHealth);
+            // Opcionalmente, podemos también actualizar health para que se refleje la mejora
+            this.health = this.maxHealth;
         }
-        // Resistencia
+        // Para estadísticas con incremento fijo (resistance, strength, speed)
         if (statUpgrades.resistance) {
-            this.resistance += Math.ceil(
-                this.resistance * STAT_UPGRADE_MULTIPLIERS.resistance * statUpgrades.resistance
-            );
+            this.resistance += STAT_UPGRADE_MULTIPLIERS.resistance * statUpgrades.resistance;
         }
-        // Fuerza
         if (statUpgrades.strength) {
-            this.strength += Math.ceil(this.strength * STAT_UPGRADE_MULTIPLIERS.strength * statUpgrades.strength);
+            this.strength += STAT_UPGRADE_MULTIPLIERS.strength * statUpgrades.strength;
         }
-        // Velocidad
         if (statUpgrades.speed) {
-            this.speed += Math.ceil(this.speed * STAT_UPGRADE_MULTIPLIERS.speed * statUpgrades.speed);
+            this.speed += STAT_UPGRADE_MULTIPLIERS.speed * statUpgrades.speed;
         }
 
         // Actualizar nivel
@@ -239,6 +281,11 @@ export default class Player extends Entity {
             if (data.inventoryData) {
                 this.inventory.importFromJSON(data.inventoryData);
             }
+
+            // Reconectar el inventario con el jugador después de cargar
+            this.inventory.setPlayer(this);
+            // Recalcular stats basados en equipamiento
+            this.inventory.recalculatePlayerStats();
 
             return true;
         } catch (error) {

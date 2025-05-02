@@ -114,16 +114,16 @@
                         <div id="inventory-equipment-box">
                             <ul>
                                 <li id="helmet">
-                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                                 <li id="chest">
-                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                                 <li id="glove">
-                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                                 <li id="shoes">
-                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                             </ul>
                             <div id="inventory-equipment-box-player">
@@ -131,21 +131,73 @@
                             </div>
                             <ul>
                                 <li id="weapon">
-                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                                 <li id="shield">
-                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                                 <li id="accessory1">
-                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                                 <li id="accessory2">
-                                    <img src="./assets/imagenPruebaNada.png" alt="objeto">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                             </ul>
                         </div>
                     </div>
                     <div class="inventory-section inventory-stats">
+                        <div class="stats-container">
+                            <div class="stats-header">
+                                <h3>Estadísticas del Jugador</h3>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stat-group">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Salud</span>
+                                        <div class="stat-value" id="player-health-stat">
+                                            <span class="current-value">100</span>
+                                            <span class="max-value">/100</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Fuerza</span>
+                                        <div class="stat-value" id="player-strength-stat">
+                                            <span class="base-value">5</span>
+                                            <span class="bonus-value">(+0)</span>
+                                            <span class="total-value">= 5</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Daño</span>
+                                        <div class="stat-value" id="player-damage-stat">
+                                            <span class="total-value">5</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="stat-group">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Resistencia</span>
+                                        <div class="stat-value" id="player-resistance-stat">
+                                            <span class="base-value">3</span>
+                                            <span class="bonus-value">(+0)</span>
+                                            <span class="total-value">= 3</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Defensa</span>
+                                        <div class="stat-value" id="player-defense-stat">
+                                            <span class="total-value">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Velocidad</span>
+                                        <div class="stat-value" id="player-speed-stat">
+                                            <span class="total-value">2</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="inventory-container-right">
@@ -196,26 +248,28 @@
                             <div class="stat-row">
                                 <span>Salud: </span>
                                 <span id="player-health">100</span>
+                                <button class="downgrade-btn" data-stat="health">-</button>
                                 <button class="upgrade-btn" data-stat="health">+</button>
                             </div>
                             <div class="stat-row">
                                 <span>Resistencia: </span>
                                 <span id="player-resistance">10</span>
+                                <button class="downgrade-btn" data-stat="resistance">-</button>
                                 <button class="upgrade-btn" data-stat="resistance">+</button>
                             </div>
                             <div class="stat-row">
                                 <span>Fuerza: </span>
                                 <span id="player-strength">10</span>
+                                <button class="downgrade-btn" data-stat="strength">-</button>
                                 <button class="upgrade-btn" data-stat="strength">+</button>
                             </div>
                             <div class="stat-row">
                                 <span>Velocidad: </span>
                                 <span id="player-speed">30</span>
+                                <button class="downgrade-btn" data-stat="speed">-</button>
                                 <button class="upgrade-btn" data-stat="speed">+</button>
                             </div>
                         </div>
-
-                        <button id="accept-upgrades" class="accept-button">Aceptar</button>
                     </div>
                 </div>
                 <div class="trainer-section player-stats blue">
@@ -249,6 +303,8 @@
                             </div>
                         </div>
                     </div>
+                    <button id="accept-upgrades" class="accept-button">Aceptar</button>
+
                 </div>
                 <div class="trainer-section stats-info blue">
                     <div class="section-title">Información Detallada</div>

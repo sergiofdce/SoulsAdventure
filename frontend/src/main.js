@@ -6,6 +6,7 @@ import BossScene from "./scenes/BossScene.js";
 import TrainingScene from "./scenes/TrainingScene.js";
 import TeleportScene from "./scenes/TeleportScene.js";
 
+
 // Phaser config
 const config = {
     type: Phaser.AUTO,

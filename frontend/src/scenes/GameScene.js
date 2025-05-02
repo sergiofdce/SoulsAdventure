@@ -3,6 +3,7 @@ import Player from "../entities/base/Player.js";
 import Controls from "../managers/Controls.js";
 import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
+import { setupConsoleCommands } from "../utils/consoleCommands.js";
 
 // Enemigos
 import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
@@ -19,6 +20,7 @@ export default class GameScene extends Phaser.Scene {
         this.enemies = [];
         this.bosses = [];
         this.fireplaces = [];
+        this.gameState = {};
     }
 
     preload() {
@@ -39,10 +41,10 @@ export default class GameScene extends Phaser.Scene {
         this.spawnFireplaces();
 
         // Generar enemigos en el mapa
-        this.spawnEnemies();
+        //this.spawnEnemies();
 
         // Generar Bosses
-        this.spawnBosses();
+        //this.spawnBosses();
 
         // Generar objetos en el mapa
         this.spawnObjects();
@@ -55,6 +57,9 @@ export default class GameScene extends Phaser.Scene {
 
         // Configurar la cámara para seguir al jugador
         this.setupCamera();
+
+        // Configurar comandos de consola para el inventario
+        this.setupConsoleCommands();
 
         // Activar modo debug
         //this.enableDebugMode();
@@ -171,6 +176,9 @@ export default class GameScene extends Phaser.Scene {
 
     spawnPlayer() {
         this.player = new Player(this, 90, 90, "player");
+
+        // Usamos el inventario del jugador para el gameState
+        this.gameState.inventory = this.player.inventory;
     }
 
     setupCollisions() {
@@ -192,7 +200,7 @@ export default class GameScene extends Phaser.Scene {
 
         // Colisiones con enemigos
         this.enemies.forEach((enemy) => enemy.setupCollision(this.player));
-        
+
         // Colisiones con bosses
         this.bosses.forEach((boss) => boss.setupCollision(this.player));
 
@@ -205,6 +213,19 @@ export default class GameScene extends Phaser.Scene {
     setupCamera() {
         this.controls = new Controls(this);
         this.camera = new Camera(this, this.player, this.mapManager);
+    }
+
+    setupConsoleCommands() {
+        // Aseguramos que estamos usando el inventario del jugador
+        this.gameState.inventory = this.player.inventory;
+
+        // Configuramos los comandos de consola
+        setupConsoleCommands(this.gameState);
+
+        // Mensaje informativo en consola
+        console.log(
+            "💡 Comandos disponibles en consola: addItem(), listItems(), showInventory(), equipItem(), itemDetails()"
+        );
     }
 
     enableDebugMode() {

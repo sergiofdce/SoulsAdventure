@@ -10,7 +10,7 @@ export class Lobo extends Boss {
         this.scale = scale;
 
         // Atributos específicos
-        this.health = 1;
+        this.health = 100;
         this.strength = 10;
         this.speed = 5;
 

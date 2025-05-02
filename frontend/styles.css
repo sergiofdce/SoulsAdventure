@@ -506,7 +506,6 @@ MARK: Objetos
     border: 1px solid rgba(147, 51, 234, 0.3);
     transition: all var(--transition-speed) var(--transition-effect);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
     position: relative;
     overflow: hidden;
 }
@@ -611,9 +610,6 @@ MARK: Objetos
     flex-direction: column;
     justify-content: center;
     padding: var(--spacing-md);
-    background: linear-gradient(135deg,
-            rgba(30, 20, 40, 0.8) 0%,
-            rgba(20, 15, 30, 0.8) 100%);
     border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
 }
 
@@ -657,9 +653,12 @@ MARK: Objetos
 .inventory-items ul {
     width: 100%;
     height: 100%;
-    overflow-y: auto;
+    overflow: auto;
+    overflow-x: hidden;
     padding: var(--spacing-sm);
+    padding-right: var(--spacing-lg);
     box-sizing: border-box;
+    scrollbar-gutter: stable;
 }
 
 .inventory-items ul::-webkit-scrollbar {
@@ -919,7 +918,6 @@ MARK: Trainer
 
 .trainer-section {
     padding: var(--spacing-sm);
-    overflow: auto;
 }
 
 .upgrade-stats {
@@ -1077,7 +1075,6 @@ MARK: Sistema de Mejora de Entrenamiento
 .stat-upgrades {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
 }
 
 .stat-row {
@@ -1112,27 +1109,59 @@ MARK: Sistema de Mejora de Entrenamiento
     text-align: right;
 }
 
-.upgrade-btn {
-    width: 30px;
-    height: 30px;
-    background: #4a5568;
+.upgrade-btn,
+.downgrade-btn {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #4a3c28, #2d231b);
     color: var(--color-text);
-    border: none;
-    border-radius: var(--border-radius-round);
-    font-size: var(--font-size-md);
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    font-size: var(--font-size-lg);
+    font-weight: bold;
     cursor: pointer;
-    transition: background var(--transition-speed);
-    margin-left: auto;
+    transition: all 0.2s ease;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3),
+        inset 0 0 5px rgba(255, 204, 0, 0.2);
+    margin-left: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.upgrade-btn:hover {
-    background: #2d3748;
+.upgrade-btn:hover,
+.downgrade-btn:hover {
+    background: linear-gradient(135deg, #634f2c, #3e2f21);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.4),
+        inset 0 0 8px rgba(255, 204, 0, 0.3);
 }
 
-.upgrade-btn:disabled {
-    background: #718096;
+.upgrade-btn:active,
+.downgrade-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 5px rgba(255, 204, 0, 0.2),
+        inset 0 0 3px rgba(255, 204, 0, 0.4);
+}
+
+.upgrade-btn:disabled,
+.downgrade-btn:disabled {
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border-color: #4a4a4a;
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Ajustar el margen para los botones en la misma fila */
+.upgrade-btn {
+    margin-left: var(--spacing-md);
+}
+
+.downgrade-btn {
+    margin-right: var(--spacing-xs);
 }
 
 .accept-button {
@@ -1205,7 +1234,6 @@ MARK: Sistema de Mejora de Entrenamiento - Mejorado
     background: linear-gradient(135deg,
             rgba(20, 20, 30, 0.9) 0%,
             rgba(40, 30, 50, 0.85) 100%);
-    overflow-y: auto;
     max-height: 100%;
     border: 1px solid;
     border-image: linear-gradient(to bottom,
@@ -1269,7 +1297,6 @@ MARK: Sistema de Mejora de Entrenamiento - Mejorado
     background: rgba(20, 20, 25, 0.8);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-md) var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
     position: relative;
     border: 1px solid rgba(139, 69, 19, 0.6);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.4),
@@ -1781,6 +1808,195 @@ MARK: Estadísticas del Jugador
 .upgrade-stats .stat-row {
     display: flex;
     justify-content: space-between;
+}
+
+
+
+/*****************************************************
+MARK: Estilos mejorados para los atributos del jugador
+*****************************************************/
+
+#inventory-stats-player {
+    height: 80%;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+    background: linear-gradient(135deg, rgba(40, 30, 50, 0.8) 0%, rgba(30, 20, 40, 0.8) 100%);
+    border-radius: var(--border-radius-lg);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(147, 51, 234, 0.3);
+    position: relative;
+
+}
+
+
+#inventory-stats-player::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('./assets/ui/magic-pattern.png');
+    background-size: cover;
+    opacity: 0.05;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    z-index: -1;
+}
+
+#inventory-stats-player li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: linear-gradient(135deg, rgba(30, 20, 40, 0.7) 0%, rgba(20, 15, 30, 0.7) 100%);
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(147, 51, 234, 0.2);
+    transition: all 0.3s var(--transition-effect);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+#inventory-stats-player li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 10px rgba(147, 51, 234, 0.2);
+    border-color: rgba(147, 51, 234, 0.4);
+}
+
+#inventory-stats-player li::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: rgba(147, 51, 234, 0.6);
+    opacity: 0;
+    transition: opacity 0.3s var(--transition-effect);
+}
+
+#inventory-stats-player li:hover::before {
+    opacity: 1;
+}
+
+#inventory-stats-player li p:first-child {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    color: var(--color-text);
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+/* Iconos para cada atributo */
+#inventory-stats-player-health p:first-child::before {
+    content: "❤️";
+    margin-right: var(--spacing-sm);
+}
+
+#inventory-stats-player-strength p:first-child::before {
+    content: "⚔️";
+    margin-right: var(--spacing-sm);
+}
+
+#inventory-stats-player-energy p:first-child::before {
+    content: "✨";
+    margin-right: var(--spacing-sm);
+}
+
+#inventory-stats-player-speed p:first-child::before {
+    content: "💨";
+    margin-right: var(--spacing-sm);
+}
+
+#inventory-stats-player-souls p:first-child::before {
+    content: "👻";
+    margin-right: var(--spacing-sm);
+}
+
+#inventory-stats-player li .p-stats {
+    font-weight: bold;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    min-width: 40px;
+    text-align: center;
+    background: rgba(20, 15, 30, 0.8);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s var(--transition-effect);
+    position: relative;
+    overflow: hidden;
+}
+
+#inventory-stats-player-health .p-stats {
+    color: #4ade80;
+    text-shadow: 0 0 5px rgba(74, 222, 128, 0.5);
+}
+
+#inventory-stats-player-strength .p-stats {
+    color: #f97316;
+    text-shadow: 0 0 5px rgba(249, 115, 22, 0.5);
+}
+
+#inventory-stats-player-energy .p-stats {
+    color: #60a5fa;
+    text-shadow: 0 0 5px rgba(96, 165, 250, 0.5);
+}
+
+#inventory-stats-player-speed .p-stats {
+    color: #a78bfa;
+    text-shadow: 0 0 5px rgba(167, 139, 250, 0.5);
+}
+
+#inventory-stats-player-souls .p-stats {
+    color: #d8b4fe;
+    text-shadow: 0 0 5px rgba(216, 180, 254, 0.5);
+}
+
+#inventory-stats-player li:hover .p-stats {
+    transform: scale(1.1);
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4), 0 0 10px rgba(147, 51, 234, 0.2);
+}
+
+#inventory-stats-player li .p-stats::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: transform 0.5s var(--transition-effect);
+}
+
+#inventory-stats-player li:hover .p-stats::after {
+    transform: translateX(100%);
+    opacity: 0.5;
+}
+
+/* Título para el panel de atributos */
+#inventory-stats-player::after {
+    content: "Atributos con la equipación seleccionada";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: var(--spacing-xs) 0;
+    background: linear-gradient(90deg, rgba(20, 15, 30, 0.8) 0%, rgba(40, 30, 50, 0.8) 50%, rgba(20, 15, 30, 0.8) 100%);
+    color: var(--color-primary);
+    font-size: var(--font-size-md);
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 0 0 5px rgba(147, 51, 234, 0.5);
+    border-bottom: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+/* Ajuste de padding para compensar el título */
+#inventory-stats-player {
+    padding-top: calc(var(--font-size-md) + var(--spacing-sm) * 2);
 }
 
 /*****************************************************
@@ -2658,7 +2874,6 @@ MARK: Combate
     width: 50%;
     flex-direction: column;
     color: var(--color-text);
-    position: relative;
     overflow: hidden;
     border-radius: var(--border-radius-lg);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.6),
@@ -2730,16 +2945,36 @@ MARK: Combate
     }
 }
 
-#player-container,
-#enemy-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    height: 100%;
-    width: 100%;
+#player-animation-container,
+#enemy-animation-container {
+    width: 80%;
+    height: 70%;
     position: relative;
-    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 0;
+    padding: 0;
+}
+
+#player-anim-game,
+#enemy-anim-game {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 250px;
+    padding-top: 20px;
+}
+
+#player-anim-game canvas,
+#enemy-anim-game canvas {
+    object-fit: contain;
+    max-height: 100%;
+    max-width: 100%;
+    position: relative;
+    top: 0;
 }
 
 #player-name,
@@ -2766,6 +3001,8 @@ MARK: Combate
         inset 0 0 15px rgba(0, 0, 0, 0.3);
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 10px auto;
+    z-index: 10;
 }
 
 .health-bar {
@@ -3325,4 +3562,141 @@ MARK: Combate
         opacity: 1;
         transform: scale(1.1);
     }
+}
+
+#player-container,
+#enemy-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%;
+    position: relative;
+    padding: 10px 0;
+    gap: 10px;
+}
+
+#player-animation-container,
+#enemy-animation-container {
+    width: 80%;
+    height: 80%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+#player-anim-game,
+#enemy-anim-game {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+#player-anim-game canvas,
+#enemy-anim-game canvas {
+    object-fit: contain;
+    max-height: 200%;
+    max-width: 100%;
+    position: relative;
+    bottom: 0;
+}
+
+.health-bar-container {
+    width: 80%;
+    height: 20px;
+    background: linear-gradient(135deg,
+            rgba(20, 15, 30, 0.8) 0%,
+            rgba(10, 5, 20, 0.8) 100%);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4),
+        inset 0 0 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0 auto;
+    z-index: 10;
+}
+
+.stats-container {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.stats-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.stats-header h3 {
+    color: #fff;
+    font-size: 1.5em;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.stat-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+}
+
+.stat-label {
+    color: #fff;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.stat-value {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #fff;
+}
+
+.stat-value .base-value {
+    color: #4CAF50;
+}
+
+.stat-value .bonus-value {
+    color: #2196F3;
+}
+
+.stat-value .total-value {
+    color: #FFC107;
+}
+
+.stat-value .current-value {
+    color: #FF5722;
+}
+
+.stat-value .max-value {
+    color: #9E9E9E;
 }
