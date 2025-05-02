@@ -1,14 +1,21 @@
-export default class CombatScene extends Phaser.Scene {
+export default class BossScene extends Phaser.Scene {
     constructor() {
-        super({ key: "CombatScene" });
+        super({ key: "BossScene" });
 
         // Objetos Player y Enemy
         this.player = null;
         this.enemy = null;
 
         // Variables combate
-        this.isPlayerTurn = true;
         this.combatActive = false;
+        this.isBlockWindowActive = false; // Cambiado de isDodgeWindowActive
+        this.lastAttackTime = 0;
+
+        // Variables para la barra de sincronización
+        this.syncBar = null;
+        this.syncMarker = null;
+        this.syncZone = null;
+        this.syncTween = null;
     }
 
     // Método init que recibe instancia de Player y Enemy
@@ -16,9 +23,6 @@ export default class CombatScene extends Phaser.Scene {
         // Obtener las instancias de player y enemy
         this.player = data.player;
         this.enemy = data.enemy;
-
-        console.log(this.player);
-        console.log(this.enemy);
 
         // Salud Player
         this.playerMaxHealth = this.player.maxHealth;
@@ -36,6 +40,9 @@ export default class CombatScene extends Phaser.Scene {
         // Configurar la interfaz
         this.setupCombatUI();
 
+        // Crear la barra de sincronización
+        this.createSyncBar();
+
         // Iniciar combate
         this.startCombat();
 
@@ -43,34 +50,271 @@ export default class CombatScene extends Phaser.Scene {
         this.setupButtonListeners();
     }
 
-    startCombat() {
-        // Inicializar variables de combate
-        this.combatActive = true;
+    createSyncBar() {
+        // Crear contenedor para la barra de sincronización
+        const syncBarContainer = document.createElement("div");
+        syncBarContainer.id = "sync-bar-container";
+        syncBarContainer.style.cssText = `
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 200px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        `;
 
-        // Por defecto, desactivar todos los controles hasta determinar quién empieza
-        this.disablePlayerControls();
+        // Crear zona de sincronización perfecta (sin posición fija inicial)
+        const syncZone = document.createElement("div");
+        syncZone.id = "sync-zone";
+        syncZone.style.cssText = `
+            position: absolute;
+            width: 100%;
+            height: 30%;
+            background-color: rgba(0, 255, 0, 0.3);
+            left: 0;
+        `;
 
-        // Determinar quien empieza basado en la velocidad (speed)
-        this.isPlayerTurn = this.player.speed >= this.enemy.speed;
+        // Crear marcador
+        const syncMarker = document.createElement("div");
+        syncMarker.id = "sync-marker";
+        syncMarker.style.cssText = `
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            background-color: white;
+            bottom: 0;
+            left: 0;
+            border-radius: 5px;
+        `;
 
-        // Mensaje inicial basado en quien empieza
-        if (this.isPlayerTurn) {
-            this.addCombatLogMessage(
-                `¡Tu velocidad (${this.player.speed}) es mayor que la del enemigo (${this.enemy.speed})! Atacas primero.`,
-                "combat-info"
-            );
-            this.time.delayedCall(500, () => {
-                this.enablePlayerControls();
+        // Añadir elementos al contenedor
+        syncBarContainer.appendChild(syncZone);
+        syncBarContainer.appendChild(syncMarker);
+
+        // Añadir el contenedor al DOM
+        document.getElementById("combat-container").appendChild(syncBarContainer);
+
+        // Guardar referencias
+        this.syncBar = syncBarContainer;
+        this.syncMarker = syncMarker;
+        this.syncZone = syncZone;
+
+        // Posicionar la zona aleatoriamente para la primera vez
+        this.randomizeSyncZone();
+    }
+
+    // Nuevo método para posicionar la zona de sincronización aleatoriamente
+    randomizeSyncZone() {
+        if (!this.syncZone) return;
+
+        // Obtener un valor aleatorio entre 0 y 70 (dejando espacio para que la zona quepa completamente)
+        const randomPosition = Math.floor(Math.random() * 70);
+
+        // Establecer la posición aleatoria
+        this.syncZone.style.top = `${randomPosition}%`;
+
+        // Añadir una pequeña animación para que el cambio sea visible
+        this.syncZone.style.transition = "top 0.3s ease-out";
+
+        // Opcionalmente, cambiamos ligeramente el color para indicar que es una nueva posición
+        const greenIntensity = 150 + Math.floor(Math.random() * 105); // Valor entre 150 y 255
+        this.syncZone.style.backgroundColor = `rgba(0, ${greenIntensity}, 0, 0.3)`;
+    }
+
+    startSyncBarAnimation() {
+        // Resetear posición del marcador
+        this.syncMarker.style.bottom = "0%";
+
+        // Posicionar la zona de sincronización aleatoriamente cada vez
+        this.randomizeSyncZone();
+
+        // Crear animación
+        const animation = this.syncMarker.animate([{ bottom: "0%" }, { bottom: "100%" }], {
+            duration: this.enemy.attackInterval,
+            easing: "linear",
+        });
+
+        // Guardar referencia a la animación
+        this.syncTween = animation;
+
+        // Añadir evento para cuando termine la animación
+        animation.onfinish = () => {
+            if (this.combatActive && this.isBlockWindowActive) {
+                this.handleBlockWindowEnd();
+            }
+        };
+    }
+
+    handleBlockWindowEnd() {
+        this.isBlockWindowActive = false;
+        if (this.combatActive) {
+            this.addCombatLogMessage("¡No has intentado bloquear! Has recibido daño.", "enemy-action");
+            this.applyDamageToPlayer();
+        }
+    }
+
+    handleBlock() {
+        // Si no hay ventana de bloqueo activa, no hacer nada
+        if (!this.isBlockWindowActive || !this.combatActive) {
+            this.addCombatLogMessage("Has intentado bloquear, pero no había un ataque que bloquear.", "player-action");
+            return;
+        }
+
+        // Obtener la posición actual del marcador
+        const markerRect = this.syncMarker.getBoundingClientRect();
+        const zoneRect = this.syncZone.getBoundingClientRect();
+        const barRect = this.syncBar.getBoundingClientRect();
+
+        // Calcular la posición relativa del marcador
+        const markerPosition = (markerRect.top - barRect.top) / barRect.height;
+        const zoneStart = (zoneRect.top - barRect.top) / barRect.height;
+        const zoneEnd = (zoneRect.bottom - barRect.top) / barRect.height;
+
+        // Detener la animación actual
+        if (this.syncTween) {
+            this.syncTween.cancel();
+        }
+
+        // Desactivar la ventana de bloqueo para evitar múltiples intentos
+        this.isBlockWindowActive = false;
+
+        if (markerPosition >= zoneStart && markerPosition <= zoneEnd) {
+            // Bloqueo perfecto - evita completamente el daño
+            this.addCombatLogMessage("¡Bloqueo perfecto! Has evitado todo el daño.", "player-action");
+            this.playPlayerAnimation("walk");
+
+            // Añadir un efecto visual o sonoro de bloqueo exitoso
+            this.time.delayedCall(300, () => {
+                this.playPlayerAnimation("idle");
             });
         } else {
-            this.addCombatLogMessage(
-                `¡El enemigo es más rápido (${this.enemy.speed}) que tú (${this.player.speed})! Ataca primero.`,
-                "enemy-action"
-            );
-            this.disablePlayerControls();
-            // Dar tiempo para que el jugador lea el mensaje antes del ataque enemigo
-            this.time.delayedCall(2000, () => {
-                this.enemyAction();
+            // Bloqueo fallido - recibe el daño completo
+            this.addCombatLogMessage("¡Bloqueo fallido! Has recibido el daño completo.", "enemy-action");
+            this.applyDamageToPlayer();
+        }
+    }
+
+    startCombat() {
+        this.combatActive = true;
+        this.addCombatLogMessage("¡El combate ha comenzado!", "combat-info");
+        this.addCombatLogMessage("Observa el patrón de ataque del jefe...", "combat-info");
+
+        // Iniciar el ciclo de ataques
+        this.scheduleNextAction();
+    }
+
+    scheduleNextAction() {
+        if (!this.combatActive) return;
+
+        const nextAction = this.enemy.getNextAction();
+        this.time.delayedCall(this.enemy.attackInterval, () => {
+            if (nextAction === 0) {
+                this.handleBossAttack();
+            } else {
+                this.handleBossDodge();
+            }
+        });
+    }
+
+    handleBossAttack() {
+        if (!this.combatActive) return;
+
+        this.addCombatLogMessage("¡El jefe se prepara para atacar!", "enemy-action");
+        this.playEnemyAnimation("light-attack");
+
+        // Activar ventana de bloqueo
+        this.isBlockWindowActive = true;
+        this.lastAttackTime = this.time.now;
+
+        // Iniciar animación de la barra de sincronización
+        this.startSyncBarAnimation();
+
+        // Programar siguiente acción
+        this.scheduleNextAction();
+    }
+
+    handleBossDodge() {
+        if (!this.combatActive) return;
+
+        this.addCombatLogMessage("¡El enemigo se encuentra cansado, ataca ahora!", "enemy-action");
+        this.playEnemyAnimation("walk");
+
+        // Programar siguiente acción
+        this.scheduleNextAction();
+    }
+
+    handleAttack() {
+        if (!this.combatActive) return;
+
+        // Verificar si el jefe está en modo esquive
+        if (this.enemy.getCurrentAction() === 1) {
+            this.addCombatLogMessage("¡Ataque exitoso!", "player-action");
+            this.playPlayerAnimation("light-attack");
+            this.applyDamageToEnemy();
+        } else {
+            this.addCombatLogMessage("¡El jefe te ha contraatacado!", "enemy-action");
+            this.playEnemyAnimation("heavy-attack");
+            this.applyDamageToPlayer();
+        }
+    }
+
+    applyDamageToPlayer() {
+        const damage = Math.ceil(10 * (1 + Math.max(0, (this.enemy.strength - 10) * 0.1)));
+        this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
+        this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+        this.playPlayerAnimation("hit");
+        this.checkCombatEnd();
+    }
+
+    applyDamageToEnemy() {
+        const damage = Math.ceil(8 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
+        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+        this.playEnemyAnimation("hit");
+        this.checkCombatEnd();
+    }
+
+    setupButtonListeners() {
+        // Ataque ligero
+        const attackLightBtn = document.querySelector(".combat-button.attack-light");
+        if (attackLightBtn) {
+            attackLightBtn.addEventListener("click", () => {
+                if (this.combatActive) {
+                    this.handleAttackLight();
+                }
+            });
+        }
+
+        // Bloqueo
+        const blockBtn = document.querySelector(".combat-button.dodge");
+        if (blockBtn) {
+            blockBtn.addEventListener("click", () => {
+                if (this.combatActive) {
+                    this.handleBlock();
+                }
+            });
+        }
+
+        // Ataque pesado
+        const attackHeavyBtn = document.querySelector(".combat-button.attack-heavy");
+        if (attackHeavyBtn) {
+            attackHeavyBtn.addEventListener("click", () => {
+                if (this.combatActive) {
+                    this.handleAttackHeavy();
+                }
+            });
+        }
+
+        // Curación
+        const healBtn = document.querySelector(".combat-button.heal");
+        if (healBtn) {
+            healBtn.addEventListener("click", () => {
+                if (this.combatActive) {
+                    this.handleHeal();
+                }
             });
         }
     }
@@ -293,8 +537,8 @@ export default class CombatScene extends Phaser.Scene {
                 preload: function () {
                     // Usar el spritesheet del enemigo desde su propiedad
                     this.load.spritesheet("enemy-combat", this.game.mainScene.enemy.spritesheet, {
-                        frameWidth: 96,
-                        frameHeight: 96,
+                        frameWidth: 64,
+                        frameHeight: 64,
                     });
                 },
                 create: function () {
@@ -381,12 +625,12 @@ export default class CombatScene extends Phaser.Scene {
                     // Ajustar el sprite al centro de la escala actual
                     this.enemySprite = this.add.sprite(
                         this.cameras.main.width / 2,
-                        this.cameras.main.height / 2,
+                        this.cameras.main.height / 3,
                         "enemy-combat"
                     );
 
-                    // Hacer el sprite considerablemente más grande
-                    this.enemySprite.setScale(1.5);
+                    // Usar la escala definida en el enemigo
+                    this.enemySprite.setScale(this.mainScene.enemy.scale * 3);
 
                     // Voltear el sprite horizontalmente (efecto espejo)
                     this.enemySprite.flipX = true;
@@ -474,51 +718,14 @@ export default class CombatScene extends Phaser.Scene {
         }
     }
 
-    setupButtonListeners() {
-        // Ataque ligero
-        const attackLightBtn = document.querySelector(".combat-button.attack-light");
-        if (attackLightBtn) {
-            attackLightBtn.addEventListener("click", () => {
-                // Verificar explícitamente si es el turno del jugador antes de procesar
-                if (this.isPlayerTurn && this.combatActive && !attackLightBtn.disabled) {
-                    this.handleAttackLight();
-                }
-            });
-        }
-
-        // Ataque pesado
-        const attackHeavyBtn = document.querySelector(".combat-button.attack-heavy");
-        if (attackHeavyBtn) {
-            attackHeavyBtn.addEventListener("click", () => {
-                // Verificar explícitamente si es el turno del jugador antes de procesar
-                if (this.isPlayerTurn && this.combatActive && !attackHeavyBtn.disabled) {
-                    this.handleAttackHeavy();
-                }
-            });
-        }
-
-        // Curar
-        const healBtn = document.querySelector(".combat-button.heal");
-        if (healBtn) {
-            healBtn.addEventListener("click", () => {
-                // Verificar explícitamente si es el turno del jugador antes de procesar
-                if (this.isPlayerTurn && this.combatActive && !healBtn.disabled) {
-                    //this.handleHeal();
-                }
-            });
-        }
-
-        // Huir
-        const dodgeBtn = document.querySelector(".combat-button.dodge");
-        if (dodgeBtn) {
-        }
-    }
-
     handleAttackLight() {
-        if (!this.isPlayerTurn || !this.combatActive) return;
+        if (!this.combatActive) return;
 
-        // Desactivar controles para evitar múltiples acciones
-        this.disablePlayerControls();
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
 
         // Reproducir animación de ataque ligero
         this.playPlayerAnimation("light-attack");
@@ -540,24 +747,23 @@ export default class CombatScene extends Phaser.Scene {
                 }
             });
 
-            // Esperar a que termine la animación antes de finalizar el turno
+            // Esperar a que termine la animación antes de continuar
             this.time.delayedCall(1000, () => {
                 // Volver a la animación de idle
                 this.playPlayerAnimation("idle");
                 this.playEnemyAnimation("idle");
-                // Finalizar turno después de un momento adicional
-                this.time.delayedCall(500, () => {
-                    this.endTurn();
-                });
             });
         }
     }
 
     handleAttackHeavy() {
-        if (!this.isPlayerTurn || !this.combatActive) return;
+        if (!this.combatActive) return;
 
-        // Desactivar controles para evitar múltiples acciones
-        this.disablePlayerControls();
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
 
         // Reproducir animación de ataque pesado
         this.playPlayerAnimation("heavy-attack");
@@ -579,24 +785,23 @@ export default class CombatScene extends Phaser.Scene {
                 }
             });
 
-            // Esperar a que termine la animación antes de finalizar el turno
+            // Esperar a que termine la animación antes de continuar
             this.time.delayedCall(1000, () => {
                 // Volver a la animación de idle
                 this.playPlayerAnimation("idle");
                 this.playEnemyAnimation("idle");
-                // Finalizar turno después de un momento adicional
-                this.time.delayedCall(500, () => {
-                    this.endTurn();
-                });
             });
         }
     }
 
     handleHeal() {
-        if (!this.isPlayerTurn || !this.combatActive) return;
+        if (!this.combatActive) return;
 
-        // Desactivar controles para evitar múltiples acciones
-        this.disablePlayerControls();
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
 
         // Calcular curación basada en resistencia
         const healPercent = 0.1 + this.player.resistance * 0.005;
@@ -607,29 +812,11 @@ export default class CombatScene extends Phaser.Scene {
         this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
         this.addCombatLogMessage(`Te has curado ${healAmount} puntos de vida.`, "heal-action");
 
-        // Finalizar turno después de que termine la animación
+        // Finalizar la animación después de un tiempo
         this.time.delayedCall(1000, () => {
             // Volver a la animación de idle
             this.playPlayerAnimation("idle");
-            // Finalizar turno después de un momento adicional
-            this.time.delayedCall(500, () => {
-                this.endTurn();
-            });
         });
-    }
-
-    addCombatLogMessage(message, className = "") {
-        const combatLog = document.getElementById("combat-log");
-        if (combatLog) {
-            const messageElement = document.createElement("p");
-            messageElement.textContent = message;
-            messageElement.classList.add("console-message");
-            if (className) {
-                messageElement.classList.add(className);
-            }
-            combatLog.appendChild(messageElement);
-            combatLog.scrollTop = combatLog.scrollHeight;
-        }
     }
 
     enablePlayerControls() {
@@ -657,7 +844,7 @@ export default class CombatScene extends Phaser.Scene {
 
         // Añadir retraso para mejorar la legibilidad
         this.time.delayedCall(1000, () => {
-            this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
+            this.addCombatLogMessage("El enemigo ataca...", "enemy-turn");
 
             // Añadir un delay adicional para dar tiempo a leer el mensaje antes de realizar la acción
             this.time.delayedCall(1500, () => {
@@ -707,31 +894,10 @@ export default class CombatScene extends Phaser.Scene {
                         // Volver a la animación de idle para ambos
                         this.playPlayerAnimation("idle");
                         this.playEnemyAnimation("idle");
-                        // Finalizar turno del enemigo
-                        this.time.delayedCall(500, () => {
-                            this.endTurn();
-                        });
                     });
                 }
             });
         });
-    }
-
-    endTurn() {
-        this.isPlayerTurn = !this.isPlayerTurn;
-
-        // Verificar si el combate ha terminado antes de continuar
-        if (this.checkCombatEnd()) {
-            return;
-        }
-
-        // Continuar con el siguiente turno
-        if (this.isPlayerTurn) {
-            this.enablePlayerControls();
-            this.addCombatLogMessage("Tu turno, elige una acción.", "player-turn");
-        } else {
-            this.enemyAction();
-        }
     }
 
     checkCombatEnd() {
@@ -751,6 +917,9 @@ export default class CombatScene extends Phaser.Scene {
 
         // Verificar si el enemigo ha muerto
         if (this.enemyCurrentHealth <= 0) {
+            // Finalizar el combate activo
+            this.combatActive = false;
+
             // Reproducir animación de muerte para el enemigo
             this.playEnemyAnimation("death");
             this.addCombatLogMessage(`¡Has derrotado a ${this.enemy.name}!`, "player-action");
@@ -776,13 +945,26 @@ export default class CombatScene extends Phaser.Scene {
         // Limpiar eventos y restablecer variables
         this.cleanupListeners();
 
-        // Resetear variables de estado
-        this.isPlayerTurn = true;
+        // Resetear todas las variables de estado
+        this.isBlockWindowActive = false;
+        this.lastAttackTime = 0;
+
+        // Detener la animación de la barra de sincronización si existe
+        if (this.syncTween) {
+            this.syncTween.cancel();
+            this.syncTween = null;
+        }
 
         // Ocultar el contenedor de combate
         const combatContainer = document.getElementById("combat-container");
         if (combatContainer) {
             combatContainer.classList.add("hidden");
+
+            // Eliminar la barra de sincronización si existe
+            const syncBarContainer = document.getElementById("sync-bar-container");
+            if (syncBarContainer) {
+                syncBarContainer.remove();
+            }
         }
 
         // Limpiar el log de combate
@@ -807,7 +989,7 @@ export default class CombatScene extends Phaser.Scene {
         const attackLightBtn = document.querySelector(".combat-button.attack-light");
         const attackHeavyBtn = document.querySelector(".combat-button.attack-heavy");
         const healBtn = document.querySelector(".combat-button.heal");
-        const dodgeBtn = document.querySelector(".combat-button.dodge");
+        const blockBtn = document.querySelector(".combat-button.dodge");
 
         // Clonar y reemplazar cada botón para eliminar todos los listeners asociados
         if (attackLightBtn) {
@@ -825,9 +1007,9 @@ export default class CombatScene extends Phaser.Scene {
             healBtn.parentNode.replaceChild(newBtn, healBtn);
         }
 
-        if (dodgeBtn) {
-            const newBtn = dodgeBtn.cloneNode(true);
-            dodgeBtn.parentNode.replaceChild(newBtn, dodgeBtn);
+        if (blockBtn) {
+            const newBtn = blockBtn.cloneNode(true);
+            blockBtn.parentNode.replaceChild(newBtn, blockBtn);
         }
 
         // Habilitar los botones para el próximo combate
@@ -837,5 +1019,19 @@ export default class CombatScene extends Phaser.Scene {
             button.classList.remove("disabled");
             button.style.pointerEvents = "auto";
         });
+    }
+
+    addCombatLogMessage(message, className = "") {
+        const combatLog = document.getElementById("combat-log");
+        if (combatLog) {
+            const messageElement = document.createElement("p");
+            messageElement.textContent = message;
+            messageElement.classList.add("console-message");
+            if (className) {
+                messageElement.classList.add(className);
+            }
+            combatLog.appendChild(messageElement);
+            combatLog.scrollTop = combatLog.scrollHeight;
+        }
     }
 }

@@ -5,22 +5,106 @@
     <title>Souls Adventure</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/reset.css">
+    <script src="https://unpkg.com/spritespin@4.0.11/release/spritespin.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 
 <body>
 
     <div id="game"></div>
 
+    <div id="hud-container">
+        <div class="hud-player-icon">
+            <img src="." alt="player icon">
+        </div>
+        <div id="hud-player-display">
+            <div class="hud-item">
+                <span id="hud-player-name">Player</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label" for="health-amount">Vida</span>
+                <span id="health-amount" class="hud-value">100</span>
+                <div class="hud-progress" style="width: 100%;"></div>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label" for="souls-amount">Almas</span>
+                <span id="souls-amount" class="hud-value">0</span>
+                <div class="hud-souls-glow"></div>
+            </div>
+        </div>
+    </div>
 
-    <script type="module" src="game.js"></script>
+    <script type="module" src="src/main.js"></script>
 
     <div id="dialogueBox">
         <p id="dialogueText"></p>
         <div id="choicesContainer"></div>
     </div>
 
+    <div id="combat-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="combat-background">
+                <div class="combat-section combat-player blue">
+                    <div id="player-name">Jugador</div>
+                    <div id="player-container">
+                        <div class="health-bar-container">
+                            <div class="health-bar"></div>
+                            <div class="health-text"><span id="player-current-health">100</span>/<span
+                                    id="player-max-health">100</span></div>
+                        </div>
+                        <div id="player-animation-container">
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="combat-section combat-enemy blue">
+                    <div id="enemy-name">Enemigo</div>
+                    <div id="enemy-container">
+                        <div class="health-bar-container">
+                            <div class="health-bar enemy-health-bar"></div>
+                            <div class="health-text"><span id="enemy-current-health">100</span>/<span
+                                    id="enemy-max-health">100</span></div>
+                        </div>
+                        <div id="enemy-animation-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="combat-content">
+                <div class="combat-section combat-movements blue">
+                    <div class="section-title">Movimientos</div>
+                    <div class="combat-buttons">
+                        <button class="combat-button attack-light">
+                            <span class="button-icon">⚔️</span>
+                            Ataque Ligero
+                        </button>
+                        <button class="combat-button attack-heavy">
+                            <span class="button-icon">🗡️</span>
+                            Ataque Pesado
+                        </button>
+                        <button class="combat-button dodge">
+                            <span class="button-icon">🛡️</span>
+                            Bloquear
+                        </button>
+                        <button class="combat-button heal">
+                            <span class="button-icon">❤️</span>
+                            Curar
+                        </button>
+
+                    </div>
+                </div>
+                <div class="combat-section combat-console blue">
+                    <div class="section-title">Consola de Combate</div>
+                    <div class="console-output" id="combat-log">
+                        <p class="console-message"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
+            </div>
+        </div>
+    </div>
 
     <div id="inventory-container" class="scene-container hidden">
         <div class="scene-layout">
@@ -86,8 +170,6 @@
             <button id="cancelModal">Cancelar</button>
         </div>
     </div>
-
-
 
     <div id="trainer-container" class="scene-container hidden">
         <div class="scene-layout">

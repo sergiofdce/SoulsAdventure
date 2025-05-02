@@ -1,5 +1,3 @@
-import itemsData from "../items/data/itemsData.js";
-
 export default class InventoryScene extends Phaser.Scene {
     constructor() {
         super({ key: "InventoryScene" });
@@ -12,37 +10,47 @@ export default class InventoryScene extends Phaser.Scene {
     }
 
     create() {
+        // Ocultar HUD
+        document.getElementById("hud-container").classList.add("hidden");
+
         // Mostrar el inventario en HTML
         const inventoryDiv = document.getElementById("inventory-container");
         inventoryDiv.classList.remove("hidden");
 
+        // Configurar la imagen del jugador y el evento para mostrar atributos
+        const playerBox = document.querySelector(".inventory-equipment #inventory-equipment-box-player");
+        playerBox.querySelector("img").src = this.player.img;
+        playerBox.addEventListener("click", () => this.showAttributes());
+
         // Llenar el inventario con los datos del jugador
         this.populateInventory();
 
-        document.querySelector(".inventory-equipment #inventory-equipment-box-player img").src = this.player.img;
-        document
-            .querySelector(".inventory-equipment #inventory-equipment-box-player")
-            .addEventListener("click", () => this.showAttributes());
-
-        // Detectar la tecla I para cerrar el inventario
+        // Detectar la tecla I
         this.input.keyboard.on("keydown-I", () => {
+            // Cerrar Inventario
             inventoryDiv.classList.add("hidden");
+            // Mostrar HUD
+            document.getElementById("hud-container").classList.remove("hidden");
             this.scene.resume("GameScene");
             this.scene.stop("InventoryScene");
         });
     }
 
+    /**
+     * Llena el inventario con los ítems del jugador
+     */
     populateInventory() {
         const inventoryItemsContainer = document.querySelector(".inventory-items ul");
-
-        // Limpiar el inventario antes de llenarlo
-        inventoryItemsContainer.innerHTML = "";
+        inventoryItemsContainer.innerHTML = ""; // Limpiar el inventario
 
         // Separar los ítems equipados y no equipados
         const equippedItems = [];
         const unequippedItems = [];
 
-        Object.keys(this.player.inventory.items).forEach((key) => {
+        // Ahora accedemos al inventario a través del método getInventory()
+        const playerInventory = this.player.inventory.getInventory();
+
+        Object.keys(playerInventory).forEach((key) => {
             const item = this.player.getItemData(key);
             if (item.equipped) {
                 equippedItems.push({ key, item });
@@ -51,334 +59,397 @@ export default class InventoryScene extends Phaser.Scene {
             }
         });
 
-        // Recorrer los ítems equipados
-        equippedItems.forEach(({ key, item }) => {
-            const li = document.createElement("li");
+        // Mostrar primero los ítems equipados
+        this.renderItemsList(equippedItems, inventoryItemsContainer, true);
+        this.renderItemsList(unequippedItems, inventoryItemsContainer, false);
 
-            // Agregar el evento de doble clic
-            li.addEventListener("dblclick", () => this.toggleEquipItem(key));
-
-            // Mostrar el ítem
-            li.innerHTML = `
-                <img src="${item.image}" alt="${key}">
-                <p class='inventory-items-Name'>${item.name}</p>
-                ${item.equipped ? "<span>&#9876;</span>" : ""}
-                <p class='inventory-items-Quantity'>X${item.quantity}</p>
-            `;
-
-            // Evento para mostrar detalles del ítem al hacer clic
-            li.addEventListener("click", () => this.showItemDetails(item, key));
-
-            li.classList.add("inventory-items-equipped");
-
-            inventoryItemsContainer.appendChild(li);
-        });
-
-        // Recorrer los ítems del inventario
-        unequippedItems.forEach(({ key, item }) => {
-            const li = document.createElement("li");
-
-            // Agregar el evento de doble clic
-            li.addEventListener("dblclick", () => this.toggleEquipItem(key));
-
-            // Mostrar el ítem
-            li.innerHTML = `
-                <img src="${item.image}" alt="${key}">
-                <p class='inventory-items-Name'>${item.name}</p>
-                ${item.equipped ? "<span>&#9876;</span>" : ""}
-                <p class='inventory-items-Quantity'>X${item.quantity}</p>
-            `;
-
-            // Evento para mostrar detalles del ítem al hacer clic
-            li.addEventListener("click", () => this.showItemDetails(item, key));
-
-            inventoryItemsContainer.appendChild(li);
-        });
-
-        this.showEquipment();
+        // Actualizar la visualización del equipo
+        this.updateEquipmentDisplay();
     }
 
+    /**
+     * Renderiza una lista de ítems en el contenedor HTML
+     */
+    renderItemsList(items, container, isEquipped) {
+        items.forEach(({ key, item }) => {
+            const li = document.createElement("li");
+
+            li.innerHTML = `
+                <img src="${item.image}" alt="${key}">
+                <p class='inventory-items-Name'>${item.name}</p>
+                ${item.equipped ? "<span>&#9876;</span>" : ""}
+                <p class='inventory-items-Quantity'>X${item.quantity}</p>
+            `;
+
+            // Añadir la clase de equipado si corresponde
+            if (isEquipped) {
+                li.classList.add("inventory-items-equipped");
+            }
+
+            // Eventos
+            li.addEventListener("click", () => this.showItemDetails(item, key));
+            li.addEventListener("dblclick", () => this.toggleEquipItem(key));
+
+            container.appendChild(li);
+        });
+    }
+
+    /**
+     * Muestra los detalles de un ítem seleccionado
+     */
     showItemDetails(item, key) {
-        document.querySelector(".inventory-stats").innerHTML = `<div id="inventory-stats-item-img">
-                        <img src="" alt="">
-                    </div>
-                    <ul id="inventory-stats-item">
-                        <li id="inventory-stats-item-name">
-                            <h3></h3>
-                        </li>
-                        <li id="inventory-stats-item-descripcion">
-                            <p></p>
-                        </li>
-                        <li id="inventory-stats-item-type">
-                            <p></p>
-                        </li>
-                        <li id="inventory-stats-item-utility">
-                            <p></p>
-                        </li>
-                    </ul>`;
-        document.querySelector("#inventory-stats-item-img img").src = item.image;
-        document.querySelector("#inventory-stats-item-img img").alt = key;
-        document.querySelector("#inventory-stats-item-name h3").textContent = item.name;
-        document.querySelector("#inventory-stats-item-descripcion p").textContent = `Descripción: ${item.description}`;
-        document.querySelector("#inventory-stats-item-type p").textContent = `Tipo: ${item.category}`;
+        const statsContainer = document.querySelector(".inventory-stats");
+
+        let extraInfo = "";
+        if (item.category === "weapon" && item.twoHanded) {
+            extraInfo = `<li id="inventory-stats-item-two-handed"><p>Arma a dos manos</p></li>`;
+        }
+
+        statsContainer.innerHTML = `
+            <div id="inventory-stats-item-img">
+                <img src="${item.image}" alt="${key}">
+            </div>
+            <ul id="inventory-stats-item">
+                <li id="inventory-stats-item-name">
+                    <h3>${item.name}</h3>
+                </li>
+                <li id="inventory-stats-item-descripcion">
+                    <p>Descripción: ${item.description}</p>
+                </li>
+                <li id="inventory-stats-item-type">
+                    <p>Tipo: ${item.category}</p>
+                </li>
+                <li id="inventory-stats-item-utility">
+                    <p>${this.getItemUtilityText(item)}</p>
+                </li>
+                ${extraInfo}
+            </ul>`;
+    }
+
+    /**
+     * Obtiene el texto de utilidad de un ítem según su tipo
+     */
+    getItemUtilityText(item) {
         if (item.damage) {
-            document.querySelector("#inventory-stats-item-utility p").textContent = `Daño: +${item.damage}`;
+            return `Daño: +${item.damage}`;
         } else if (item.defense) {
-            document.querySelector("#inventory-stats-item-utility p").textContent = `Armadura: +${item.defense}`;
+            return `Armadura: +${item.defense}`;
+        } else if (item.blockChance) {
+            return `Bloqueo: ${item.blockChance}%`;
         } else {
-            document.querySelector("#inventory-stats-item-utility p").textContent = `Efecto: ${item.effect || "N/A"}`;
+            return `Efecto: ${item.effect || "N/A"}`;
         }
     }
 
+    /**
+     * Muestra los atributos del jugador
+     */
     showAttributes() {
-        // attributes = this.player.attributes;
-        document.querySelector(".inventory-stats").innerHTML = `
-                    <ul id="inventory-stats-player">
-                        <li id="inventory-stats-player-health">
-                            <p>Vida:</p>
-                            <p class="p-stats"></p>
-                        </li>
-                        <li id="inventory-stats-player-strength">
-                            <p>Fuerza:</p>
-                            <p class="p-stats"></p>
-                        </li>
-                        <li id="inventory-stats-player-energy">
-                            <p>Energia:</p>
-                            <p class="p-stats"></p>
-                        </li>
-                        <li id="inventory-stats-player-speed">
-                            <p>Velocidad:</p>
-                            <p class="p-stats"></p>
-                        </li>
-                        <li id="inventory-stats-player-souls">
-                            <p>Almas:</p>
-                            <p class="p-stats"></p>
-                        </li>
-                    </ul>`;
-        document.querySelector("#inventory-stats-player-health p.p-stats").textContent = `${this.player.health}`;
-        document.querySelector("#inventory-stats-player-strength p.p-stats").textContent = `${this.player.strength}`;
-        document.querySelector("#inventory-stats-player-energy p.p-stats").textContent = `${this.player.energy}`;
-        document.querySelector("#inventory-stats-player-speed p.p-stats").textContent = `${this.player.speed}`;
-        document.querySelector("#inventory-stats-player-souls p.p-stats").textContent = `${this.player.souls}`;
+        const statsContainer = document.querySelector(".inventory-stats");
+
+        statsContainer.innerHTML = `
+            <ul id="inventory-stats-player">
+                <li id="inventory-stats-player-health">
+                    <p>Vida:</p>
+                    <p class="p-stats">${this.player.health}</p>
+                </li>
+                <li id="inventory-stats-player-strength">
+                    <p>Fuerza:</p>
+                    <p class="p-stats">${this.player.strength}</p>
+                </li>
+                <li id="inventory-stats-player-energy">
+                    <p>Energia:</p>
+                    <p class="p-stats">${this.player.energy}</p>
+                </li>
+                <li id="inventory-stats-player-speed">
+                    <p>Velocidad:</p>
+                    <p class="p-stats">${this.player.speed}</p>
+                </li>
+                <li id="inventory-stats-player-souls">
+                    <p>Almas:</p>
+                    <p class="p-stats">${this.player.souls}</p>
+                </li>
+            </ul>`;
     }
 
-    showEquipment() {
-        console.log("----------------------------");
+    /**
+     * Actualiza la visualización del equipo en la interfaz
+     */
+    updateEquipmentDisplay() {
+        // Primero, resetear todas las ranuras de equipo a imagen vacía
+        this.resetEquipmentSlots();
 
-        Object.keys(this.player.inventory.items).forEach((key) => {
-            const item = this.player.getItemData(key); // Obtener el item de ese key
-            const imgElement = document.querySelector(`#inventory-equipment-box #${item.category} img`);
-            const imgElementAccessory1 = document.querySelector(`#inventory-equipment-box #${item.category}1 img`);
-            const imgElementAccessory2 = document.querySelector(`#inventory-equipment-box #${item.category}2 img`);
+        // Luego actualizar las ranuras con los ítems equipados
+        const playerInventory = this.player.inventory.getInventory();
 
-            // Solo actualizar los elementos si el ítem está equipado
-            if (item.equipped) {
-                if (imgElement) {
-                    console.log(`Actualizando imagen de: ${item.name} en ${item.category}`);
+        Object.keys(playerInventory).forEach((key) => {
+            const itemData = playerInventory[key];
+            const item = this.player.getItemData(key);
 
-                    imgElement.src = item.image;
-                    imgElement.alt = key;
+            if (!itemData.equipped) return;
 
-                    // Limpiar los eventos anteriores antes de agregar nuevos
-                    imgElement.removeEventListener("click", this.showItemDetails);
-                    imgElement.removeEventListener("dblclick", this.removeEquipItem);
-
-                    // Añadir evento de clic para mostrar detalles
-                    imgElement.addEventListener("click", () => this.showItemDetails(item, key));
-
-                    // Añadir evento de doble clic para desequipar
-                    imgElement.addEventListener("dblclick", () => this.removeEquipItem(key));
-                }
-
-                if (item.accessory1) {
-
-                    console.log(`Actualizando imagen de: ${item.name} en ${item.category}`);
-
-                    imgElementAccessory1.src = item.image;
-                    imgElementAccessory1.alt = key;
-
-                    // Limpiar los eventos anteriores antes de agregar nuevos
-                    imgElementAccessory1.removeEventListener("click", this.showItemDetails);
-                    imgElementAccessory1.removeEventListener("dblclick", this.removeEquipItem);
-
-                    // Añadir evento de clic para mostrar detalles
-                    imgElementAccessory1.addEventListener("click", () => this.showItemDetails(item, key));
-
-                    // Añadir evento de doble clic para desequipar
-                    imgElementAccessory1.addEventListener("dblclick", () => this.removeEquipItem(key, 1));
-                }
-
-                if (item.accessory2) {
-
-                    console.log(`Actualizando imagen de: ${item.name} en ${item.category}`);
-
-                    imgElementAccessory2.src = item.image;
-                    imgElementAccessory2.alt = key;
-
-                    // Limpiar los eventos anteriores antes de agregar nuevos
-                    imgElementAccessory2.removeEventListener("click", this.showItemDetails);
-                    imgElementAccessory2.removeEventListener("dblclick", this.removeEquipItem);
-
-                    // Añadir evento de clic para mostrar detalles
-                    imgElementAccessory2.addEventListener("click", () => this.showItemDetails(item, key));
-
-                    // Añadir evento de doble clic para desequipar
-                    imgElementAccessory2.addEventListener("dblclick", () => this.removeEquipItem(key, 2));
-                }
+            if (item.category === "accessory") {
+                this.updateAccessorySlot(key, item, itemData);
+            } else {
+                this.updateRegularEquipmentSlot(key, item);
             }
         });
     }
 
-    // Equipa arma
+    /**
+     * Reinicia todas las ranuras de equipo a la imagen vacía
+     */
+    resetEquipmentSlots() {
+        const slots = ["weapon", "shield", "helmet", "chest", "glove", "shoes", "accessory1", "accessory2"];
+        slots.forEach((slotId) => {
+            const imgElement = document.querySelector(`#inventory-equipment-box #${slotId} img`);
+            if (imgElement) {
+                imgElement.src = "./assets/imagenPruebaNada.png";
+                imgElement.alt = "No equipado";
+
+                // Eliminar eventos antiguos clonando y reemplazando el elemento
+                const newImg = imgElement.cloneNode(true);
+                imgElement.parentNode.replaceChild(newImg, imgElement);
+            }
+        });
+    }
+
+    /**
+     * Actualiza una ranura de accesorio
+     */
+    updateAccessorySlot(key, item, itemData) {
+        if (itemData.accessory1) {
+            this.setEquipmentSlotImage("accessory1", key, item);
+        }
+
+        if (itemData.accessory2) {
+            this.setEquipmentSlotImage("accessory2", key, item);
+        }
+    }
+
+    /**
+     * Actualiza una ranura de equipo regular (no accesorio)
+     */
+    updateRegularEquipmentSlot(key, item) {
+        this.setEquipmentSlotImage(item.category, key, item);
+    }
+
+    /**
+     * Configura la imagen y eventos para una ranura de equipo
+     */
+    setEquipmentSlotImage(slotId, key, item) {
+        const imgElement = document.querySelector(`#inventory-equipment-box #${slotId} img`);
+        if (imgElement) {
+            imgElement.src = item.image;
+            imgElement.alt = key;
+
+            // Clonar y reemplazar para eliminar eventos antiguos
+            const newImg = imgElement.cloneNode(true);
+            imgElement.parentNode.replaceChild(newImg, imgElement);
+
+            // Añadir nuevos eventos al clon
+            newImg.addEventListener("click", () => this.showItemDetails(item, key)); // Mostrar detalles con un clic
+            newImg.addEventListener("dblclick", () => this.removeEquipItem(key)); // Quitar equipo con doble clic
+        }
+    }
+
+    /**
+     * Equipa o desequipa un ítem
+     */
     toggleEquipItem(key) {
-        const equippedItemsData = Object.keys(this.player.inventory.items)
-            .filter(itemId => 
-                this.player.inventory.items[itemId].equipped &&
-                this.player.getItemData(itemId).category === this.player.getItemData(key).category
-            )
-            .map((itemId) => ({
-                key: itemId,
-                data: this.player.getItemData(itemId)
-            }));
-    
-        const equippedItemIdData = this.player.inventory.items[key];
-    
-        if (this.player.getItemData(key)) {
-            if (equippedItemIdData.quantity > 0 && !equippedItemIdData.equipped) {
-                if (equippedItemsData.length > 0) {
-                    if (this.player.getItemData(key).category === "accessory") {
-                        console.log("Soy un accesorio");
-    
-                        if (equippedItemsData.length === 2) {
-                            console.log("Todos los accesorios ocupados");
-    
-                            const modal = document.getElementById("accessoryModal");
-                            modal.style.display = "flex";
-    
-                            const self = this;
-    
-                            function closeModal() {
-                                modal.style.display = "none";
-                                self.populateInventory();
-                            }
-    
-                            document.getElementById("replaceAccessory1").onclick = () => {
-                                if (self.player.inventory.items[equippedItemsData[0].key].accessory1){
-                                    self.player.inventory.items[equippedItemsData[0].key].accessory1 = false;
-                                    self.player.inventory.items[equippedItemsData[0].key].equipped = false;
-                                } else {
-                                    self.player.inventory.items[equippedItemsData[1].key].accessory1 = false;
-                                    self.player.inventory.items[equippedItemsData[1].key].equipped = false;
-                                }
-                                equippedItemIdData.accessory1 = true;
-                                equippedItemIdData.equipped = true;
-                                closeModal();
-                            };
-    
-                            document.getElementById("replaceAccessory2").onclick = () => {
-                                if (self.player.inventory.items[equippedItemsData[0].key].accessory2){
-                                    self.player.inventory.items[equippedItemsData[0].key].accessory2 = false;
-                                    self.player.inventory.items[equippedItemsData[0].key].equipped = false;
-                                } else {
-                                    self.player.inventory.items[equippedItemsData[1].key].accessory2 = false;
-                                    self.player.inventory.items[equippedItemsData[1].key].equipped = false;
-                                }
-                                equippedItemIdData.accessory2 = true;
-                                equippedItemIdData.equipped = true;
-                                closeModal();
-                            };
-    
-                            document.getElementById("cancelModal").onclick = closeModal;
-                        } else {
-                            if (!equippedItemIdData.accessory1) {
-                                console.log("accessory1 libre");
-                                equippedItemIdData.accessory1 = true;
-                            } else if (!equippedItemIdData.accessory2) {
-                                console.log("accessory2 libre");
-                                equippedItemIdData.accessory2 = true;
-                            }
-                            equippedItemIdData.equipped = true;
-                        }
-                    } else {
-                        this.player.inventory.items[equippedItemsData[0].key].equipped = false;
-                        equippedItemIdData.equipped = true;
-                    }
-                } else {
-                    if (this.player.getItemData(key).category === "accessory") {
-                        console.log("Todos los accesorios libres");
-                        equippedItemIdData.accessory1 = true;
-                    }
-                    equippedItemIdData.equipped = true;
-                }
-            }
+        const item = this.player.getItemData(key);
+        const itemData = this.player.inventory.getInventory()[key];
+
+        // Si el ítem no existe o no hay cantidad, salir
+        if (!item || itemData.quantity <= 0) return;
+
+        // Si no está equipado, intentar equiparlo
+        if (!itemData.equipped) {
+            this.equipItem(key, item, itemData);
+        } else {
+            this.removeEquipItem(key);
         }
 
-        // Actualiza la interfaz del inventario después de equipar o desequipar
+        // Actualizar la interfaz
         this.populateInventory();
-    }    
-    
-    // Quitar equipo
-    removeEquipItem(key, number = 0) {
-        const equippedItemIdData = this.player.inventory.items[key];
+    }
 
-        // Verifica que el objeto existe, tiene cantidad mayor a 0 y está equipado
-        if (equippedItemIdData && equippedItemIdData.quantity > 0 && equippedItemIdData.equipped) {
-            // Si el objeto NO es un accesorio
-            if (this.player.getItemData(key).category !== "accessory") {
-                equippedItemIdData.equipped = false;
+    /**
+     * Equipa un ítem
+     */
+    equipItem(key, item, itemData) {
+        if (item.category === "accessory") {
+            this.equipAccessory(key, itemData);
+        } else {
+            this.equipRegularItem(key, item, itemData);
+        }
+    }
 
-                // Obtener la categoría del objeto
-                const category = this.player.getItemData(key).category;
-                const imgElement = document.querySelector(`#inventory-equipment-box #${category} img`);
+    /**
+     * Equipa un accesorio
+     */
+    equipAccessory(key, itemData) {
+        // Contar accesorios equipados
+        const equippedAccessories = Object.keys(this.player.inventory.getInventory()).filter(
+            (itemId) =>
+                this.player.inventory.getInventory()[itemId].equipped &&
+                this.player.getItemData(itemId).category === "accessory"
+        );
 
-                // Clonar el nodo de la imagen para eliminar todos los eventos previos asociados
-                const newImgElement = imgElement.cloneNode(true);
-                imgElement.parentNode.replaceChild(newImgElement, imgElement);
+        if (equippedAccessories.length < 2) {
+            // Si hay espacio, equipar en la primera ranura disponible
+            itemData.equipped = true;
 
-                // Cambiar la imagen a una imagen vacía (sin objeto equipado)
-                newImgElement.src = "./assets/imagenPruebaNada.png";
-                newImgElement.alt = `${category} no equipado`;
+            if (!Object.values(this.player.inventory.getInventory()).some((item) => item.accessory1)) {
+                itemData.accessory1 = true;
             } else {
-                // Si el objeto ES un accesorio
-                const category = this.player.getItemData(key).category;
+                itemData.accessory2 = true;
+            }
+        } else {
+            // Si no hay espacio, mostrar modal para reemplazar
+            this.showAccessoryReplaceModal(key);
+        }
+    }
 
-                // Seleccionar las imágenes de los accesorios
-                const imgElementAccessory1 = document.querySelector(`#inventory-equipment-box #${category}1 img`);
-                const imgElementAccessory2 = document.querySelector(`#inventory-equipment-box #${category}2 img`);
+    /**
+     * Muestra el modal para reemplazar accesorios
+     */
+    showAccessoryReplaceModal(key) {
+        const modal = document.getElementById("accessoryModal");
+        modal.style.display = "flex";
 
-                // Si se pasa el número 1, significa que se está eliminando el accesorio 1
-                if (number === 1 && imgElementAccessory1) {
-                    equippedItemIdData.accessory1 = false;
+        const self = this;
 
-                    // Clonar y reemplazar el nodo para eliminar eventos
-                    const newImgElement1 = imgElementAccessory1.cloneNode(true);
-                    imgElementAccessory1.parentNode.replaceChild(newImgElement1, imgElementAccessory1);
+        document.getElementById("replaceAccessory1").onclick = () => {
+            self.replaceAccessory(key, 1);
+            modal.style.display = "none";
+        };
 
-                    // Cambiar la imagen a una imagen vacía
-                    newImgElement1.src = "./assets/imagenPruebaNada.png";
-                    newImgElement1.alt = `${category} no equipado`;
+        document.getElementById("replaceAccessory2").onclick = () => {
+            self.replaceAccessory(key, 2);
+            modal.style.display = "none";
+        };
 
-                    // Si se pasa el número 2, significa que se está eliminando el accesorio 2
-                } else if (number === 2 && imgElementAccessory2) {
-                    equippedItemIdData.accessory2 = false;
+        document.getElementById("cancelModal").onclick = () => {
+            modal.style.display = "none";
+        };
+    }
 
-                    // Clonar y reemplazar el nodo para eliminar eventos
-                    const newImgElement2 = imgElementAccessory2.cloneNode(true);
-                    imgElementAccessory2.parentNode.replaceChild(newImgElement2, imgElementAccessory2);
+    /**
+     * Reemplaza un accesorio en la ranura especificada
+     */
+    replaceAccessory(newItemKey, slotNum) {
+        // Buscar el accesorio que está en la ranura especificada
+        const accessoryToReplace = Object.keys(this.player.inventory.getInventory()).find((key) => {
+            const item = this.player.inventory.getInventory()[key];
+            return item.equipped && ((slotNum === 1 && item.accessory1) || (slotNum === 2 && item.accessory2));
+        });
 
-                    // Cambiar la imagen a una imagen vacía
-                    newImgElement2.src = "./assets/imagenPruebaNada.png";
-                    newImgElement2.alt = `${category} no equipado`;
-                }
+        if (accessoryToReplace) {
+            const oldAccessory = this.player.inventory.getInventory()[accessoryToReplace];
+            if (slotNum === 1) oldAccessory.accessory1 = false;
+            if (slotNum === 2) oldAccessory.accessory2 = false;
 
-                // Si ambos accesorios han sido eliminados, marcar el objeto como no equipado
-                if (!equippedItemIdData.accessory1 && !equippedItemIdData.accessory2) {
-                    equippedItemIdData.equipped = false;
-                }
+            // Si no tiene ninguna ranura ocupada, marcar como no equipado
+            if (!oldAccessory.accessory1 && !oldAccessory.accessory2) {
+                oldAccessory.equipped = false;
             }
         }
 
-        // Actualiza la interfaz del inventario después de desequipar el objeto
+        // Equipar el nuevo accesorio
+        const newAccessory = this.player.inventory.getInventory()[newItemKey];
+        newAccessory.equipped = true;
+        if (slotNum === 1) newAccessory.accessory1 = true;
+        if (slotNum === 2) newAccessory.accessory2 = true;
+
+        this.populateInventory();
+    }
+
+    /**
+     * Equipa un ítem regular (no accesorio)
+     */
+    equipRegularItem(key, item, itemData) {
+        // Casos especiales para armas y escudos (pueden ser combinados)
+        if (item.category === "weapon" || item.category === "shield") {
+            // Si es un escudo, verificar si hay un arma a dos manos equipada
+            if (item.category === "shield") {
+                const equippedWeapon = this.findEquippedItemByCategory("weapon");
+                if (equippedWeapon && this.player.getItemData(equippedWeapon).twoHanded) {
+                    // Desequipar el arma a dos manos si estamos equipando un escudo
+                    this.player.inventory.getInventory()[equippedWeapon].equipped = false;
+                }
+            }
+            // Si es un arma a dos manos, desequipar escudo si hay uno equipado
+            else if (item.twoHanded) {
+                const equippedShield = this.findEquippedItemByCategory("shield");
+                if (equippedShield) {
+                    this.player.inventory.getInventory()[equippedShield].equipped = false;
+                }
+            }
+
+            // Desequipar solo ítems de la misma categoría
+            const playerInventory = this.player.inventory.getInventory();
+            Object.keys(playerInventory).forEach((itemId) => {
+                const currentItem = this.player.getItemData(itemId);
+                if (currentItem.category === item.category && playerInventory[itemId].equipped) {
+                    playerInventory[itemId].equipped = false;
+                }
+            });
+        } else {
+            // Para el resto de categorías, comportamiento normal
+            const playerInventory = this.player.inventory.getInventory();
+            Object.keys(playerInventory).forEach((itemId) => {
+                const currentItem = this.player.getItemData(itemId);
+                if (currentItem.category === item.category && playerInventory[itemId].equipped) {
+                    playerInventory[itemId].equipped = false;
+                }
+            });
+        }
+
+        // Equipar el nuevo ítem
+        itemData.equipped = true;
+    }
+
+    /**
+     * Encuentra un ítem equipado por categoría
+     */
+    findEquippedItemByCategory(category) {
+        const playerInventory = this.player.inventory.getInventory();
+        return Object.keys(playerInventory).find((itemId) => {
+            const item = this.player.getItemData(itemId);
+            return item.category === category && playerInventory[itemId].equipped;
+        });
+    }
+
+    /**
+     * Quita un equipo
+     */
+    removeEquipItem(key, accessorySlot = 0) {
+        const itemData = this.player.inventory.getInventory()[key];
+
+        if (!itemData || !itemData.equipped) return;
+
+        const item = this.player.getItemData(key);
+
+        if (item.category === "accessory") {
+            if (accessorySlot === 1) {
+                itemData.accessory1 = false;
+            } else if (accessorySlot === 2) {
+                itemData.accessory2 = false;
+            } else {
+                // Si no se especifica ranura, quitar de ambas
+                itemData.accessory1 = false;
+                itemData.accessory2 = false;
+            }
+
+            // Si no está en ninguna ranura, marcar como no equipado
+            if (!itemData.accessory1 && !itemData.accessory2) {
+                itemData.equipped = false;
+            }
+        } else {
+            itemData.equipped = false;
+        }
+
         this.populateInventory();
     }
 }
