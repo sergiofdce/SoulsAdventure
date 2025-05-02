@@ -17,10 +17,13 @@ export class Fireplace extends NPC {
         this.discovered = false;
 
         // Diálogos alternativos para cuando ya ha sido descubierta
-        this.discoveredDialogue = ["¿Deseas viajar a otro lugar?"];
+        this.discoveredDialogue = ["¿Quieres descansar en la hoguera?"];
 
         // Guardar referencia a los diálogos iniciales
         this.initialDialogue = initialDialogues;
+
+        // Referencia al jugador
+        this.player = null;
     }
 
     registerFireplace() {
@@ -44,6 +47,9 @@ export class Fireplace extends NPC {
 
     // Sobrescribir el método interact para manejar el estado de descubrimiento
     interact(player) {
+        // Guardar referencia al jugador
+        this.player = player;
+
         // Verificar si ya hay un diálogo abierto
         const isDialogOpen = this.dialogManager.isDialogOpen();
 
@@ -75,21 +81,73 @@ export class Fireplace extends NPC {
 
     // Sobrescribir el método onChoiceSelected heredado de NPC
     onChoiceSelected(choice, player) {
-        if (choice === "Sí") {
-            // Iniciar teletransporte
-            this.dialogManager.dialogueText.textContent = `${this.name}: Preparando teletransporte...`;
+        if (this.discovered) {
+            if (choice === "Sí") {
+                // Descansar en la hoguera
+                this.dialogManager.dialogueText.textContent = `${this.name}: Los enemigos han reaparecido.`;
 
-            // Cerrar diálogo después de un breve retraso y lanzar la escena de teletransporte
-            setTimeout(() => {
+                console.log("Iniciando proceso de reaparecer enemigos");
+                console.log("Estado de la escena:", this.scene);
+                console.log("Método spawnEnemies disponible:", typeof this.scene.spawnEnemies === "function");
+
+                // Crear animación de neblina verde
+                this.createMistAnimation();
+
+                // Reaparecer enemigos
+                this.scene.spawnEnemies();
+
+                console.log("Enemigos reaparecidos, verificando estado:", this.scene.enemies);
+
+                // Después de un breve retraso, mostrar la opción de viajar
+                setTimeout(() => {
+                    this.dialogManager.dialogueText.textContent = `${this.name}: ¿Deseas viajar a otro lugar?`;
+                    this.dialogManager.showChoices();
+                }, 2000);
+            } else {
+                // Rechazar descanso
+                this.dialogManager.dialogueText.textContent = `${this.name}: Las llamas seguirán ardiendo para cuando las necesites.`;
                 this.dialogManager.closeDialog();
-                this.scene.scene.pause("GameScene");
-                this.scene.scene.launch("TeleportScene", { player: player });
-            }, 1500);
+            }
         } else {
-            // Rechazar teletransporte
-            this.dialogManager.dialogueText.textContent = `${this.name}: Las llamas seguirán ardiendo para cuando las necesites.`;
+            if (choice === "Sí") {
+                // Iniciar teletransporte
+                this.dialogManager.dialogueText.textContent = `${this.name}: Preparando teletransporte...`;
 
-            // El diálogo se cerrará automáticamente después de un tiempo gracias al DialogManager
+                // Cerrar diálogo después de un breve retraso y lanzar la escena de teletransporte
+                setTimeout(() => {
+                    this.dialogManager.closeDialog();
+                    this.scene.scene.pause("GameScene");
+                    this.scene.scene.launch("TeleportScene", { player: player });
+                }, 1500);
+            } else {
+                // Rechazar teletransporte
+                this.dialogManager.dialogueText.textContent = `${this.name}: Las llamas seguirán ardiendo para cuando las necesites.`;
+                this.dialogManager.closeDialog();
+            }
         }
+    }
+
+    createMistAnimation() {
+        // Crear un gráfico para la neblina
+        const mist = this.scene.add.graphics();
+
+        // Configurar el color y la transparencia
+        const color = 0x00ff00; // Verde
+        const alpha = 0.5;
+
+        // Dibujar un círculo de neblina
+        mist.fillStyle(color, alpha);
+        mist.fillCircle(this.sprite.x, this.sprite.y, 200);
+
+        // Animación de desvanecimiento
+        this.scene.tweens.add({
+            targets: mist,
+            alpha: 0,
+            duration: 2000,
+            ease: "Power2",
+            onComplete: () => {
+                mist.destroy();
+            },
+        });
     }
 }

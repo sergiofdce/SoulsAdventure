@@ -17,6 +17,10 @@ export class Enemy extends CombatEntity {
 
     // Lanzar Escena
     startCombat() {
+        console.log(`${this.name} iniciando combate`);
+        console.log("Estado del jugador:", this.scene.player);
+        console.log("Estado del enemigo:", this);
+
         this.scene.scene.launch("CombatScene", {
             player: this.scene.player,
             enemy: this,

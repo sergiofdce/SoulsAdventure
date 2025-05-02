@@ -31,7 +31,7 @@ export class CombatEntity extends Entity {
 
         // Update function
         this.updateEntity = () => {
-            if (this.sprite && this.scene.player) {
+            if (this.sprite && this.scene && this.scene.player && !this.isDestroyed) {
                 this.follow(this.scene.player);
 
                 if (this.playerRef && !this.isDestroyed) {
@@ -50,7 +50,10 @@ export class CombatEntity extends Entity {
             }
         };
 
-        this.scene.events.on("update", this.updateEntity);
+        // Esperar a que la escena esté lista antes de añadir el listener
+        scene.events.once("create", () => {
+            scene.events.on("update", this.updateEntity);
+        });
     }
 
     // Método centralizado para configurar el hitbox
@@ -72,7 +75,12 @@ export class CombatEntity extends Entity {
 
     // Seguir a player
     follow(player) {
+        if (!this.sprite || !this.sprite.body || this.isDestroyed) {
+            return;
+        }
+
         if (this.isInRange(player)) {
+            console.log(`${this.name} está siguiendo al jugador`);
             // Calcular dirección
             const directionX = player.sprite.x - this.sprite.x;
             const directionY = player.sprite.y - this.sprite.y;
@@ -103,9 +111,15 @@ export class CombatEntity extends Entity {
 
     // Detectar si el jugador está en el rango de interacción
     isInRange(entity) {
-        if (!entity || !entity.sprite || !this.sprite) return false;
+        if (!entity || !entity.sprite || !this.sprite) {
+            console.log(`${this.name} - Error: Entidad o sprite no encontrado`);
+            return false;
+        }
 
         const distance = Phaser.Math.Distance.Between(entity.sprite.x, entity.sprite.y, this.sprite.x, this.sprite.y);
+        console.log(
+            `${this.name} - Distancia al jugador: ${distance}, Radio de interacción: ${this.interactionRadius}`
+        );
 
         return distance <= this.interactionRadius;
     }
