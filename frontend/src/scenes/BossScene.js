@@ -474,7 +474,13 @@ export default class BossScene extends Phaser.Scene {
 
         // Verificar si hay una ventana de bloqueo activa
         if (this.isBlockWindowActive) {
-            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            this.addCombatLogMessage("¡No es buen momento para curarte.", "enemy-action");
+            // Verificar si la salud ya está al máximo
+            if (this.playerCurrentHealth >= this.playerMaxHealth) {
+                // Mostrar mensaje especial
+                this.addCombatLogMessage("¡No es buen momento para curarte.", "combat-info");
+            }
+
             return;
         }
 
