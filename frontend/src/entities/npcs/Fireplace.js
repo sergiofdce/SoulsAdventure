@@ -84,7 +84,7 @@ export class Fireplace extends NPC {
         if (this.discovered) {
             if (choice === "Sí") {
                 // Descansar en la hoguera
-                this.dialogManager.dialogueText.textContent = `${this.name}: Los enemigos han reaparecido.`;
+                this.dialogManager.dialogueText.textContent = `${this.name}: Los enemigos han reaparecido y tus pociones han sido restablecidas.`;
 
                 console.log("Iniciando proceso de reaparecer enemigos");
                 console.log("Estado de la escena:", this.scene);
@@ -95,6 +95,9 @@ export class Fireplace extends NPC {
 
                 // Reaparecer enemigos
                 this.scene.spawnEnemies();
+
+                // Reponer pociones de salud hasta su máximo
+                this.replenishHealthPotions(player);
 
                 console.log("Enemigos reaparecidos, verificando estado:", this.scene.enemies);
 
@@ -123,6 +126,26 @@ export class Fireplace extends NPC {
                 // Rechazar teletransporte
                 this.dialogManager.dialogueText.textContent = `${this.name}: Las llamas seguirán ardiendo para cuando las necesites.`;
                 this.dialogManager.closeDialog();
+            }
+        }
+    }
+
+    // Nuevo método para reponer pociones de salud
+    replenishHealthPotions(player) {
+        if (!player || !player.inventory) return;
+
+        // Buscar la poción de salud en el inventario
+        const itemId = "pocion-salud";
+        const inventoryData = player.inventory.data.items[itemId];
+
+        if (inventoryData) {
+            // Obtener la información completa del ítem para conocer su maxQuantity
+            const itemData = player.inventory.getItemData(itemId);
+
+            if (itemData && itemData.maxQuantity) {
+                // Reponer hasta el máximo
+                inventoryData.quantity = itemData.maxQuantity;
+                console.log(`Pociones de salud reabastecidas a ${itemData.maxQuantity}`);
             }
         }
     }

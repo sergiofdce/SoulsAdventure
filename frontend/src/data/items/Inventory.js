@@ -30,7 +30,7 @@ export default class Inventory {
                     equipped: false,
                 },
                 "pocion-salud": {
-                    quantity: 3,
+                    quantity: 1,
                     equipped: false,
                 },
             },

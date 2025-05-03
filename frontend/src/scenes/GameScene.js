@@ -37,13 +37,13 @@ export default class GameScene extends Phaser.Scene {
         this.setupMap();
 
         // Generar Trainer
-        //this.spawnTrainer();
+        this.spawnTrainer();
 
         // Generar hogueras
-        //this.spawnFireplaces();
+        this.spawnFireplaces();
 
         // Generar enemigos en el mapa
-        //this.spawnEnemies();
+        this.spawnEnemies();
 
         // Generar Bosses
         //this.spawnBosses();
@@ -167,12 +167,12 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnTrainer() {
-        this.trainer = new Trainer(this, 350, 200, "trainer");
+        this.trainer = new Trainer(this, 700, 700, "trainer");
     }
 
     spawnFireplaces() {
         // Hoguera principal
-        const fireplace1 = new Fireplace(this, 450, 200, "fireplace");
+        const fireplace1 = new Fireplace(this, 600, 670, "fireplace");
         fireplace1.fireplaceName = "01 Hoguera del Entrenador";
         fireplace1.sprite.setTint(0xff6b6b);
         this.fireplaces.push(fireplace1);

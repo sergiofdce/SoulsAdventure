@@ -50,10 +50,7 @@ export class InteractableObject extends Entity {
 
         // Ajustar tamaño según el tipo de objeto
         let scale = 0.5;
-        if (itemData.category === "weapon") scale = 0.6;
-        else if (itemData.category === "shield") scale = 0.7;
-        else if (itemData.category === "consumable") scale = 0.4;
-
+        
         // Escalar el sprite
         this.setupSprite(this.sprite, scale);
 
@@ -143,6 +140,31 @@ export class InteractableObject extends Entity {
 
         // Añadir el item al inventario del jugador
         if (player.addItem(this.itemId, 1)) {
+            // Si es poción de salud, incrementar maxQuantity
+            if (this.itemId === "pocion-salud") {
+                // Obtener el objeto de la poción
+                const pocionData = player.inventory.getItemData(this.itemId);
+
+                if (pocionData) {
+                    // Incrementar el máximo de pociones que puede llevar
+                    const currentMax = pocionData.maxQuantity || 3;
+                    const newMax = currentMax + 1;
+
+                    // Actualizar la información en la base de datos
+                    const allItems = ItemsDatabase.getAllItems();
+                    if (allItems[this.itemId]) {
+                        allItems[this.itemId].maxQuantity = newMax;
+                        console.log(`Capacidad máxima de pociones aumentada a: ${newMax}`);
+                    }
+
+                    // Mostrar mensaje especial indicando el aumento de capacidad
+                    this.showFloatingText(`+1 ${this.itemName}\n¡Capacidad máxima aumentada!`);
+                }
+            } else {
+                // Mensaje flotante normal para otros objetos
+                this.showFloatingText(`+1 ${this.itemName}`);
+            }
+
             // Marcar como recogido
             this.collected = true;
 
@@ -160,9 +182,6 @@ export class InteractableObject extends Entity {
                     this.sprite.destroy();
                 },
             });
-
-            // Mensaje flotante de confirmación
-            this.showFloatingText(`+1 ${this.itemName}`);
         }
     }
 

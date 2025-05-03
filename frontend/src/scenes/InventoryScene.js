@@ -164,6 +164,11 @@ export default class InventoryScene extends Phaser.Scene {
             }
         });
 
+        // Ordenar los items no equipados por categoría
+        unequippedItems.sort((a, b) => {
+            return this.getCategoryOrderValue(a.item.category) - this.getCategoryOrderValue(b.item.category);
+        });
+
         // Mostrar primero los ítems equipados
         this.renderItemsList(equippedItems, inventoryItemsContainer, true);
         this.renderItemsList(unequippedItems, inventoryItemsContainer, false);
@@ -173,6 +178,25 @@ export default class InventoryScene extends Phaser.Scene {
 
         // Mostrar los atributos del jugador después de actualizar el inventario
         this.showAttributes();
+    }
+
+    /**
+     * Devuelve un valor numérico para ordenar categorías de ítems
+     * Orden: weapons, armor, shields, accessories, consumables
+     */
+    getCategoryOrderValue(category) {
+        const categoryOrder = {
+            weapon: 1,
+            shield: 2,
+            helmet: 3,
+            chest: 3,
+            glove: 3,
+            shoes: 3,
+            accessory: 4,
+            consumable: 5,
+        };
+
+        return categoryOrder[category];
     }
 
     /**
@@ -261,7 +285,6 @@ export default class InventoryScene extends Phaser.Scene {
         }
     }
 
-
     showAttributes(useDelay = true) {
         // Si se requiere delay y no estamos ya dentro de un callback de temporizador
         if (useDelay && !this.attributesTimer) {
@@ -286,7 +309,7 @@ export default class InventoryScene extends Phaser.Scene {
         const resistance = this.player.resistance || 0;
         const defense = this.player.defense || 0;
         const totalResistance = resistance + defense;
-        
+
         // Crear contenido usando grid para mejor organización
         statsContainer.innerHTML = `
             <div id="inventory-stats-player" class="stats-grid">
