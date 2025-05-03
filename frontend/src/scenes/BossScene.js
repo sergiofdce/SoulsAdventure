@@ -16,6 +16,36 @@ export default class BossScene extends Phaser.Scene {
         this.syncMarker = null;
         this.syncZone = null;
         this.syncTween = null;
+
+        // Constantes para combate (importadas de CombatScene)
+        this.COMBAT = {
+            LIGHT_ATTACK: {
+                BASE_HIT_CHANCE: 0.9,
+                SPEED_HIT_BONUS: 0.01,
+                DAMAGE_MULTIPLIER: 0.8,
+                CRITICAL_THRESHOLD: 5,
+                CRITICAL_MULTIPLIER: 1.5,
+            },
+            HEAVY_ATTACK: {
+                BASE_HIT_CHANCE: 0.7,
+                SPEED_HIT_BONUS: 0.01,
+                DAMAGE_MULTIPLIER: 1.2,
+                BASE_STUN_CHANCE: 0.2,
+                STRENGTH_STUN_BONUS: 0.02,
+                STUN_DURATION: 1,
+            },
+            BLOCK: {
+                BASE_TOTAL_BLOCK_CHANCE: 0.3,
+                RESISTANCE_BLOCK_BONUS: 0.01,
+                MAX_TOTAL_BLOCK_CHANCE: 0.7,
+                BASE_DAMAGE_REDUCTION: 0.3,
+                DEFENSE_REDUCTION_BONUS: 0.02,
+                RESISTANCE_REDUCTION_BONUS: 0.01,
+                MAX_DAMAGE_REDUCTION: 0.7,
+                COUNTER_ATTACK_DAMAGE_SPEED: 0.5,
+                COUNTER_ATTACK_DAMAGE_STRENGTH: 0.3,
+            },
+        };
     }
 
     // Método init que recibe instancia de Player y Enemy
@@ -246,18 +276,210 @@ export default class BossScene extends Phaser.Scene {
         this.scheduleNextAction();
     }
 
-    handleAttack() {
+    handleAttackLight() {
         if (!this.combatActive) return;
 
-        // Verificar si el jefe está en modo esquive
-        if (this.enemy.getCurrentAction() === 1) {
-            this.addCombatLogMessage("¡Ataque exitoso!", "player-action");
-            this.playPlayerAnimation("light-attack");
-            this.applyDamageToEnemy();
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
+
+        // Reproducir animación de ataque ligero
+        this.playPlayerAnimation("light-attack");
+
+        // Ejecutar ataque ligero
+        this.addCombatLogMessage("Has realizado un ataque rápido.", "player-action");
+
+        // Calcular probabilidad de acierto basada en velocidad
+        const speedDifference = this.player.speed - this.enemy.speed;
+        const hitChance =
+            this.COMBAT.LIGHT_ATTACK.BASE_HIT_CHANCE + speedDifference * this.COMBAT.LIGHT_ATTACK.SPEED_HIT_BONUS;
+        const roll = Math.random();
+
+        // Verificar si el ataque acierta
+        if (roll <= hitChance) {
+            // Calcular daño base según velocidad
+            let damage = Math.ceil(this.player.speed * this.COMBAT.LIGHT_ATTACK.DAMAGE_MULTIPLIER);
+
+            // Verificar si es golpe crítico (si la diferencia de velocidad supera el umbral)
+            let isCritical = false;
+            if (speedDifference >= this.COMBAT.LIGHT_ATTACK.CRITICAL_THRESHOLD) {
+                damage = Math.ceil(damage * this.COMBAT.LIGHT_ATTACK.CRITICAL_MULTIPLIER);
+                isCritical = true;
+            }
+
+            // Aplicar daño
+            this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+
+            // Mostrar mensaje según si fue crítico o no
+            if (isCritical) {
+                this.addCombatLogMessage(`¡CRÍTICO! Has causado ${damage} puntos de daño al enemigo.`, "critical-hit");
+            } else {
+                this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+            }
+
+            // Verificar fin de combate antes de programar la animación de hit
+            if (!this.checkCombatEnd()) {
+                // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
+                this.time.delayedCall(300, () => {
+                    if (!this.checkCombatEnd()) {
+                        this.playEnemyAnimation("hit");
+                    }
+                });
+
+                // Esperar a que termine la animación antes de continuar
+                this.time.delayedCall(1000, () => {
+                    // Volver a la animación de idle
+                    this.playPlayerAnimation("idle");
+                    this.playEnemyAnimation("idle");
+                });
+            }
         } else {
-            this.addCombatLogMessage("¡El jefe te ha contraatacado!", "enemy-action");
-            this.playEnemyAnimation("heavy-attack");
-            this.applyDamageToPlayer();
+            // El ataque falla
+            this.addCombatLogMessage("Tu ataque ha fallado.", "combat-info");
+
+            // Esperar a que termine la animación antes de continuar
+            this.time.delayedCall(1000, () => {
+                // Volver a la animación de idle
+                this.playPlayerAnimation("idle");
+            });
+        }
+    }
+
+    handleAttackHeavy() {
+        if (!this.combatActive) return;
+
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
+
+        // Reproducir animación de ataque pesado
+        this.playPlayerAnimation("heavy-attack");
+
+        // Ejecutar ataque pesado
+        this.addCombatLogMessage("Has realizado un ataque pesado.", "player-action");
+
+        // Calcular probabilidad de acierto basada en velocidad
+        const speedDifference = this.player.speed - this.enemy.speed;
+        const hitChance =
+            this.COMBAT.HEAVY_ATTACK.BASE_HIT_CHANCE + speedDifference * this.COMBAT.HEAVY_ATTACK.SPEED_HIT_BONUS;
+        const roll = Math.random();
+
+        // Verificar si el ataque acierta
+        if (roll <= hitChance) {
+            // Calcular daño basado en fuerza
+            const damage = Math.ceil(this.player.strength * this.COMBAT.HEAVY_ATTACK.DAMAGE_MULTIPLIER);
+
+            // Aplicar daño
+            this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+            this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+
+            // Verificar fin de combate antes de programar la animación de hit
+            if (!this.checkCombatEnd()) {
+                // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
+                this.time.delayedCall(300, () => {
+                    if (!this.checkCombatEnd()) {
+                        this.playEnemyAnimation("hit");
+                    }
+                });
+
+                // Esperar a que termine la animación antes de continuar
+                this.time.delayedCall(1000, () => {
+                    // Volver a la animación de idle
+                    this.playPlayerAnimation("idle");
+                    this.playEnemyAnimation("idle");
+                });
+            }
+        } else {
+            // El ataque falla
+            this.addCombatLogMessage("Tu ataque pesado ha fallado.", "combat-info");
+
+            // Esperar a que termine la animación antes de continuar
+            this.time.delayedCall(1000, () => {
+                // Volver a la animación de idle
+                this.playPlayerAnimation("idle");
+            });
+        }
+    }
+
+    handleHeal() {
+        if (!this.combatActive) return;
+
+        // Verificar si hay una ventana de bloqueo activa
+        if (this.isBlockWindowActive) {
+            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            return;
+        }
+
+        // Comprobar si el jugador tiene pociones
+        const potionItem = this.player.inventory.getItemData("pocion-salud");
+        if (!potionItem || potionItem.quantity <= 0) {
+            this.addCombatLogMessage("¡No tienes pociones de salud!", "combat-info");
+            return;
+        }
+
+        // Verificar si la salud ya está al máximo
+        if (this.playerCurrentHealth >= this.playerMaxHealth) {
+            // Mostrar mensaje especial
+            this.addCombatLogMessage(
+                "¡Wow! Has malgastado una poción con la vida al máximo, así no funciona",
+                "combat-info"
+            );
+
+            // Consumir una poción de todos modos
+            this.player.deleteItem("pocion-salud");
+
+            // Actualizar el contador de pociones
+            this.updatePotionCounter();
+
+            // Finalizar turno después de un momento
+            return;
+        }
+
+        // Aplicar la nueva fórmula de curación
+        const healAmount = Math.ceil(this.playerMaxHealth * 0.2 + this.player.resistance * 2);
+
+        // Aplicar curación
+        this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);
+        this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+        this.addCombatLogMessage(`Has usado una poción y recuperado ${healAmount} puntos de vida.`, "heal-action");
+
+        // Consumir una poción
+        this.player.deleteItem("pocion-salud");
+
+        // Actualizar el contador de pociones
+        this.updatePotionCounter();
+
+        // Finalizar la animación después de un tiempo
+        this.time.delayedCall(1000, () => {
+            // Volver a la animación de idle
+            this.playPlayerAnimation("idle");
+        });
+    }
+
+    updatePotionCounter() {
+        const potionCounter = document.getElementById("potion-counter");
+        if (potionCounter) {
+            let potionItem = this.player.inventory.getItemData("pocion-salud");
+            let potionCount = potionItem ? potionItem.quantity : 0;
+
+            potionCounter.textContent = potionCount;
+
+            // Deshabilitar el botón de curación si no hay pociones
+            const healButton = document.querySelector(".combat-button.heal");
+            if (healButton) {
+                healButton.disabled = potionCount <= 0;
+                if (potionCount <= 0) {
+                    healButton.classList.add("disabled");
+                } else {
+                    healButton.classList.remove("disabled");
+                }
+            }
         }
     }
 
@@ -343,6 +565,9 @@ export default class BossScene extends Phaser.Scene {
         // Actualizar barras de salud
         this.updateHealthBar("player", this.player.health, this.player.maxHealth);
         this.updateHealthBar("enemy", this.enemy.health, this.enemy.health);
+
+        // Actualizar contador de pociones
+        this.updatePotionCounter();
 
         // Añadir animaciones de Player
         this.setupPlayerAnimations();
@@ -737,107 +962,6 @@ export default class BossScene extends Phaser.Scene {
                 healthBar.style.backgroundColor = "rgb(255, 0, 0)";
             }
         }
-    }
-
-    handleAttackLight() {
-        if (!this.combatActive) return;
-
-        // Verificar si hay una ventana de bloqueo activa
-        if (this.isBlockWindowActive) {
-            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
-            return;
-        }
-
-        // Reproducir animación de ataque ligero
-        this.playPlayerAnimation("light-attack");
-
-        // Ejecutar ataque ligero
-        this.addCombatLogMessage("Has realizado un ataque ligero.", "player-action");
-        // Calcular y aplicar daño
-        const damage = Math.ceil(8 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
-        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
-        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-        this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
-
-        // Verificar fin de combate antes de programar la animación de hit
-        if (!this.checkCombatEnd()) {
-            // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
-            this.time.delayedCall(300, () => {
-                if (!this.checkCombatEnd()) {
-                    this.playEnemyAnimation("hit");
-                }
-            });
-
-            // Esperar a que termine la animación antes de continuar
-            this.time.delayedCall(1000, () => {
-                // Volver a la animación de idle
-                this.playPlayerAnimation("idle");
-                this.playEnemyAnimation("idle");
-            });
-        }
-    }
-
-    handleAttackHeavy() {
-        if (!this.combatActive) return;
-
-        // Verificar si hay una ventana de bloqueo activa
-        if (this.isBlockWindowActive) {
-            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
-            return;
-        }
-
-        // Reproducir animación de ataque pesado
-        this.playPlayerAnimation("heavy-attack");
-
-        // Ejecutar ataque pesado
-        this.addCombatLogMessage("Has realizado un ataque pesado.", "player-action");
-        // Calcular y aplicar daño (más alto que el ataque ligero)
-        const damage = Math.ceil(15 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
-        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
-        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-        this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
-
-        // Verificar fin de combate antes de programar la animación de hit
-        if (!this.checkCombatEnd()) {
-            // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
-            this.time.delayedCall(300, () => {
-                if (!this.checkCombatEnd()) {
-                    this.playEnemyAnimation("hit");
-                }
-            });
-
-            // Esperar a que termine la animación antes de continuar
-            this.time.delayedCall(1000, () => {
-                // Volver a la animación de idle
-                this.playPlayerAnimation("idle");
-                this.playEnemyAnimation("idle");
-            });
-        }
-    }
-
-    handleHeal() {
-        if (!this.combatActive) return;
-
-        // Verificar si hay una ventana de bloqueo activa
-        if (this.isBlockWindowActive) {
-            this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
-            return;
-        }
-
-        // Calcular curación basada en resistencia
-        const healPercent = 0.1 + this.player.resistance * 0.005;
-        const healAmount = Math.ceil(this.playerMaxHealth * healPercent);
-
-        // Aplicar curación
-        this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);
-        this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-        this.addCombatLogMessage(`Te has curado ${healAmount} puntos de vida.`, "heal-action");
-
-        // Finalizar la animación después de un tiempo
-        this.time.delayedCall(1000, () => {
-            // Volver a la animación de idle
-            this.playPlayerAnimation("idle");
-        });
     }
 
     enablePlayerControls() {
