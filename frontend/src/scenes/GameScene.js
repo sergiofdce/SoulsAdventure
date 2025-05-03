@@ -46,7 +46,7 @@ export default class GameScene extends Phaser.Scene {
         this.spawnEnemies();
 
         // Generar Bosses
-        //this.spawnBosses();
+        this.spawnBosses();
 
         // Generar objetos en el mapa
         this.spawnObjects();
@@ -215,15 +215,7 @@ export default class GameScene extends Phaser.Scene {
         console.log("Nuevos enemigos creados:", this.enemies.length);
 
         // Configurar colisiones y eventos para los nuevos enemigos
-        if (this.mapManager && this.mapManager.collisionLayer) {
-            this.enemies.forEach((enemy) => {
-                if (enemy.sprite && this.mapManager.collisionLayer) {
-                    // Configurar colisiones con el mapa
-                    this.physics.add.collider(enemy.sprite, this.mapManager.collisionLayer);
-                    console.log(`Configuradas colisiones con mapa para ${enemy.name}`);
-                }
-            });
-        }
+        this.setupEnemyMapCollisions();
 
         // Configurar colisiones con el jugador si ya existe
         if (this.player) {
@@ -241,6 +233,27 @@ export default class GameScene extends Phaser.Scene {
                 }
             });
         }
+    }
+
+    // Nuevo método para configurar colisiones de enemigos con todas las capas de colisión del mapa
+    setupEnemyMapCollisions() {
+        if (!this.mapManager) return;
+        const collisionLayers = [
+            this.mapManager.collisionLayer,
+            this.mapManager.collisionLayer1,
+            this.mapManager.collisionLayer2,
+            this.mapManager.collisionLayer3,
+            this.mapManager.perspectiveLayer,
+        ].filter(Boolean);
+
+        this.enemies.forEach((enemy) => {
+            if (enemy.sprite) {
+                collisionLayers.forEach((layer) => {
+                    this.physics.add.collider(enemy.sprite, layer);
+                });
+                console.log(`Configuradas colisiones con mapa para ${enemy.name}`);
+            }
+        });
     }
 
     spawnBosses() {
