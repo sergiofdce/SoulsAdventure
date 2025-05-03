@@ -186,16 +186,9 @@ const ItemsDatabase = {
         "pocion-salud": new Consumable(
             "pocion-salud",
             "Poción de Salud",
-            "Restaura 50 puntos de vida al instante.",
+            "Restaura puntos de vida durante el combate.",
             "./assets/items/consumables/pocion-salud.png",
-            "restore-health-50"
-        ),
-        "frasco-almas": new Consumable(
-            "frasco-almas",
-            "Frasco de Almas",
-            "Aumenta las Almas de forma aleatoria",
-            "./assets/items/consumables/frasco-almas.png",
-            "boost-souls-20-60"
+            "restore-health"
         ),
     },
 

@@ -3708,3 +3708,24 @@ MARK: Combate
 .stat-value .max-value {
     color: #9E9E9E;
 }
+
+/* Estilos para el contador de pociones */
+.potion-counter {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.combat-button {
+    position: relative;
+}

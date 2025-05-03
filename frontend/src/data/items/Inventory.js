@@ -33,10 +33,6 @@ export default class Inventory {
                     quantity: 3,
                     equipped: false,
                 },
-                "frasco-almas": {
-                    quantity: 1,
-                    equipped: false,
-                },
             },
         };
 

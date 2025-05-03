@@ -108,11 +108,34 @@ export default class CombatScene extends Phaser.Scene {
         this.updateHealthBar("player", this.player.health, this.player.maxHealth);
         this.updateHealthBar("enemy", this.enemy.health, this.enemy.health);
 
+        // Actualizar contador de pociones
+        this.updatePotionCounter();
+
         // Añadir animaciones de Player
         this.setupPlayerAnimations();
 
         // Añadir animaciones del enemigo
         this.setupEnemyAnimations();
+    }
+
+    // Nuevo método para actualizar el contador de pociones
+    updatePotionCounter() {
+        const potionCounter = document.getElementById("potion-counter");
+        let potionItem = this.player.inventory.getItemData("pocion-salud");
+        let potionCount = potionItem ? potionItem.quantity : 0;
+
+        potionCounter.textContent = potionCount;
+
+        // Deshabilitar el botón de curación si no hay pociones
+        const healButton = document.querySelector(".combat-button.heal");
+        if (healButton) {
+            healButton.disabled = potionCount <= 0;
+            if (potionCount <= 0) {
+                healButton.classList.add("disabled");
+            } else {
+                healButton.classList.remove("disabled");
+            }
+        }
     }
 
     // Configurar sistema de animaciones para el jugador
@@ -519,7 +542,6 @@ export default class CombatScene extends Phaser.Scene {
         // Bloquear
         const blockBtn = document.querySelector(".combat-button.dodge");
         if (blockBtn) {
-
             blockBtn.addEventListener("click", () => {
                 // Verificar explícitamente si es el turno del jugador antes de procesar
                 if (this.isPlayerTurn && this.combatActive && !blockBtn.disabled) {
@@ -693,17 +715,50 @@ export default class CombatScene extends Phaser.Scene {
     handleHeal() {
         if (!this.isPlayerTurn || !this.combatActive) return;
 
+        // Comprobar si el jugador tiene pociones
+        const potionItem = this.player.inventory.getItemData("pocion-salud");
+        if (!potionItem || potionItem.quantity <= 0) {
+            this.addCombatLogMessage("¡No tienes pociones de salud!", "combat-info");
+            return;
+        }
+
+        // Verificar si la salud ya está al máximo
+        if (this.playerCurrentHealth >= this.playerMaxHealth) {
+            // Mostrar mensaje especial
+            this.addCombatLogMessage(
+                "¡Wow! Has malgastado una poción con la vida al máximo, así no funciona",
+                "combat-info"
+            );
+
+            // Consumir una poción de todos modos
+            this.player.deleteItem("pocion-salud");
+
+            // Actualizar contador de pociones
+            this.updatePotionCounter();
+
+            // Finalizar turno después de un momento
+            this.time.delayedCall(1000, () => {
+                this.endTurn();
+            });
+            return;
+        }
+
         // Desactivar controles para evitar múltiples acciones
         this.disablePlayerControls();
 
-        // Calcular curación basada en resistencia
-        const healPercent = 0.1 + this.player.resistance * 0.005;
-        const healAmount = Math.ceil(this.playerMaxHealth * healPercent);
+        // Aplicar la nueva fórmula de curación
+        const healAmount = Math.ceil(this.playerMaxHealth * 0.2 + this.player.resistance * 2);
 
         // Aplicar curación
         this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);
         this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-        this.addCombatLogMessage(`Te has curado ${healAmount} puntos de vida.`, "heal-action");
+        this.addCombatLogMessage(`Has usado una poción y recuperado ${healAmount} puntos de vida.`, "heal-action");
+
+        // Consumir una poción
+        this.player.deleteItem("pocion-salud");
+
+        // Actualizar contador de pociones
+        this.updatePotionCounter();
 
         // Finalizar turno después de que termine la animación
         this.time.delayedCall(1000, () => {

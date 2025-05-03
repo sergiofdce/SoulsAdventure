@@ -30,10 +30,11 @@ export class Accessory extends Item {
 }
 
 export class Consumable extends Item {
-    constructor(id, name, description, image, effect = "", quantity = 0) {
+    constructor(id, name, description, image, effect = "", quantity = 0, maxQuantity = 99) {
         super(id, name, "consumable", description, image, quantity, false);
         this.effect = effect;
         this.equipped = false;
+        this.maxQuantity = maxQuantity;
     }
 }
 
