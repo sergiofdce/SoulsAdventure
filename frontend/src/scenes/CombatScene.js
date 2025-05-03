@@ -516,11 +516,10 @@ export default class CombatScene extends Phaser.Scene {
             });
         }
 
-        // Bloquear (usando el botón "dodge" para implementar bloqueo)
+        // Bloquear
         const blockBtn = document.querySelector(".combat-button.dodge");
         if (blockBtn) {
-            // Cambiar el texto del botón para reflejar la nueva funcionalidad
-            blockBtn.textContent = "Bloquear";
+
             blockBtn.addEventListener("click", () => {
                 // Verificar explícitamente si es el turno del jugador antes de procesar
                 if (this.isPlayerTurn && this.combatActive && !blockBtn.disabled) {
