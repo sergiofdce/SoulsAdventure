@@ -47,8 +47,7 @@ export class EnanoFuego extends Enemy {
             idle: { start: 0, end: 5, frameRate: 5, repeat: -1 },
             walk: { start: 0, end: 5, frameRate: 10, repeat: -1 },
             hit: { start: 18, end: 23, frameRate: 8, repeat: 0 },
-            "light-attack": { start: 12, end: 17, frameRate: 8, repeat: 0 },
-            "heavy-attack": { start: 12, end: 17, frameRate: 8, repeat: 0 },
+            attack: { start: 12, end: 17, frameRate: 8, repeat: 0 },
             death: { start: 24, end: 29, frameRate: 5, repeat: 0 },
         };
     }

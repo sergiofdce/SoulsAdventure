@@ -41,7 +41,7 @@ export default class GameScene extends Phaser.Scene {
         //this.spawnFireplaces();
 
         // Generar enemigos en el mapa
-        //this.spawnEnemies();
+        this.spawnEnemies();
 
         // Generar Bosses
         //this.spawnBosses();
@@ -194,7 +194,7 @@ export default class GameScene extends Phaser.Scene {
         // Limpiar el array de enemigos
         this.enemies = [];
 
-        const enemyConfigs = [{ type: EnanoFuego, x: 300, y: 100 }];
+        const enemyConfigs = [{ type: EnanoFuego, x: 500, y: 600 }];
 
         enemyConfigs.forEach(({ type, x, y }) => {
             const enemy = new type(this, x, y);

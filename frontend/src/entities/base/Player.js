@@ -15,7 +15,7 @@ export default class Player extends Entity {
         this.health = 100;
         this.resistance = 3;
         this.strength = 5;
-        this.speed = 233;
+        this.speed = 7;
 
         // Atributos equipación
         this.damage = 0;

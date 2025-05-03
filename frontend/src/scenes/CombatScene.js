@@ -1,3 +1,5 @@
+import { COMBAT } from "../config/constants.js";
+
 export default class CombatScene extends Phaser.Scene {
     constructor() {
         super({ key: "CombatScene" });
@@ -524,27 +526,67 @@ export default class CombatScene extends Phaser.Scene {
         this.playPlayerAnimation("light-attack");
 
         // Ejecutar ataque ligero
-        this.addCombatLogMessage("Has realizado un ataque ligero.", "player-action");
-        // Calcular y aplicar daño
-        const damage = Math.ceil(8 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
-        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
-        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-        this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+        this.addCombatLogMessage("Has realizado un ataque rápido.", "player-action");
 
-        // Verificar fin de combate antes de programar la animación de hit
-        if (!this.checkCombatEnd()) {
-            // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
-            this.time.delayedCall(300, () => {
-                if (!this.checkCombatEnd()) {
+        // Calcular probabilidad de acierto basada en velocidad
+        const speedDifference = this.player.speed - this.enemy.speed;
+        const hitChance = COMBAT.LIGHT_ATTACK.BASE_HIT_CHANCE + speedDifference * COMBAT.LIGHT_ATTACK.SPEED_HIT_BONUS;
+        const roll = Math.random();
+
+        // Verificar si el ataque acierta
+        if (roll <= hitChance) {
+            // Calcular daño base según velocidad
+            let damage = Math.ceil(this.player.speed * COMBAT.LIGHT_ATTACK.DAMAGE_MULTIPLIER);
+
+            // Verificar si es golpe crítico (si la diferencia de velocidad supera el umbral)
+            let isCritical = false;
+            if (speedDifference >= COMBAT.LIGHT_ATTACK.CRITICAL_THRESHOLD) {
+                damage = Math.ceil(damage * COMBAT.LIGHT_ATTACK.CRITICAL_MULTIPLIER);
+                isCritical = true;
+            }
+
+            // Aplicar daño
+            this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+
+            // Mostrar mensaje según si fue crítico o no
+            if (isCritical) {
+                this.addCombatLogMessage(`¡CRÍTICO! Has causado ${damage} puntos de daño al enemigo.`, "critical-hit");
+            } else {
+                this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+            }
+
+            // Verificar si el combate ha terminado después de aplicar daño
+            const combatEnded = this.checkCombatEnd();
+
+            // Solo continuar con las animaciones si el combate no ha terminado
+            if (!combatEnded) {
+                // Reproducir animación de golpe recibido
+                this.time.delayedCall(300, () => {
                     this.playEnemyAnimation("hit");
-                }
-            });
+                });
+
+                // Esperar a que termine la animación antes de finalizar el turno
+                this.time.delayedCall(1000, () => {
+                    // Volver a la animación de idle
+                    this.playPlayerAnimation("idle");
+                    this.playEnemyAnimation("idle");
+
+                    // Finalizar turno después de un momento adicional
+                    this.time.delayedCall(500, () => {
+                        this.endTurn();
+                    });
+                });
+            }
+        } else {
+            // El ataque falla
+            this.addCombatLogMessage("Tu ataque ha fallado.", "combat-info");
 
             // Esperar a que termine la animación antes de finalizar el turno
             this.time.delayedCall(1000, () => {
                 // Volver a la animación de idle
                 this.playPlayerAnimation("idle");
-                this.playEnemyAnimation("idle");
+
                 // Finalizar turno después de un momento adicional
                 this.time.delayedCall(500, () => {
                     this.endTurn();
@@ -661,44 +703,22 @@ export default class CombatScene extends Phaser.Scene {
 
             // Añadir un delay adicional para dar tiempo a leer el mensaje antes de realizar la acción
             this.time.delayedCall(1500, () => {
-                // El enemigo solo puede elegir entre ataque ligero y pesado
-                const action = Math.random() < 0.5 ? "light" : "heavy";
+                // El enemigo ahora tiene un único tipo de ataque
+                this.addCombatLogMessage(`${this.enemy.name} te ha atacado.`, "enemy-action");
 
-                if (action === "light") {
-                    // Ataque ligero del enemigo
-                    this.addCombatLogMessage(`${this.enemy.name} ha realizado un ataque ligero.`, "enemy-action");
-                    // Reproducir animación de ataque ligero
-                    this.playEnemyAnimation("light-attack");
-                    // Calcular daño
-                    const baseDamage = 6;
-                    const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
-                    const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
-                    const damage = Math.ceil(baseDamage * enemyStrengthMultiplier * resistanceMultiplier);
-                    // Mostrar animación de jugador recibiendo daño
-                    this.playPlayerAnimation("hit");
-                    // Aplicar daño
-                    this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
-                    this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-                    this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
-                } else {
-                    // Ataque pesado del enemigo
-                    this.addCombatLogMessage(`${this.enemy.name} ha realizado un ataque pesado.`, "enemy-action");
-                    // Reproducir animación de ataque pesado
-                    this.playEnemyAnimation("heavy-attack");
-                    // Calcular daño (mayor al ataque ligero)
-                    const baseDamage = 12;
-                    const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
-                    const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
-                    const damage = Math.ceil(baseDamage * enemyStrengthMultiplier * resistanceMultiplier);
+                // Reproducir animación de ataque
+                this.playEnemyAnimation("attack");
 
-                    // Mostrar animación de jugador recibiendo daño
-                    this.playPlayerAnimation("hit");
+                // Usar directamente el valor de strength como daño
+                const damage = this.enemy.strength;
 
-                    // Aplicar daño
-                    this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
-                    this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-                    this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
-                }
+                // Mostrar animación de jugador recibiendo daño
+                this.playPlayerAnimation("hit");
+
+                // Aplicar daño
+                this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
+                this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+                this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
 
                 // Verificar fin de combate
                 if (!this.checkCombatEnd()) {
