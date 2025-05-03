@@ -117,11 +117,18 @@ export class DialogManager {
                 return;
             }
 
-            if (!this.currentEntity.isInRange(this.currentPlayer) && this.dialogueBox.style.display === "block") {
-                // El jugador se alejó, cerrar diálogo
-                this.closeDialog();
+            // Verificar si la entidad tiene el método isInRange
+            if (typeof this.currentEntity.isInRange === "function") {
+                if (!this.currentEntity.isInRange(this.currentPlayer) && this.dialogueBox.style.display === "block") {
+                    // El jugador se alejó, cerrar diálogo
+                    console.log("Jugador fuera de rango, cerrando diálogo");
+                    this.closeDialog();
+                }
+            } else {
+                console.warn("La entidad no tiene un método isInRange válido");
+                this.stopDistanceCheck();
             }
-        }, 500); // Verificar cada medio segundo
+        }, 300); // Verificar más frecuentemente (300ms)
     }
 
     stopDistanceCheck() {

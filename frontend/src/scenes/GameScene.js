@@ -13,6 +13,7 @@ import { Lobo } from "../entities/bosses/Lobo.js";
 // Otros
 import { Trainer } from "../entities/npcs/Trainer.js";
 import { Fireplace } from "../entities/npcs/Fireplace.js";
+import { InteractableObject } from "../entities/interactables/Objects.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -20,6 +21,7 @@ export default class GameScene extends Phaser.Scene {
         this.enemies = [];
         this.bosses = [];
         this.fireplaces = [];
+        this.interactableObjects = []; // Nueva array para objetos interactuables
         this.gameState = {};
     }
 
@@ -41,10 +43,10 @@ export default class GameScene extends Phaser.Scene {
         //this.spawnFireplaces();
 
         // Generar enemigos en el mapa
-        this.spawnEnemies();
+        //this.spawnEnemies();
 
         // Generar Bosses
-        this.spawnBosses();
+        //this.spawnBosses();
 
         // Generar objetos en el mapa
         this.spawnObjects();
@@ -93,6 +95,14 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 96,
         });
+
+        // Cargar sprite genérico para objetos
+        this.load.image("object-sprite", "./assets/items/object-sprite.png");
+
+        // Cargar assets específicos para los objetos interactuables
+        this.load.image("escudo-dragon", "./assets/items/shields/escudo-dragon.png");
+        this.load.image("espada-larga", "./assets/items/weapons/espada-larga.png");
+        this.load.image("pocion-salud", "./assets/items/consumables/pocion-salud.png");
 
         // Cargar assets Mapa
         this.load.tilemapTiledJSON("map", "assets/maps/Map.json");
@@ -243,7 +253,38 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnObjects() {
-        // Aquí habrán armas tiradas en el suelo
+        // Limpiar objetos existentes si los hay
+        this.interactableObjects.forEach((obj) => {
+            if (obj.sprite) obj.destroy();
+        });
+        this.interactableObjects = [];
+
+        // Definir objetos en el mapa
+        const objectsToSpawn = [
+            // Aquí usamos el mismo ID como textura ya que coincide con el nombre del asset cargado
+            { itemId: "escudo-dragon", x: 540, y: 550, texture: "escudo-dragon" },
+            { itemId: "espada-larga", x: 700, y: 600, texture: "espada-larga" },
+            { itemId: "pocion-salud", x: 650, y: 500, texture: "pocion-salud" },
+        ];
+
+        // Crear los objetos interactuables
+        objectsToSpawn.forEach((objConfig) => {
+            const obj = new InteractableObject(
+                this,
+                objConfig.x,
+                objConfig.y,
+                objConfig.itemId,
+                objConfig.texture // Pasar la textura específica
+            );
+            this.interactableObjects.push(obj);
+
+            // Añadir colisión física con el jugador (opcional)
+            if (this.player && obj.sprite) {
+                this.physics.add.collider(this.player.sprite, obj.sprite);
+            }
+        });
+
+        console.log(`Spawned ${this.interactableObjects.length} interactable objects`);
     }
 
     spawnPlayer() {
@@ -349,6 +390,13 @@ export default class GameScene extends Phaser.Scene {
         this.fireplaces.forEach((fireplace) => {
             if (fireplace.sprite) {
                 fireplace.sprite.depth = fireplace.sprite.y;
+            }
+        });
+
+        // Profundidad de objetos interactuables
+        this.interactableObjects.forEach((obj) => {
+            if (obj.sprite && !obj.collected) {
+                obj.sprite.depth = obj.sprite.y;
             }
         });
     }
