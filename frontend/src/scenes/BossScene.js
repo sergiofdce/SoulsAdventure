@@ -1,3 +1,5 @@
+import { COMBAT } from "../config/constants.js";
+
 export default class BossScene extends Phaser.Scene {
     constructor() {
         super({ key: "BossScene" });
@@ -16,36 +18,6 @@ export default class BossScene extends Phaser.Scene {
         this.syncMarker = null;
         this.syncZone = null;
         this.syncTween = null;
-
-        // Constantes para combate (importadas de CombatScene)
-        this.COMBAT = {
-            LIGHT_ATTACK: {
-                BASE_HIT_CHANCE: 0.9,
-                SPEED_HIT_BONUS: 0.01,
-                DAMAGE_MULTIPLIER: 0.8,
-                CRITICAL_THRESHOLD: 5,
-                CRITICAL_MULTIPLIER: 1.5,
-            },
-            HEAVY_ATTACK: {
-                BASE_HIT_CHANCE: 0.7,
-                SPEED_HIT_BONUS: 0.01,
-                DAMAGE_MULTIPLIER: 1.2,
-                BASE_STUN_CHANCE: 0.2,
-                STRENGTH_STUN_BONUS: 0.02,
-                STUN_DURATION: 1,
-            },
-            BLOCK: {
-                BASE_TOTAL_BLOCK_CHANCE: 0.3,
-                RESISTANCE_BLOCK_BONUS: 0.01,
-                MAX_TOTAL_BLOCK_CHANCE: 0.7,
-                BASE_DAMAGE_REDUCTION: 0.3,
-                DEFENSE_REDUCTION_BONUS: 0.02,
-                RESISTANCE_REDUCTION_BONUS: 0.01,
-                MAX_DAMAGE_REDUCTION: 0.7,
-                COUNTER_ATTACK_DAMAGE_SPEED: 0.5,
-                COUNTER_ATTACK_DAMAGE_STRENGTH: 0.3,
-            },
-        };
     }
 
     // Método init que recibe instancia de Player y Enemy
@@ -441,8 +413,11 @@ export default class BossScene extends Phaser.Scene {
             return;
         }
 
-        // Aplicar la nueva fórmula de curación
-        const healAmount = Math.ceil(this.playerMaxHealth * 0.2 + this.player.resistance * 2);
+        // Aplicar curación usando las constantes definidas en COMBAT.POTION
+        const healAmount = Math.ceil(
+            this.playerMaxHealth * COMBAT.POTION.BASE_PERCENTAGE +
+                this.player.resistance * COMBAT.POTION.RESISTANCE_BONUS
+        );
 
         // Aplicar curación
         this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);

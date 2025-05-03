@@ -746,8 +746,11 @@ export default class CombatScene extends Phaser.Scene {
         // Desactivar controles para evitar múltiples acciones
         this.disablePlayerControls();
 
-        // Aplicar la nueva fórmula de curación
-        const healAmount = Math.ceil(this.playerMaxHealth * 0.2 + this.player.resistance * 2);
+        // Aplicar curación usando las constantes definidas en COMBAT.POTION
+        const healAmount = Math.ceil(
+            this.playerMaxHealth * COMBAT.POTION.BASE_PERCENTAGE +
+                this.player.resistance * COMBAT.POTION.RESISTANCE_BONUS
+        );
 
         // Aplicar curación
         this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);

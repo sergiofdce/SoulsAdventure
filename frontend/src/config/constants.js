@@ -39,4 +39,8 @@ export const COMBAT = {
         COUNTER_ATTACK_DAMAGE_SPEED: 0.5, // Multiplicador de velocidad para daño de contraataque
         COUNTER_ATTACK_DAMAGE_STRENGTH: 0.5, // Multiplicador de fuerza para daño de contraataque
     },
+    POTION: {
+        BASE_PERCENTAGE: 0.2, // Cura base del 20% de la salud máxima
+        RESISTANCE_BONUS: 2, // +2 puntos de curación por cada punto de resistencia
+    },
 };
