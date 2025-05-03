@@ -29,6 +29,9 @@ export default class CombatScene extends Phaser.Scene {
         // Salud Enemy
         this.enemyMaxHealth = this.enemy.health;
         this.enemyCurrentHealth = this.enemy.health;
+
+        // Inicializar variable de aturdimiento del enemigo
+        this.enemy.stunned = 0;
     }
 
     create() {
@@ -606,26 +609,69 @@ export default class CombatScene extends Phaser.Scene {
 
         // Ejecutar ataque pesado
         this.addCombatLogMessage("Has realizado un ataque pesado.", "player-action");
-        // Calcular y aplicar daño (más alto que el ataque ligero)
-        const damage = Math.ceil(15 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
-        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
-        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-        this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
 
-        // Verificar fin de combate antes de programar la animación de hit
-        if (!this.checkCombatEnd()) {
-            // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
-            this.time.delayedCall(300, () => {
-                if (!this.checkCombatEnd()) {
+        // Calcular probabilidad de acierto basada en velocidad
+        const speedDifference = this.player.speed - this.enemy.speed;
+        const hitChance = COMBAT.HEAVY_ATTACK.BASE_HIT_CHANCE + speedDifference * COMBAT.HEAVY_ATTACK.SPEED_HIT_BONUS;
+        const roll = Math.random();
+
+        // Verificar si el ataque acierta
+        if (roll <= hitChance) {
+            // Calcular daño basado en fuerza
+            const damage = Math.ceil(this.player.strength * COMBAT.HEAVY_ATTACK.DAMAGE_MULTIPLIER);
+
+            // Aplicar daño
+            this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+            this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+
+            // Verificar si el combate ha terminado después de aplicar daño
+            const combatEnded = this.checkCombatEnd();
+
+            // Solo continuar con las animaciones y el efecto de aturdimiento si el combate no ha terminado
+            if (!combatEnded) {
+                // Reproducir animación de golpe recibido
+                this.time.delayedCall(300, () => {
                     this.playEnemyAnimation("hit");
+                });
+
+                // Calcular probabilidad de aturdimiento
+                const strengthDifference = this.player.strength - this.enemy.strength;
+                const stunChance =
+                    COMBAT.HEAVY_ATTACK.BASE_STUN_CHANCE + strengthDifference * COMBAT.HEAVY_ATTACK.STRENGTH_STUN_BONUS;
+                const stunRoll = Math.random();
+
+                // Verificar si el enemigo queda aturdido
+                if (stunRoll <= stunChance) {
+                    // El enemigo queda aturdido
+                    this.enemy.stunned = COMBAT.HEAVY_ATTACK.STUN_DURATION; // Duración del aturdimiento en turnos
+                    this.addCombatLogMessage(
+                        `¡El enemigo ha quedado aturdido durante ${this.enemy.stunned} turno!`,
+                        "critical-hit"
+                    );
                 }
-            });
+
+                // Esperar a que termine la animación antes de finalizar el turno
+                this.time.delayedCall(1000, () => {
+                    // Volver a la animación de idle
+                    this.playPlayerAnimation("idle");
+                    this.playEnemyAnimation("idle");
+
+                    // Finalizar turno después de un momento adicional
+                    this.time.delayedCall(500, () => {
+                        this.endTurn();
+                    });
+                });
+            }
+        } else {
+            // El ataque falla
+            this.addCombatLogMessage("Tu ataque pesado ha fallado. Has perdido el turno.", "combat-info");
 
             // Esperar a que termine la animación antes de finalizar el turno
             this.time.delayedCall(1000, () => {
                 // Volver a la animación de idle
                 this.playPlayerAnimation("idle");
-                this.playEnemyAnimation("idle");
+
                 // Finalizar turno después de un momento adicional
                 this.time.delayedCall(500, () => {
                     this.endTurn();
@@ -700,6 +746,18 @@ export default class CombatScene extends Phaser.Scene {
         // Añadir retraso para mejorar la legibilidad
         this.time.delayedCall(1000, () => {
             this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
+
+            // Verificar si el enemigo está aturdido
+            if (this.enemy.stunned && this.enemy.stunned > 0) {
+                this.addCombatLogMessage(`${this.enemy.name} está aturdido y no puede actuar.`, "enemy-action");
+                this.enemy.stunned--; // Reducir duración del aturdimiento
+
+                // Esperar un momento y finalizar el turno
+                this.time.delayedCall(1500, () => {
+                    this.endTurn();
+                });
+                return;
+            }
 
             // Añadir un delay adicional para dar tiempo a leer el mensaje antes de realizar la acción
             this.time.delayedCall(1500, () => {
