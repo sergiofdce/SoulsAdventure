@@ -28,4 +28,15 @@ export const COMBAT = {
         STRENGTH_STUN_BONUS: 0.05, // 5% adicional por cada punto de fuerza de diferencia
         STUN_DURATION: 1, // Duración del aturdimiento en turnos
     },
+    BLOCK: {
+        BASE_TOTAL_BLOCK_CHANCE: 0.05, // 5% de probabilidad base de bloqueo total
+        RESISTANCE_BLOCK_BONUS: 0.01, // 1% adicional por cada punto de resistencia
+        MAX_TOTAL_BLOCK_CHANCE: 0.4, // Máximo 40% de probabilidad de bloqueo total
+        BASE_DAMAGE_REDUCTION: 0.3, // 30% de reducción de daño base
+        DEFENSE_REDUCTION_BONUS: 0.02, // 2% adicional por cada punto de defensa
+        RESISTANCE_REDUCTION_BONUS: 0.01, // 1% adicional por cada punto de resistencia
+        MAX_DAMAGE_REDUCTION: 0.8, // Máximo 80% de reducción de daño
+        COUNTER_ATTACK_DAMAGE_SPEED: 0.5, // Multiplicador de velocidad para daño de contraataque
+        COUNTER_ATTACK_DAMAGE_STRENGTH: 0.5, // Multiplicador de fuerza para daño de contraataque
+    },
 };

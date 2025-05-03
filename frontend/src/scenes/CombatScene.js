@@ -11,6 +11,9 @@ export default class CombatScene extends Phaser.Scene {
         // Variables combate
         this.isPlayerTurn = true;
         this.combatActive = false;
+
+        // Variable para rastrear si el jugador está bloqueando
+        this.playerIsBlocking = false;
     }
 
     // Método init que recibe instancia de Player y Enemy
@@ -508,14 +511,22 @@ export default class CombatScene extends Phaser.Scene {
             healBtn.addEventListener("click", () => {
                 // Verificar explícitamente si es el turno del jugador antes de procesar
                 if (this.isPlayerTurn && this.combatActive && !healBtn.disabled) {
-                    //this.handleHeal();
+                    this.handleHeal();
                 }
             });
         }
 
-        // Huir
-        const dodgeBtn = document.querySelector(".combat-button.dodge");
-        if (dodgeBtn) {
+        // Bloquear (usando el botón "dodge" para implementar bloqueo)
+        const blockBtn = document.querySelector(".combat-button.dodge");
+        if (blockBtn) {
+            // Cambiar el texto del botón para reflejar la nueva funcionalidad
+            blockBtn.textContent = "Bloquear";
+            blockBtn.addEventListener("click", () => {
+                // Verificar explícitamente si es el turno del jugador antes de procesar
+                if (this.isPlayerTurn && this.combatActive && !blockBtn.disabled) {
+                    this.handleBlock();
+                }
+            });
         }
     }
 
@@ -706,6 +717,28 @@ export default class CombatScene extends Phaser.Scene {
         });
     }
 
+    // Nuevo método para manejar la acción de bloqueo
+    handleBlock() {
+        if (!this.isPlayerTurn || !this.combatActive) return;
+
+        // Desactivar controles para evitar múltiples acciones
+        this.disablePlayerControls();
+
+        // Activar el estado de bloqueo
+        this.playerIsBlocking = true;
+
+        // Mostrar mensaje de que el jugador está bloqueando
+        this.addCombatLogMessage("Te preparas para bloquear el próximo ataque del enemigo.", "player-action");
+
+        // Volver a la animación de idle (podría agregarse una animación específica de bloqueo en el futuro)
+        this.playPlayerAnimation("idle");
+
+        // Finalizar el turno después de un momento
+        this.time.delayedCall(1000, () => {
+            this.endTurn();
+        });
+    }
+
     addCombatLogMessage(message, className = "") {
         const combatLog = document.getElementById("combat-log");
         if (combatLog) {
@@ -752,6 +785,12 @@ export default class CombatScene extends Phaser.Scene {
                 this.addCombatLogMessage(`${this.enemy.name} está aturdido y no puede actuar.`, "enemy-action");
                 this.enemy.stunned--; // Reducir duración del aturdimiento
 
+                // Desactivar el estado de bloqueo si estaba activado, ya que no hubo ataque
+                if (this.playerIsBlocking) {
+                    this.playerIsBlocking = false;
+                    this.addCombatLogMessage("Mantienes tu postura de bloqueo, pero no fue necesaria.", "combat-info");
+                }
+
                 // Esperar un momento y finalizar el turno
                 this.time.delayedCall(1500, () => {
                     this.endTurn();
@@ -761,38 +800,160 @@ export default class CombatScene extends Phaser.Scene {
 
             // Añadir un delay adicional para dar tiempo a leer el mensaje antes de realizar la acción
             this.time.delayedCall(1500, () => {
-                // El enemigo ahora tiene un único tipo de ataque
+                // El enemigo ataca
                 this.addCombatLogMessage(`${this.enemy.name} te ha atacado.`, "enemy-action");
 
-                // Reproducir animación de ataque
+                // Reproducir animación de ataque del enemigo
                 this.playEnemyAnimation("attack");
 
-                // Usar directamente el valor de strength como daño
-                const damage = this.enemy.strength;
+                // Comprobar si el jugador está bloqueando
+                if (this.playerIsBlocking) {
+                    // Calcular la probabilidad de bloqueo total basada en resistencia
+                    const resistance = this.player.resistance;
+                    let totalBlockChance =
+                        COMBAT.BLOCK.BASE_TOTAL_BLOCK_CHANCE + resistance * COMBAT.BLOCK.RESISTANCE_BLOCK_BONUS;
 
-                // Mostrar animación de jugador recibiendo daño
-                this.playPlayerAnimation("hit");
+                    // Limitar la probabilidad máxima de bloqueo total
+                    totalBlockChance = Math.min(totalBlockChance, COMBAT.BLOCK.MAX_TOTAL_BLOCK_CHANCE);
 
-                // Aplicar daño
-                this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
-                this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-                this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
+                    // Mostrar información sobre la probabilidad de bloqueo
+                    const blockPercentage = Math.round(totalBlockChance * 100);
+                    this.addCombatLogMessage(`Probabilidad de bloqueo total: ${blockPercentage}%`, "combat-info");
 
-                // Verificar fin de combate
-                if (!this.checkCombatEnd()) {
-                    // Esperar a que termine la animación de daño/ataque
-                    this.time.delayedCall(1000, () => {
-                        // Volver a la animación de idle para ambos
-                        this.playPlayerAnimation("idle");
-                        this.playEnemyAnimation("idle");
-                        // Finalizar turno del enemigo
+                    // Tirar los dados para ver si el bloqueo es total
+                    const roll = Math.random();
+
+                    if (roll <= totalBlockChance) {
+                        // ¡Bloqueo total exitoso!
+                        this.addCombatLogMessage("¡Has bloqueado completamente el ataque!", "critical-hit");
+
+                        // No reproducir animación de daño para el jugador
+                        // En su lugar, preparar el contraataque
                         this.time.delayedCall(500, () => {
-                            this.endTurn();
+                            this.handleCounterAttack();
                         });
-                    });
+                    } else {
+                        // Bloqueo parcial - reducir el daño
+                        const baseDamage = this.enemy.strength;
+
+                        // Calcular reducción de daño
+                        let damageReduction =
+                            COMBAT.BLOCK.BASE_DAMAGE_REDUCTION +
+                            (this.player.defense || 0) * COMBAT.BLOCK.DEFENSE_REDUCTION_BONUS +
+                            this.player.resistance * COMBAT.BLOCK.RESISTANCE_REDUCTION_BONUS;
+
+                        // Limitar la reducción máxima de daño
+                        damageReduction = Math.min(damageReduction, COMBAT.BLOCK.MAX_DAMAGE_REDUCTION);
+
+                        // Calcular daño final
+                        const finalDamage = Math.max(1, Math.floor(baseDamage * (1 - damageReduction)));
+
+                        // Mostrar animación de daño para el jugador (menos intensa)
+                        this.playPlayerAnimation("hit");
+
+                        // Aplicar daño reducido
+                        this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - finalDamage);
+                        this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+
+                        // Mostrar mensaje de bloqueo parcial
+                        const reducedPercent = Math.round(damageReduction * 100);
+                        this.addCombatLogMessage(
+                            `Has bloqueado parcialmente el ataque, reduciendo el daño en un ${reducedPercent}%.`,
+                            "combat-info"
+                        );
+                        this.addCombatLogMessage(
+                            `Has recibido ${finalDamage} puntos de daño (reducido de ${baseDamage}).`,
+                            "enemy-action"
+                        );
+
+                        // Resetear el estado de bloqueo
+                        this.playerIsBlocking = false;
+
+                        // Verificar fin de combate
+                        if (!this.checkCombatEnd()) {
+                            // Esperar a que termine la animación de daño
+                            this.time.delayedCall(1000, () => {
+                                // Volver a animación idle
+                                this.playPlayerAnimation("idle");
+                                this.playEnemyAnimation("idle");
+                                // Finalizar turno
+                                this.time.delayedCall(500, () => {
+                                    this.endTurn();
+                                });
+                            });
+                        }
+                    }
+                } else {
+                    // El jugador no está bloqueando, aplicar daño normal
+                    const damage = this.enemy.strength;
+
+                    // Mostrar animación de jugador recibiendo daño
+                    this.playPlayerAnimation("hit");
+
+                    // Aplicar daño
+                    this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
+                    this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+                    this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
+
+                    // Verificar fin de combate
+                    if (!this.checkCombatEnd()) {
+                        // Esperar a que termine la animación de daño/ataque
+                        this.time.delayedCall(1000, () => {
+                            // Volver a la animación de idle para ambos
+                            this.playPlayerAnimation("idle");
+                            this.playEnemyAnimation("idle");
+                            // Finalizar turno del enemigo
+                            this.time.delayedCall(500, () => {
+                                this.endTurn();
+                            });
+                        });
+                    }
                 }
             });
         });
+    }
+
+    // Método para manejar el contraataque cuando el bloqueo es total
+    handleCounterAttack() {
+        // Mostrar mensaje de contraataque
+        this.addCombatLogMessage("¡Contraatacas con un movimiento rápido!", "player-action");
+
+        // Reproducir animación de ataque ligero
+        this.playPlayerAnimation("light-attack");
+
+        // Calcular daño del contraataque usando la fórmula específica
+        const counterDamage = Math.ceil(
+            this.player.speed * COMBAT.BLOCK.COUNTER_ATTACK_DAMAGE_SPEED +
+                this.player.strength * COMBAT.BLOCK.COUNTER_ATTACK_DAMAGE_STRENGTH
+        );
+
+        // Aplicar daño al enemigo
+        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - counterDamage);
+        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+
+        // Reproducir animación de golpe recibido por el enemigo
+        this.playEnemyAnimation("hit");
+
+        // Mostrar mensaje de daño
+        this.addCombatLogMessage(`Tu contraataque ha causado ${counterDamage} puntos de daño.`, "critical-hit");
+
+        // Resetear el estado de bloqueo
+        this.playerIsBlocking = false;
+
+        // Verificar si el combate ha terminado después del contraataque
+        if (!this.checkCombatEnd()) {
+            // Esperar a que termine la animación
+            this.time.delayedCall(1000, () => {
+                // Volver a animaciones idle
+                this.playPlayerAnimation("idle");
+                this.playEnemyAnimation("idle");
+
+                // Finalizar turno
+                this.time.delayedCall(500, () => {
+                    this.endTurn();
+                });
+            });
+        }
     }
 
     endTurn() {
