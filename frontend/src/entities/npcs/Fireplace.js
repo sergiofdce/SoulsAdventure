@@ -82,7 +82,7 @@ export class Fireplace extends NPC {
     // Sobrescribir el método onChoiceSelected heredado de NPC
     onChoiceSelected(choice, player) {
         if (this.discovered) {
-            if (choice === "Sí") {
+            if (choice === "Sí" && this.dialogManager.dialogueText.textContent.includes("¿Quieres descansar")) {
                 // Descansar en la hoguera
                 this.dialogManager.dialogueText.textContent = `${this.name}: Los enemigos han reaparecido y tus pociones han sido restablecidas.`;
 
@@ -104,14 +104,30 @@ export class Fireplace extends NPC {
                 // Después de un breve retraso, mostrar la opción de viajar
                 setTimeout(() => {
                     this.dialogManager.dialogueText.textContent = `${this.name}: ¿Deseas viajar a otro lugar?`;
+
+                    // Actualizar las opciones para la nueva pregunta
+                    this.setDialogChoices(["Sí", "No"], 0);
                     this.dialogManager.showChoices();
                 }, 2000);
+            }
+            // Respuesta a la pregunta de viajar después de descansar
+            else if (choice === "Sí" && this.dialogManager.dialogueText.textContent.includes("¿Deseas viajar")) {
+                // Iniciar teletransporte
+                this.dialogManager.dialogueText.textContent = `${this.name}: Preparando teletransporte...`;
+
+                // Cerrar diálogo después de un breve retraso y lanzar la escena de teletransporte
+                setTimeout(() => {
+                    this.dialogManager.closeDialog();
+                    this.scene.scene.pause("GameScene");
+                    this.scene.scene.launch("TeleportScene", { player: player });
+                }, 1500);
             } else {
-                // Rechazar descanso
+                // Rechazar descanso o viajar
                 this.dialogManager.dialogueText.textContent = `${this.name}: Las llamas seguirán ardiendo para cuando las necesites.`;
                 this.dialogManager.closeDialog();
             }
         } else {
+            // Primer encuentro con la hoguera (no descubierta)
             if (choice === "Sí") {
                 // Iniciar teletransporte
                 this.dialogManager.dialogueText.textContent = `${this.name}: Preparando teletransporte...`;
