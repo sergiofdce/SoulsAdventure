@@ -12,6 +12,7 @@ export default class BossScene extends Phaser.Scene {
         this.combatActive = false;
         this.isBlockWindowActive = false; // Cambiado de isDodgeWindowActive
         this.lastAttackTime = 0;
+        this.isEnemyTired = false; // Nueva variable para controlar si el enemigo está cansado
 
         // Variables para la barra de sincronización
         this.syncBar = null;
@@ -202,7 +203,7 @@ export default class BossScene extends Phaser.Scene {
     startCombat() {
         this.combatActive = true;
         this.addCombatLogMessage("¡El combate ha comenzado!", "combat-info");
-        this.addCombatLogMessage("Observa el patrón de ataque del jefe...", "combat-info");
+        this.addCombatLogMessage("Usa tu escudo cuando el jefe ataque en el momento exacto.", "combat-info");
 
         // Iniciar el ciclo de ataques
         this.scheduleNextAction();
@@ -231,11 +232,14 @@ export default class BossScene extends Phaser.Scene {
         this.isBlockWindowActive = true;
         this.lastAttackTime = this.time.now;
 
-        // Iniciar animación de la barra de sincronización
-        this.startSyncBarAnimation();
+        // Esperar 1 segundo antes de iniciar la animación de la barra de sincronización
+        this.time.delayedCall(1000, () => {
+            // Iniciar animación de la barra de sincronización
+            this.startSyncBarAnimation();
 
-        // Programar siguiente acción
-        this.scheduleNextAction();
+            // Programar siguiente acción
+            this.scheduleNextAction();
+        });
     }
 
     handleBossDodge() {
@@ -243,6 +247,18 @@ export default class BossScene extends Phaser.Scene {
 
         this.addCombatLogMessage("¡El enemigo se encuentra cansado, ataca ahora!", "enemy-action");
         this.playEnemyAnimation("walk");
+
+        // Establecer el estado de enemigo cansado
+        this.isEnemyTired = true;
+
+        // Tiempo que el enemigo permanecerá cansado (3 segundos)
+        this.time.delayedCall(3000, () => {
+            if (this.combatActive) {
+                this.isEnemyTired = false;
+                // Añadir mensaje opcional cuando termina el estado de cansancio
+                this.addCombatLogMessage("¡El enemigo se ha recuperado!", "enemy-action");
+            }
+        });
 
         // Programar siguiente acción
         this.scheduleNextAction();
@@ -257,6 +273,44 @@ export default class BossScene extends Phaser.Scene {
             return;
         }
 
+        // Verificar si el enemigo está cansado
+        if (!this.isEnemyTired) {
+            this.addCombatLogMessage("¡Has atacado en mal momento! El enemigo contraataca.", "enemy-action");
+
+            // Reproducir animación del enemigo contraatacando
+            this.playEnemyAnimation("light-attack");
+
+            // Reproducir animación del jugador recibiendo daño
+            this.time.delayedCall(300, () => {
+                this.playPlayerAnimation("hit");
+            });
+
+            // Aplicar daño al jugador (contraataque)
+            const counterDamage = Math.ceil(this.enemy.strength * 0.7); // Daño reducido por ser contraataque
+            this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - counterDamage);
+            this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+
+            // Mensaje de contraataque
+            this.addCombatLogMessage(
+                `¡${this.enemy.name} te contraatacó causando ${counterDamage} de daño!`,
+                "enemy-action"
+            );
+
+            // Verificar fin de combate
+            this.checkCombatEnd();
+
+            // Esperar a que terminen las animaciones antes de continuar
+            this.time.delayedCall(1000, () => {
+                // Volver a las animaciones de idle
+                if (this.combatActive) {
+                    this.playPlayerAnimation("idle");
+                    this.playEnemyAnimation("idle");
+                }
+            });
+
+            return;
+        }
+
         // Reproducir animación de ataque ligero
         this.playPlayerAnimation("light-attack");
 
@@ -265,19 +319,18 @@ export default class BossScene extends Phaser.Scene {
 
         // Calcular probabilidad de acierto basada en velocidad
         const speedDifference = this.player.speed - this.enemy.speed;
-        const hitChance =
-            this.COMBAT.LIGHT_ATTACK.BASE_HIT_CHANCE + speedDifference * this.COMBAT.LIGHT_ATTACK.SPEED_HIT_BONUS;
+        const hitChance = COMBAT.LIGHT_ATTACK.BASE_HIT_CHANCE + speedDifference * COMBAT.LIGHT_ATTACK.SPEED_HIT_BONUS;
         const roll = Math.random();
 
         // Verificar si el ataque acierta
         if (roll <= hitChance) {
             // Calcular daño base según velocidad
-            let damage = Math.ceil(this.player.speed * this.COMBAT.LIGHT_ATTACK.DAMAGE_MULTIPLIER);
+            let damage = Math.ceil(this.player.speed * COMBAT.LIGHT_ATTACK.DAMAGE_MULTIPLIER);
 
             // Verificar si es golpe crítico (si la diferencia de velocidad supera el umbral)
             let isCritical = false;
-            if (speedDifference >= this.COMBAT.LIGHT_ATTACK.CRITICAL_THRESHOLD) {
-                damage = Math.ceil(damage * this.COMBAT.LIGHT_ATTACK.CRITICAL_MULTIPLIER);
+            if (speedDifference >= COMBAT.LIGHT_ATTACK.CRITICAL_THRESHOLD) {
+                damage = Math.ceil(damage * COMBAT.LIGHT_ATTACK.CRITICAL_MULTIPLIER);
                 isCritical = true;
             }
 
@@ -329,6 +382,44 @@ export default class BossScene extends Phaser.Scene {
             return;
         }
 
+        // Verificar si el enemigo está cansado
+        if (!this.isEnemyTired) {
+            this.addCombatLogMessage("¡Has atacado en mal momento! El enemigo contraataca con fuerza.", "enemy-action");
+
+            // Reproducir animación del enemigo contraatacando
+            this.playEnemyAnimation("heavy-attack");
+
+            // Reproducir animación del jugador recibiendo daño
+            this.time.delayedCall(300, () => {
+                this.playPlayerAnimation("hit");
+            });
+
+            // Aplicar daño al jugador (contraataque más fuerte por intentar un ataque pesado)
+            const counterDamage = Math.ceil(this.enemy.strength * 1.2); // Daño aumentado por ser un ataque pesado
+            this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - counterDamage);
+            this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+
+            // Mensaje de contraataque
+            this.addCombatLogMessage(
+                `¡${this.enemy.name} te contraatacó brutalmente causando ${counterDamage} de daño!`,
+                "enemy-action"
+            );
+
+            // Verificar fin de combate
+            this.checkCombatEnd();
+
+            // Esperar a que terminen las animaciones antes de continuar
+            this.time.delayedCall(1000, () => {
+                // Volver a las animaciones de idle
+                if (this.combatActive) {
+                    this.playPlayerAnimation("idle");
+                    this.playEnemyAnimation("idle");
+                }
+            });
+
+            return;
+        }
+
         // Reproducir animación de ataque pesado
         this.playPlayerAnimation("heavy-attack");
 
@@ -337,14 +428,13 @@ export default class BossScene extends Phaser.Scene {
 
         // Calcular probabilidad de acierto basada en velocidad
         const speedDifference = this.player.speed - this.enemy.speed;
-        const hitChance =
-            this.COMBAT.HEAVY_ATTACK.BASE_HIT_CHANCE + speedDifference * this.COMBAT.HEAVY_ATTACK.SPEED_HIT_BONUS;
+        const hitChance = COMBAT.HEAVY_ATTACK.BASE_HIT_CHANCE + speedDifference * COMBAT.HEAVY_ATTACK.SPEED_HIT_BONUS;
         const roll = Math.random();
 
         // Verificar si el ataque acierta
         if (roll <= hitChance) {
             // Calcular daño basado en fuerza
-            const damage = Math.ceil(this.player.strength * this.COMBAT.HEAVY_ATTACK.DAMAGE_MULTIPLIER);
+            const damage = Math.ceil(this.player.strength * COMBAT.HEAVY_ATTACK.DAMAGE_MULTIPLIER);
 
             // Aplicar daño
             this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
