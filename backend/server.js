@@ -4,8 +4,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
-const userRoutes = require("./routes/userRoutes");
-const { requireAuth } = require("./middleware/auth");
+const userRoutes = require("./db/routes/userRoutes");
+const { requireAuth } = require("./db/middleware/auth");
 
 const app = express();
 const PORT = 3000;
