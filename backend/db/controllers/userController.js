@@ -77,6 +77,3 @@ exports.getPlayerData = async (req, res) => {
         console.error("Error al obtener datos del jugador:", error);
     }
 };
-
-// Verificar token
-exports.verifyToken = async (req, res) => {};

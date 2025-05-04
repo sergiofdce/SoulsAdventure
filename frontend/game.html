@@ -4,20 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Souls Adventure - Juego</title>
-    <!-- Incluir el script de autenticación antes que cualquier otro script -->
-    <script src="/js/auth.js"></script>
-    <!-- Verificación inmediata antes de que se cargue el resto de la página -->
-    <script>
-        if (!isAuthenticated()) {
-            window.location.href = '/index.html';
-        }
-    </script>
+    <title>Souls Adventure</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://unpkg.com/spritespin@4.0.11/release/spritespin.min.js"></script>
+
+    <!-- Comprobar token -->
+    <script>
+        if (localStorage.getItem("authToken") === null) {
+            window.location.href = '/index.html';
+        }
+    </script>
     <link rel="stylesheet" type="text/css" href="css/game.css">
     <link rel="stylesheet" type="text/css" href="css/reset.css">
+
 </head>
 
 <body>

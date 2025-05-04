@@ -12,9 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Comprobar si hay un token guardado
     const token = localStorage.getItem("authToken");
-    if (token) {
-        verifyToken(token);
-    }
+
 
     async function registerUser() {
         const username = document.getElementById("player-name").value;
@@ -64,72 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    async function verifyToken(token) {
-        try {
-            const response = await fetch(`/api/users/verify`, {
-                method: "GET",
-                headers: {
-                    "x-auth-token": token,
-                },
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                localStorage.setItem(
-                    "soulsAdventure_user",
-                    JSON.stringify({
-                        id: data.user.id,
-                        username: data.user.username,
-                    })
-                );
-
-                if (data.user.playerData) {
-                    localStorage.setItem("soulsAdventure_playerData", JSON.stringify(data.user.playerData));
-                }
-            } else {
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("soulsAdventure_user");
-                localStorage.removeItem("soulsAdventure_playerData");
-            }
-        } catch (error) {
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("soulsAdventure_user");
-            localStorage.removeItem("soulsAdventure_playerData");
-        }
-    }
-
-    // Función para guardar datos del jugador
-    window.savePlayerData = async function (playerData) {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-            return false;
-        }
-
-        try {
-            const response = await fetch(`/api/users/save-data`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-auth-token": token,
-                },
-                body: JSON.stringify({ playerData }),
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                localStorage.setItem("soulsAdventure_playerData", JSON.stringify(playerData));
-                return true;
-            } else {
-                console.error("Error al guardar datos:", data.message);
-                return false;
-            }
-        } catch (error) {
-            console.error("Error de conexión al guardar datos");
-            return false;
-        }
-    };
 
     // Event Listeners
     newGameBtn.addEventListener("click", () => {
