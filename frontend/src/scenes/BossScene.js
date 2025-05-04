@@ -1165,7 +1165,6 @@ export default class BossScene extends Phaser.Scene {
 
             // Registrar el boss derrotado en el array defeatedBosses del jugador
             this.player.defeatedBosses.push(this.enemy.name);
-            // Guardar los datos del jugador para persistir esta información
             this.player.savePlayerData();
 
             // Tiempo antes de cerrar escena

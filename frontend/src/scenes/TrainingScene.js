@@ -47,6 +47,7 @@ export default class TrainingScene extends Phaser.Scene {
 
         // Cerrar Escena
         this.input.keyboard.on("keydown-ESC", () => {
+            this.player.savePlayerData();
             this.closeTraining();
         });
     }

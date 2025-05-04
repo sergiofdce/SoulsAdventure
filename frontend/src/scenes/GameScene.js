@@ -51,7 +51,7 @@ export default class GameScene extends Phaser.Scene {
         this.spawnFireplaces();
 
         // Generar enemigos en el mapa
-        // this.spawnEnemies();
+        this.spawnEnemies();
 
         // Generar Bosses
         this.spawnBosses();
@@ -279,7 +279,8 @@ export default class GameScene extends Phaser.Scene {
         // Limpiar el array de enemigos
         this.enemies = [];
 
-        const enemyConfigs = [{ type: EnanoFuego, x: 400, y: 600 }];
+        //const enemyConfigs = [{ type: EnanoFuego, x: 400, y: 600 }];
+        const enemyConfigs = [];
 
         enemyConfigs.forEach(({ type, x, y }) => {
             const enemy = new type(this, x, y);
@@ -318,7 +319,8 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnBosses() {
-        const bossConfigs = [{ type: Lobo, name: "Lobo", x: 800, y: 600 }];
+        //const bossConfigs = [{ type: Lobo, name: "Lobo", x: 800, y: 600 }];
+        const bossConfigs = [];
 
         bossConfigs.forEach(({ type, name, x, y }) => {
             // Verificar si el boss ya ha sido derrotado
@@ -341,18 +343,27 @@ export default class GameScene extends Phaser.Scene {
 
         // Definir objetos en el mapa
         const objectsToSpawn = [
-            // { itemId: "escudo-dragon", x: 540, y: 550, texture: "escudo-dragon" },
-            // { itemId: "espada-larga", x: 700, y: 600, texture: "espada-larga" },
-            // { itemId: "pocion-salud", x: 650, y: 500, texture: "pocion-salud" },
+            { itemId: "escudo-dragon", x: 540, y: 550, texture: "escudo-dragon" },
+            { itemId: "espada-larga", x: 700, y: 600, texture: "espada-larga" },
+            { itemId: "pocion-salud", x: 650, y: 500, texture: "pocion-salud" },
         ];
 
-        // Crear los objetos interactuables
-        objectsToSpawn.forEach((objConfig) => {
+        // Filtrar objetos que ya han sido recogidos
+        const filteredObjects = objectsToSpawn.filter(
+            (objConfig) => !this.player.discoveredItems.includes(objConfig.itemId)
+        );
+
+        // Crear los objetos interactuables que no han sido recogidos
+        filteredObjects.forEach((objConfig) => {
             const obj = new InteractableObject(this, objConfig.x, objConfig.y, objConfig.itemId, objConfig.texture);
             this.interactableObjects.push(obj);
         });
 
-        console.log(`Spawned ${this.interactableObjects.length} interactable objects`);
+        console.log(
+            `Spawned ${this.interactableObjects.length} interactable objects (${
+                objectsToSpawn.length - filteredObjects.length
+            } skipped as already discovered)`
+        );
     }
 
     setupCollisions() {

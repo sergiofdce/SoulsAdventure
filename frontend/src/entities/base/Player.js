@@ -26,6 +26,7 @@ export default class Player extends Entity {
         this.defeatedBosses = [];
         this.discoveredFireplaces = [];
         this.discoveredNPCs = [];
+        this.discoveredItems = [];
 
         // Crear sprite con Phaser
         this.sprite = scene.physics.add.sprite(x, y, texture);
@@ -248,6 +249,7 @@ export default class Player extends Entity {
                 defeatedBosses: this.defeatedBosses,
                 discoveredFireplaces: this.discoveredFireplaces,
                 discoveredNPCs: this.discoveredNPCs,
+                discoveredItems: this.discoveredItems,
             },
             // Posición
             lastPosition: {
@@ -367,6 +369,7 @@ export default class Player extends Entity {
                 this.defeatedBosses = playerData.progress.defeatedBosses || [];
                 this.discoveredFireplaces = playerData.progress.discoveredFireplaces || [];
                 this.discoveredNPCs = playerData.progress.discoveredNPCs || [];
+                this.discoveredItems = playerData.progress.discoveredItems || [];
             }
 
             // Actualizar posición si está disponible y el sprite existe

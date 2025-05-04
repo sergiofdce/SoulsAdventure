@@ -146,8 +146,17 @@ export class InteractableObject extends Entity {
                 this.showFloatingText(`+1 ${this.itemName}`);
             }
 
+            // Añadir el ítem a la lista de ítems descubiertos por su nombre/ID
+            if (!player.discoveredItems.includes(this.itemId)) {
+                player.discoveredItems.push(this.itemId);
+                console.log(`Ítem ${this.itemId} añadido a descubiertos: [${player.discoveredItems}]`);
+            }
+
             // Marcar como recogido
             this.collected = true;
+
+            // Guardar partida
+            this.scene.player.savePlayerData();
 
             // Animación de recogida
             this.scene.tweens.add({
