@@ -172,20 +172,20 @@ export default class GameScene extends Phaser.Scene {
     spawnFireplaces() {
         // Hoguera principal
         const fireplace1 = new Fireplace(this, 630, 630, "fireplace");
-        fireplace1.fireplaceName = "01 Hoguera del Entrenador";
+        fireplace1.fireplaceName = "Plaza del Pueblo";
         fireplace1.sprite.setTint(0xff6b6b);
         this.fireplaces.push(fireplace1);
 
         // Otras hogueras
-        // const fireplace2 = new Fireplace(this, 700, 350, "fireplace");
-        // fireplace2.fireplaceName = "02 Hoguera del Bosque";
-        // fireplace2.sprite.setTint(0xff6b6b);
-        // this.fireplaces.push(fireplace2);
+        const fireplace2 = new Fireplace(this, 1146, 2710, "fireplace");
+        fireplace2.fireplaceName = "Ruinas de Nuevo Londo";
+        fireplace2.sprite.setTint(0xff6b6b);
+        this.fireplaces.push(fireplace2);
 
-        // const fireplace3 = new Fireplace(this, 200, 500, "fireplace");
-        // fireplace3.fireplaceName = "03 Hoguera del Lago";
-        // fireplace3.sprite.setTint(0xff6b6b);
-        // this.fireplaces.push(fireplace3);
+        const fireplace3 = new Fireplace(this, 3291, 4276, "fireplace");
+        fireplace3.fireplaceName = "Izalith perdida";
+        fireplace3.sprite.setTint(0xff6b6b);
+        this.fireplaces.push(fireplace3);
     }
 
     spawnEnemies() {
