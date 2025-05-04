@@ -4,13 +4,7 @@ import ItemsDatabase from "../../data/items/ItemsDatabase.js";
 
 export class InteractableObject extends Entity {
     constructor(scene, x, y, itemId, texture = null) {
-        super(
-            scene,
-            x,
-            y,
-            texture || "object-sprite",
-            `Objeto: ${ItemsDatabase.getAllItems()[itemId]?.name || itemId}`
-        );
+        super(scene, x, y, texture, `Objeto: ${ItemsDatabase.getAllItems()[itemId]?.name || itemId}`);
 
         this.itemId = itemId;
         this.interactionRadius = 30; // Radio de interacción más amplio para objetos
@@ -29,7 +23,7 @@ export class InteractableObject extends Entity {
         this.itemDescription = itemData.description;
 
         // Crear el sprite del objeto
-        this.createSprite(scene, x, y, texture || "object-sprite", itemData);
+        this.createSprite(scene, x, y, texture, itemData);
 
         // Configurar detección de tecla "E" para interacción
         this.setupInteraction();
@@ -39,10 +33,10 @@ export class InteractableObject extends Entity {
         // Usar la textura correctamente - verificar que existe en el cache de texturas
         let textureKey = texture;
 
-        // Si no se proporciona textura o no existe, usar el sprite genérico
+        // Si no se proporciona textura o no existe, mostrar advertencia y no crear sprite
         if (!texture || !scene.textures.exists(texture)) {
-            console.warn(`Textura '${texture}' no encontrada, usando textura genérica para ${this.itemId}`);
-            textureKey = "object-sprite";
+            console.warn(`Textura '${texture}' no encontrada para ${this.itemId}. No se creará sprite.`);
+            return;
         }
 
         // Crear el sprite con la textura correcta
@@ -50,22 +44,9 @@ export class InteractableObject extends Entity {
 
         // Ajustar tamaño según el tipo de objeto
         let scale = 0.5;
-        
+
         // Escalar el sprite
         this.setupSprite(this.sprite, scale);
-
-        // Verificamos si estamos usando la textura genérica para aplicar tints
-        if (textureKey === "object-sprite") {
-            let tint = 0xffffff; // Blanco por defecto
-
-            // Colorear según tipo
-            if (itemData.category === "weapon") tint = 0xff0000; // Rojo para armas
-            else if (itemData.category === "shield") tint = 0x0000ff; // Azul para escudos
-            else if (itemData.category === "armor") tint = 0x00ff00; // Verde para armadura
-            else if (itemData.category === "consumable") tint = 0xffff00; // Amarillo para consumibles
-
-            this.sprite.setTint(tint);
-        }
 
         // Añadir efecto de brillo para que se vea como un objeto recogible
         this.sprite.setAlpha(0.9);

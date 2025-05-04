@@ -102,6 +102,8 @@ export default class Controls {
         // Gestionar el movimiento del jugador
         const movementState = this.handlePlayerMovement(player);
 
+        //  console.log(`Coordenadas del jugador: X=${Math.round(player.sprite.x)}, Y=${Math.round(player.sprite.y)}`);
+
         // Gestionar los ataques del jugador si no está en movimiento
         if (!movementState.isMoving) {
             this.handlePlayerAttacks(player);

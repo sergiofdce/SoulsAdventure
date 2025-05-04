@@ -63,6 +63,9 @@ export class NPC extends Entity {
     get dialogue() {
         return this.dialogConfig.dialogue;
     }
+    set dialogue(newDialogue) {
+        this.dialogConfig.dialogue = newDialogue;
+    }
     get currentDialogueIndex() {
         return this.dialogConfig.currentIndex;
     }

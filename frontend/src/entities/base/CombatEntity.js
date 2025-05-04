@@ -61,8 +61,6 @@ export class CombatEntity extends Entity {
                     this.sprite.y
                 );
 
-                console.log(`${this.name} - Distancia al jugador para combate: ${distance}`);
-
                 if (distance < 30 && !this.gracePeriodActive) {
                     console.log(`${this.name} - Iniciando combate, distancia: ${distance}`);
                     this.scene.scene.pause("GameScene");
@@ -113,7 +111,7 @@ export class CombatEntity extends Entity {
         }
 
         if (this.isInRange(player)) {
-            console.log(`${this.name} está siguiendo al jugador`);
+            // console.log(`${this.name} está siguiendo al jugador`);
             // Calcular dirección
             const directionX = player.sprite.x - this.sprite.x;
             const directionY = player.sprite.y - this.sprite.y;
@@ -150,9 +148,6 @@ export class CombatEntity extends Entity {
         }
 
         const distance = Phaser.Math.Distance.Between(entity.sprite.x, entity.sprite.y, this.sprite.x, this.sprite.y);
-        console.log(
-            `${this.name} - Distancia al jugador: ${distance}, Radio de interacción: ${this.interactionRadius}`
-        );
 
         return distance <= this.interactionRadius;
     }

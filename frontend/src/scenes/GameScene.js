@@ -3,17 +3,19 @@ import Player from "../entities/base/Player.js";
 import Controls from "../managers/Controls.js";
 import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
-import { setupConsoleCommands } from "../utils/consoleCommands.js";
 
 // Enemigos
 import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
 // Bosses
 import { Lobo } from "../entities/bosses/Lobo.js";
 
-// Otros
+// Entidades
 import { Trainer } from "../entities/npcs/Trainer.js";
 import { Fireplace } from "../entities/npcs/Fireplace.js";
 import { InteractableObject } from "../entities/interactables/Objects.js";
+
+// Consola
+import { setupConsoleCommands } from "../utils/consoleCommands.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -21,7 +23,7 @@ export default class GameScene extends Phaser.Scene {
         this.enemies = [];
         this.bosses = [];
         this.fireplaces = [];
-        this.interactableObjects = []; // Nueva array para objetos interactuables
+        this.interactableObjects = [];
         this.gameState = {};
     }
 
@@ -43,10 +45,10 @@ export default class GameScene extends Phaser.Scene {
         this.spawnFireplaces();
 
         // Generar enemigos en el mapa
-        this.spawnEnemies();
+        // this.spawnEnemies();
 
         // Generar Bosses
-        this.spawnBosses();
+        // this.spawnBosses();
 
         // Generar objetos en el mapa
         this.spawnObjects();
@@ -96,10 +98,7 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
 
-        // Cargar sprite genérico para objetos
-        this.load.image("object-sprite", "./assets/items/object-sprite.png");
-
-        // Cargar assets específicos para los objetos interactuables
+        // Cargar assets objetos
         this.load.image("escudo-dragon", "./assets/items/shields/escudo-dragon.png");
         this.load.image("espada-larga", "./assets/items/weapons/espada-larga.png");
         this.load.image("pocion-salud", "./assets/items/consumables/pocion-salud.png");
@@ -167,26 +166,26 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnTrainer() {
-        this.trainer = new Trainer(this, 700, 700, "trainer");
+        this.trainer = new Trainer(this, 261, 479, "trainer");
     }
 
     spawnFireplaces() {
         // Hoguera principal
-        const fireplace1 = new Fireplace(this, 600, 670, "fireplace");
+        const fireplace1 = new Fireplace(this, 630, 630, "fireplace");
         fireplace1.fireplaceName = "01 Hoguera del Entrenador";
         fireplace1.sprite.setTint(0xff6b6b);
         this.fireplaces.push(fireplace1);
 
         // Otras hogueras
-        const fireplace2 = new Fireplace(this, 700, 350, "fireplace");
-        fireplace2.fireplaceName = "02 Hoguera del Bosque";
-        fireplace2.sprite.setTint(0xff6b6b);
-        this.fireplaces.push(fireplace2);
+        // const fireplace2 = new Fireplace(this, 700, 350, "fireplace");
+        // fireplace2.fireplaceName = "02 Hoguera del Bosque";
+        // fireplace2.sprite.setTint(0xff6b6b);
+        // this.fireplaces.push(fireplace2);
 
-        const fireplace3 = new Fireplace(this, 200, 500, "fireplace");
-        fireplace3.fireplaceName = "03 Hoguera del Lago";
-        fireplace3.sprite.setTint(0xff6b6b);
-        this.fireplaces.push(fireplace3);
+        // const fireplace3 = new Fireplace(this, 200, 500, "fireplace");
+        // fireplace3.fireplaceName = "03 Hoguera del Lago";
+        // fireplace3.sprite.setTint(0xff6b6b);
+        // this.fireplaces.push(fireplace3);
     }
 
     spawnEnemies() {
@@ -214,25 +213,11 @@ export default class GameScene extends Phaser.Scene {
 
         console.log("Nuevos enemigos creados:", this.enemies.length);
 
-        // Configurar colisiones y eventos para los nuevos enemigos
+        // Configurar colisiones con el mapa
         this.setupEnemyMapCollisions();
 
-        // Configurar colisiones con el jugador si ya existe
-        if (this.player) {
-            this.enemies.forEach((enemy) => {
-                enemy.setupCollision(this.player);
-                console.log(`Configuradas colisiones con jugador para ${enemy.name}`);
-
-                // Asegurarnos de que el evento update está configurado
-                if (enemy.updateEntity) {
-                    // Primero, eliminar el evento si ya existía para evitar duplicados
-                    this.events.off("update", enemy.updateEntity);
-                    // Luego, añadir el nuevo evento
-                    this.events.on("update", enemy.updateEntity);
-                    console.log(`Configurado evento update para ${enemy.name}`);
-                }
-            });
-        }
+        // Configurar colisiones con el jugador
+        this.enemies.forEach((enemy) => enemy.setupCollision(this.player));
     }
 
     // Nuevo método para configurar colisiones de enemigos con todas las capas de colisión del mapa
@@ -301,7 +286,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnPlayer() {
-        this.player = new Player(this, 630, 630, "player");
+        this.player = new Player(this, 306, 454, "player");
 
         // Usamos el inventario del jugador para el gameState
         this.gameState.inventory = this.player.inventory;
