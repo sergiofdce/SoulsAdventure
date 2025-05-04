@@ -5,11 +5,7 @@ export default class Inventory {
         this.data = inventoryData || {
             // Inventario con ítems iniciales
             items: {
-                "espada-oscura": {
-                    quantity: 1,
-                    equipped: false,
-                },
-                "escudo-torre": {
+                "espada-larga": {
                     quantity: 1,
                     equipped: false,
                 },

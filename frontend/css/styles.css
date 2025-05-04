@@ -1,0 +1,199 @@
+/* Estilos para la pantalla de inicio */
+.start-screen {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('../assets/background.jpg');
+    /* Asegúrate de tener una imagen de fondo apropiada */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.start-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    /* Overlay oscuro para mejorar legibilidad */
+}
+
+.start-container {
+    position: relative;
+    width: 80%;
+    max-width: 600px;
+    background-color: rgba(30, 30, 30, 0.85);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 165, 0, 0.6);
+    padding: 40px;
+    color: #fff;
+    text-align: center;
+    z-index: 10;
+}
+
+.game-title h1 {
+    font-size: 3.5rem;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #ffa500;
+    text-shadow: 0 0 10px rgba(255, 165, 0, 0.7);
+    font-family: 'Cinzel', serif;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 40px 0;
+}
+
+.menu-button {
+    padding: 15px 30px;
+    background: linear-gradient(to right, #7b2cbf, #3a0ca3);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.menu-button:hover {
+    background: linear-gradient(to right, #9d4edd, #5a189a);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.menu-button:active {
+    transform: translateY(1px);
+}
+
+/* Estilos para formularios */
+.auth-form {
+    background-color: rgba(40, 40, 40, 0.9);
+    padding: 30px;
+    border-radius: 8px;
+    margin-top: 20px;
+    transition: opacity 0.3s ease-in-out;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-form.hidden {
+    display: none !important;
+    /* Forzar ocultar con !important */
+}
+
+.auth-form h2 {
+    color: #ffa500;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ddd;
+    font-size: 1rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #444;
+    background-color: #222;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #ffa500;
+    box-shadow: 0 0 5px rgba(255, 165, 0, 0.5);
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.form-button {
+    flex: 1;
+    padding: 12px 20px;
+    background: linear-gradient(to right, #ff8c00, #ff4500);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+}
+
+.form-button:hover {
+    background: linear-gradient(to right, #ff9f1a, #ff5e1a);
+}
+
+.form-button.secondary {
+    background: linear-gradient(to right, #555, #333);
+}
+
+.form-button.secondary:hover {
+    background: linear-gradient(to right, #666, #444);
+}
+
+.auth-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.auth-message.error {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #ff6b6b;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.auth-message.success {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #5cb85c;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+/* Añadir o actualizar la clase hidden para garantizar que los elementos se ocultan correctamente */
+.hidden {
+    display: none !important;
+}
+
+/* Estilo para mensajes de error/éxito */
+.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}

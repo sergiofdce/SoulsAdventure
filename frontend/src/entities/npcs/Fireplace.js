@@ -83,6 +83,7 @@ export class Fireplace extends NPC {
     onChoiceSelected(choice, player) {
         if (this.discovered) {
             if (choice === "Sí" && this.dialogManager.dialogueText.textContent.includes("¿Quieres descansar")) {
+                
                 // Descansar en la hoguera
                 this.dialogManager.dialogueText.textContent = `${this.name}: Los enemigos han reaparecido y tus pociones han sido restablecidas.`;
 

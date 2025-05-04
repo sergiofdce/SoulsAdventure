@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Souls Adventure - Juego</title>
+    <!-- Incluir el script de autenticación antes que cualquier otro script -->
+    <script src="/js/auth.js"></script>
+    <!-- Verificación inmediata antes de que se cargue el resto de la página -->
+    <script>
+        if (!isAuthenticated()) {
+            window.location.href = '/index.html';
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://unpkg.com/spritespin@4.0.11/release/spritespin.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/game.css">
+</head>
+
+<body>
+
+    <div id="game"></div>
+
+    <div id="hud-container">
+        <div class="hud-player-icon">
+            <img src="." alt="player icon">
+        </div>
+        <div id="hud-player-display">
+            <div class="hud-item">
+                <span id="hud-player-name">Player</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label" for="health-amount">Vida</span>
+                <span id="health-amount" class="hud-value">100</span>
+                <div class="hud-progress" style="width: 100%;"></div>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label" for="souls-amount">Almas</span>
+                <span id="souls-amount" class="hud-value">0</span>
+                <div class="hud-souls-glow"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+
+    <div id="dialogueBox">
+        <p id="dialogueText"></p>
+        <div id="choicesContainer"></div>
+    </div>
+
+    <div id="combat-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="combat-background">
+                <div class="combat-section combat-player blue">
+                    <div id="player-name">Jugador</div>
+                    <div id="player-container">
+                        <div class="health-bar-container">
+                            <div class="health-bar"></div>
+                            <div class="health-text"><span id="player-current-health">100</span>/<span
+                                    id="player-max-health">100</span></div>
+                        </div>
+                        <div id="player-animation-container">
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="combat-section combat-enemy blue">
+                    <div id="enemy-name">Enemigo</div>
+                    <div id="enemy-container">
+                        <div class="health-bar-container">
+                            <div class="health-bar enemy-health-bar"></div>
+                            <div class="health-text"><span id="enemy-current-health">100</span>/<span
+                                    id="enemy-max-health">100</span></div>
+                        </div>
+                        <div id="enemy-animation-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="combat-content">
+                <div class="combat-section combat-movements blue">
+                    <div class="section-title">Movimientos</div>
+                    <div class="combat-buttons">
+                        <button class="combat-button attack-light">
+                            <span class="button-icon">⚔️</span>
+                            Ataque Ligero
+                        </button>
+                        <button class="combat-button attack-heavy">
+                            <span class="button-icon">🗡️</span>
+                            Ataque Pesado
+                        </button>
+                        <button class="combat-button dodge">
+                            <span class="button-icon">🛡️</span>
+                            Bloquear
+                        </button>
+                        <button class="combat-button heal">
+                            <span class="button-icon">❤️</span>
+                            Curar
+                            <span class="potion-counter" id="potion-counter">0</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="combat-section combat-console blue">
+                    <div class="section-title">Consola de Combate</div>
+                    <div class="console-output" id="combat-log">
+                        <p class="console-message"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="inventory-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="scene-content">
+                <div id="inventory-container-left">
+                    <div class="inventory-section inventory-equipment">
+                        <div id="inventory-equipment-box">
+                            <ul>
+                                <li id="helmet">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
+                                </li>
+                                <li id="chest">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
+                                </li>
+                                <li id="glove">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
+                                </li>
+                                <li id="shoes">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
+                                </li>
+                            </ul>
+                            <div id="inventory-equipment-box-player">
+                                <img src="#" alt="personaje">
+                            </div>
+                            <ul>
+                                <li id="weapon">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
+                                </li>
+                                <li id="shield">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
+                                </li>
+                                <li id="accessory1">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
+                                </li>
+                                <li id="accessory2">
+                                    <img src="./assets/items/placeholder.png" alt="Slot vacío">
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="inventory-section inventory-stats">
+                        <div class="stats-container">
+                            <div class="stats-header">
+                                <h3>Estadísticas del Jugador</h3>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stat-group">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Salud</span>
+                                        <div class="stat-value" id="player-health-stat">
+                                            <span class="current-value">100</span>
+                                            <span class="max-value">/100</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Fuerza</span>
+                                        <div class="stat-value" id="player-strength-stat">
+                                            <span class="base-value">5</span>
+                                            <span class="bonus-value">(+0)</span>
+                                            <span class="total-value">= 5</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Daño</span>
+                                        <div class="stat-value" id="player-damage-stat">
+                                            <span class="total-value">5</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="stat-group">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Resistencia</span>
+                                        <div class="stat-value" id="player-resistance-stat">
+                                            <span class="base-value">3</span>
+                                            <span class="bonus-value">(+0)</span>
+                                            <span class="total-value">= 3</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Defensa</span>
+                                        <div class="stat-value" id="player-defense-stat">
+                                            <span class="total-value">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Velocidad</span>
+                                        <div class="stat-value" id="player-speed-stat">
+                                            <span class="total-value">2</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="inventory-container-right">
+                    <div class="inventory-section inventory-items">
+                        <ul>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="accessoryModal" class="modal">
+        <div class="modal-content">
+            <p>Ya tienes dos accesorios equipados. ¿Dónde quieres colocar el nuevo accesorio?</p>
+            <button id="replaceAccessory1">Reemplazar Accesorio 1</button>
+            <button id="replaceAccessory2">Reemplazar Accesorio 2</button>
+            <button id="cancelModal">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="trainer-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="scene-content">
+                <div class="trainer-section upgrade-stats blue">
+                    <div class="section-title">Mejorar Estadísticas</div>
+                    <div id="player-upgrade-container">
+                        <div class="player-level-info">
+                            <div class="stat-row">
+                                <span>Nivel:</span>
+                                <span id="player-level">1</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Almas:</span>
+                                <span id="player-souls">0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Costo:</span>
+                                <span id="required-souls" class="costs-display">-</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-upgrades">
+                            <div class="stat-row">
+                                <span>Salud: </span>
+                                <span id="player-health">100</span>
+                                <button class="downgrade-btn" data-stat="health">-</button>
+                                <button class="upgrade-btn" data-stat="health">+</button>
+                            </div>
+                            <div class="stat-row">
+                                <span>Resistencia: </span>
+                                <span id="player-resistance">10</span>
+                                <button class="downgrade-btn" data-stat="resistance">-</button>
+                                <button class="upgrade-btn" data-stat="resistance">+</button>
+                            </div>
+                            <div class="stat-row">
+                                <span>Fuerza: </span>
+                                <span id="player-strength">10</span>
+                                <button class="downgrade-btn" data-stat="strength">-</button>
+                                <button class="upgrade-btn" data-stat="strength">+</button>
+                            </div>
+                            <div class="stat-row">
+                                <span>Velocidad: </span>
+                                <span id="player-speed">30</span>
+                                <button class="downgrade-btn" data-stat="speed">-</button>
+                                <button class="upgrade-btn" data-stat="speed">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="trainer-section player-stats blue">
+                    <div class="section-title">Estadísticas Detalladas</div>
+                    <div id="player-stats-container">
+                        <div class="stat-details">
+                            <div class="stat-header">Valores de estadísticas</div>
+                            <div class="stat-row" data-stat="health">
+                                <span>Salud:</span>
+                                <span id="stats-health-base">100</span>
+                                <span class="stat-arrow">→</span>
+                                <span id="stats-health-upgraded" class="upgraded-stat">100</span>
+                            </div>
+                            <div class="stat-row" data-stat="resistance">
+                                <span>Resistencia:</span>
+                                <span id="stats-resistance-base">10</span>
+                                <span class="stat-arrow">→</span>
+                                <span id="stats-resistance-upgraded" class="upgraded-stat">10</span>
+                            </div>
+                            <div class="stat-row" data-stat="strength">
+                                <span>Fuerza:</span>
+                                <span id="stats-strength-base">10</span>
+                                <span class="stat-arrow">→</span>
+                                <span id="stats-strength-upgraded" class="upgraded-stat">10</span>
+                            </div>
+                            <div class="stat-row" data-stat="speed">
+                                <span>Velocidad:</span>
+                                <span id="stats-speed-base">30</span>
+                                <span class="stat-arrow">→</span>
+                                <span id="stats-speed-upgraded" class="upgraded-stat">30</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="accept-upgrades" class="accept-button">Aceptar</button>
+
+                </div>
+                <div class="trainer-section stats-info blue">
+                    <div class="section-title">Información Detallada</div>
+                    <p class="stats-info-message" id="default-message">
+                        Mantén el cursor encima de alguna Estadística
+                        para mostrar información
+                    </p>
+                    <p class="stats-info-message hidden" id="health-message">La Salud es blablabla</p>
+                    <p class="stats-info-message hidden" id="resistance-message">La Resistencia es blablabla</p>
+                    <p class="stats-info-message hidden" id="strength-message">La Fuerza es blablabla</p>
+                    <p class="stats-info-message hidden" id="speed-message">La Velocidad es blablabla</p>
+                </div>
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
+            </div>
+        </div>
+        <script>
+            // Mejorar atributos -> Información detallada
+            $(document).ready(function () {
+                $('.stat-details .stat-row').on('mouseenter', function () {
+                    $('.stats-info-message').addClass('hidden');
+                    let statType = $(this).data('stat');
+                    $('#' + statType + '-message').removeClass('hidden');
+                });
+
+                $('.stat-details .stat-row').on('mouseleave', function () {
+                    $('.stats-info-message').addClass('hidden');
+                    $('#default-message').removeClass('hidden');
+                });
+            });
+        </script>
+    </div>
+
+    <div id="teleport-container" class="scene-container hidden">
+        <div class="scene-layout">
+            <div class="scene-content">
+                <div class="teleport-section blue">
+                    <div class="section-title">VIAJAR ENTRE HOGUERAS</div>
+                    <div class="teleport-instructions">Selecciona una hoguera para viajar</div>
+
+                    <div id="fireplace-list" class="fireplace-list">
+                        <div id="no-fireplaces-message" class="hidden">
+                            No has descubierto ninguna hoguera aún
+                        </div>
+                    </div>
+
+                    <div id="teleport-action-buttons" class="teleport-actions">
+                        <button id="teleport-travel" class="travel-button" disabled>Viajar</button>
+                        <button id="teleport-exit" class="exit-button">Salir</button>
+                    </div>
+
+                    <button id="teleport-cancel" class="cancel-button hidden">Cancelar</button>
+                </div>
+            </div>
+            <div class="accesibility-buttons">
+                <div>Botones de accesibilidad</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mejorar atributos -> Información detallada
+        $(document).ready(function () {
+            $('.stat-details .stat-row').on('mouseenter', function () {
+                $('.stats-info-message').addClass('hidden');
+                let statType = $(this).data('stat');
+                $('#' + statType + '-message').removeClass('hidden');
+            });
+
+            $('.stat-details .stat-row').on('mouseleave', function () {
+                $('.stats-info-message').addClass('hidden');
+                $('#default-message').removeClass('hidden');
+            });
+
+            // Teleport
+            $('#teleport-cancel').on('click', function () {
+                $('#teleport-container').addClass('hidden');
+                if (window.game) {
+                    window.game.scene.resume('GameScene');
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

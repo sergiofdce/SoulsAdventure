@@ -1,4 +1,17 @@
-// Mejora de habilidades
+/*****************************************************
+Atributos de Player
+*****************************************************/
+export const PLAYER_BASE_STATS = {
+    maxHealth: 25,
+    health: 25,
+    resistance: 1,
+    strength: 3,
+    speed: 2,
+};
+
+/*****************************************************
+Mejora de habilidades
+*****************************************************/
 
 // Porcentajes de mejora por cada punto invertido
 export const STAT_UPGRADE_MULTIPLIERS = {
@@ -11,7 +24,10 @@ export const STAT_UPGRADE_MULTIPLIERS = {
 // Incremento de coste de almas por nivel
 export const LEVEL_UPGRADE_COST_MULTIPLIER = 1.8; // +180% más de costo por nivel
 
-// Sistema de combate
+/*****************************************************
+Sistema de Combate
+*****************************************************/
+
 export const COMBAT = {
     LIGHT_ATTACK: {
         BASE_HIT_CHANCE: 0.9, // 90% de probabilidad base de acertar

@@ -1,5 +1,5 @@
 import { Entity } from "./Entity.js";
-import { STAT_UPGRADE_MULTIPLIERS } from "../../config/constants.js";
+import { STAT_UPGRADE_MULTIPLIERS, PLAYER_BASE_STATS } from "../../config/constants.js";
 import Inventory from "../../data/items/Inventory.js";
 
 export default class Player extends Entity {
@@ -9,17 +9,23 @@ export default class Player extends Entity {
 
         // Atributos base del jugador
         this.level = 1;
-        this.souls = 1000000;
+        this.souls = 0;
 
-        this.maxHealth = 100;
-        this.health = 100;
-        this.resistance = 33;
-        this.strength = 5555;
-        this.speed = 43247;
+        // Estadísticas base
+        this.maxHealth = PLAYER_BASE_STATS.maxHealth;
+        this.health = PLAYER_BASE_STATS.health;
+        this.resistance = PLAYER_BASE_STATS.resistance;
+        this.strength = PLAYER_BASE_STATS.strength;
+        this.speed = PLAYER_BASE_STATS.speed;
 
         // Atributos equipación
         this.damage = 0;
         this.defense = 0;
+
+        // Arrays de progreso
+        this.defeatedBosses = [];
+        this.discoveredFireplaces = [];
+        this.discoveredNPCs = [];
 
         // Crear sprite con Phaser
         this.sprite = scene.physics.add.sprite(x, y, texture);
@@ -33,7 +39,7 @@ export default class Player extends Entity {
         // Animaciones
         this.createAnimations(scene, texture);
 
-        // Inventario - ahora como objeto independiente
+        // Inventario
         this.inventory = new Inventory();
         // Conectar el inventario con el jugador
         this.inventory.setPlayer(this);
@@ -220,9 +226,10 @@ export default class Player extends Entity {
         return this;
     }
 
-    // Método para guardar el estado del jugador (incluyendo inventario)
+    // Exportar JSON para subir a MongoDB
     savePlayerData() {
         const playerData = {
+            // Atributos
             level: this.level,
             souls: this.souls,
             health: this.health,
@@ -230,13 +237,25 @@ export default class Player extends Entity {
             resistance: this.resistance,
             strength: this.strength,
             speed: this.speed,
-            inventoryData: this.inventory.data, // Guardamos el objeto data directamente
+            // Inventario
+            inventoryData: this.inventory.data,
+            // Bosses
+            defeatedBosses: this.defeatedBosses || [],
+            // Hogueras descubiertas
+            discoveredFireplaces: this.discoveredFireplaces || [],
+            // NPCs descubiertos
+            discoveredNPCs: this.discoveredNPCs || [],
+            // Posición
+            lastPosition: {
+                x: this.sprite.x,
+                y: this.sprite.y,
+            },
         };
 
         return JSON.stringify(playerData);
     }
 
-    // Método para cargar el estado del jugador
+    // Importar JSON
     loadPlayerData(jsonString) {
         try {
             const data = JSON.parse(jsonString);
@@ -250,10 +269,11 @@ export default class Player extends Entity {
             this.strength = data.strength || this.strength;
             this.speed = data.speed || this.speed;
 
-            // Cargar inventario si existe
-            if (data.inventoryData) {
-                this.inventory.importFromJSON(data.inventoryData);
-            }
+            // Cargar datos
+            this.inventory.importFromJSON(data.inventoryData);
+            this.defeatedBosses = data.defeatedBosses || [];
+            this.discoveredFireplaces = data.discoveredFireplaces || [];
+            this.discoveredNPCs = data.discoveredNPCs || [];
 
             // Reconectar el inventario con el jugador después de cargar
             this.inventory.setPlayer(this);

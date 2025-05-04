@@ -259,27 +259,15 @@ export default class GameScene extends Phaser.Scene {
 
         // Definir objetos en el mapa
         const objectsToSpawn = [
-            // Aquí usamos el mismo ID como textura ya que coincide con el nombre del asset cargado
-            { itemId: "escudo-dragon", x: 540, y: 550, texture: "escudo-dragon" },
-            { itemId: "espada-larga", x: 700, y: 600, texture: "espada-larga" },
-            { itemId: "pocion-salud", x: 650, y: 500, texture: "pocion-salud" },
+            // { itemId: "escudo-dragon", x: 540, y: 550, texture: "escudo-dragon" },
+            // { itemId: "espada-larga", x: 700, y: 600, texture: "espada-larga" },
+            // { itemId: "pocion-salud", x: 650, y: 500, texture: "pocion-salud" },
         ];
 
         // Crear los objetos interactuables
         objectsToSpawn.forEach((objConfig) => {
-            const obj = new InteractableObject(
-                this,
-                objConfig.x,
-                objConfig.y,
-                objConfig.itemId,
-                objConfig.texture // Pasar la textura específica
-            );
+            const obj = new InteractableObject(this, objConfig.x, objConfig.y, objConfig.itemId, objConfig.texture);
             this.interactableObjects.push(obj);
-
-            // Añadir colisión física con el jugador (opcional)
-            if (this.player && obj.sprite) {
-                this.physics.add.collider(this.player.sprite, obj.sprite);
-            }
         });
 
         console.log(`Spawned ${this.interactableObjects.length} interactable objects`);

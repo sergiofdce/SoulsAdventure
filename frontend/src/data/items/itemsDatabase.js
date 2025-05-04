@@ -31,14 +31,14 @@ const ItemsDatabase = {
             "Escudo Torre",
             "Un gran escudo que cubre casi todo el cuerpo, pero limita la movilidad.",
             "./assets/items/shields/escudo-torre.png",
-            50
+            20
         ),
         "escudo-dragon": new Shield(
             "escudo-dragon",
             "Escudo del Dragón",
             "Forjado con escamas de dragón, este escudo ofrece protección contra elementos mágicos.",
             "./assets/items/shields/escudo-dragon.png",
-            40
+            50
         ),
     },
 
