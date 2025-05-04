@@ -227,7 +227,7 @@ export default class Player extends Entity {
         return this;
     }
 
-    // Exportar JSON para subir a MongoDB
+    // Guardar en MongoDB
     savePlayerData() {
         const playerData = {
             // Atributos
@@ -260,90 +260,87 @@ export default class Player extends Entity {
             savedAt: new Date().toISOString(),
         };
 
-        // Enviar datos al backend
         this.sendToServer(playerData);
-
-        // Mostrar mensaje de confirmación en la consola
-        console.log("Datos del jugador enviado al backend:", playerData);
-
         return playerData;
     }
 
-    // Enviar datos al backend
     async sendToServer(data) {
         try {
-            // URL del endpoint de guardado (corregida para coincidir con las rutas del backend)
-            const apiUrl = "/api/users/save-data";
-
-            // Obtener el token de autenticación del localStorage
+            // Obtener el token JWT del almacenamiento local
             const token = localStorage.getItem("authToken");
 
-            // Realizar la petición al servidor con formato correcto para el backend
-            const response = await fetch(apiUrl, {
+            const response = await fetch("/api/users/save-data", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-auth-token": token, // Usar el formato que espera el middleware auth.js
+                    "x-auth-token": token,
                 },
-                body: JSON.stringify({ playerData: data }), // Enviar en el formato que espera el controlador
+                body: JSON.stringify(data),
             });
 
-            // Comprobar respuesta
-            if (!response.ok) {
-                throw new Error(`Error al guardar: ${response.status}`);
-            }
-
             const result = await response.json();
-            console.log("✅ Datos guardados correctamente:", result.message);
+            console.log("Datos de jugador guardados correctamente");
 
             return true;
         } catch (error) {
-            console.error("❌ Error al guardar datos:", error);
+            console.error("Error al enviar datos al servidor:", error);
             return false;
         }
     }
 
-    // Importar JSON
+    // Cargar desde MongoDB
     async loadPlayerData() {
         try {
-            // URL del endpoint para obtener datos
-            const apiUrl = "/api/users/get-data";
-
-            // Obtener el token de autenticación del localStorage
+            // Obtener el token JWT del almacenamiento local
             const token = localStorage.getItem("authToken");
+
             if (!token) {
-                throw new Error("No hay token de autenticación disponible");
+                console.error("No hay token de autenticación disponible");
+                return false;
             }
 
-            // Realizar la petición al servidor
-            const response = await fetch(apiUrl, {
+            // Verificar validez básica del token (formato)
+            const tokenParts = token.split(".");
+            if (tokenParts.length !== 3) {
+                console.error("El formato del token es inválido");
+                localStorage.removeItem("authToken"); // Eliminar token inválido
+                return false;
+            }
+
+            console.log("Intentando cargar datos del jugador...");
+            const response = await fetch("/api/users/get-data", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-auth-token": token, // El mismo token que identifica al usuario
+                    "x-auth-token": token,
                 },
             });
 
-            // Comprobar respuesta
-            if (!response.ok) {
-                throw new Error(`Error al cargar datos: ${response.status}`);
+            console.log("Respuesta del servidor:", response.status, response.statusText);
+
+            if (response.status === 404) {
+                // Usuario no encontrado - probablemente necesita registrarse nuevamente
+                console.warn("Usuario no encontrado. Es posible que necesites registrarte nuevamente.");
+                return false;
+            } else if (response.status === 401) {
+                // Token expirado o inválido
+                console.warn("Sesión expirada. Por favor, inicia sesión nuevamente.");
+                localStorage.removeItem("authToken");
+                return false;
+            } else if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Error del servidor:", errorText);
+                throw new Error(`Error al obtener datos del servidor: ${response.status} ${response.statusText}`);
             }
 
-            // Obtener los datos
             const result = await response.json();
+
+            if (!result.success || !result.playerData) {
+                console.error("No se encontraron datos del jugador");
+                return false;
+            }
+
             const playerData = result.playerData;
-
-            if (!playerData) {
-                throw new Error("No se encontraron datos del jugador");
-            }
-
-            console.log("📥 Datos recuperados del servidor:", result);
-
-            // Actualizar nombre
-            if (result.user && result.user.playerName) {
-                this.name = result.user.playerName;
-                console.log(`Nombre del jugador actualizado: ${this.name}`);
-            }
 
             // Actualizar atributos del jugador
             if (playerData.attributes) {
@@ -361,29 +358,27 @@ export default class Player extends Entity {
             // Actualizar inventario
             if (playerData.inventory) {
                 this.inventory.importFromJSON(playerData.inventory);
-                this.inventory.recalculatePlayerStats(); // Recalcular stats basados en equipamiento
+                // Recalcular estadísticas basadas en equipamiento
+                this.inventory.recalculatePlayerStats();
             }
 
             // Actualizar progreso
             if (playerData.progress) {
-                this.defeatedBosses = playerData.progress.defeatedBosses || [];
-                this.discoveredFireplaces = playerData.progress.discoveredFireplaces || [];
-                this.discoveredNPCs = playerData.progress.discoveredNPCs || [];
-                this.discoveredItems = playerData.progress.discoveredItems || [];
+                this.defeatedBosses = playerData.progress.defeatedBosses || this.defeatedBosses;
+                this.discoveredFireplaces = playerData.progress.discoveredFireplaces || this.discoveredFireplaces;
+                this.discoveredNPCs = playerData.progress.discoveredNPCs || this.discoveredNPCs;
+                this.discoveredItems = playerData.progress.discoveredItems || this.discoveredItems;
             }
 
-            // Actualizar posición si está disponible y el sprite existe
+            // Actualizar posición si está disponible y si tenemos acceso al sprite
             if (playerData.lastPosition && this.sprite) {
-                this.setPosition(
-                    playerData.lastPosition.x || this.sprite.x,
-                    playerData.lastPosition.y || this.sprite.y
-                );
+                this.setPosition(playerData.lastPosition.x, playerData.lastPosition.y);
             }
 
-            console.log("✅ Datos del jugador cargados correctamente");
+            console.log("Datos del jugador cargados correctamente");
             return true;
         } catch (error) {
-            console.error("❌ Error al cargar datos del jugador:", error);
+            console.error("Error al cargar datos del jugador:", error);
             return false;
         }
     }

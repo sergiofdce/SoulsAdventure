@@ -1,6 +1,5 @@
 import { NPC } from "./Npc.js";
 
-// NPC para subir de nivel
 export class Trainer extends NPC {
     constructor(scene, x, y, texture) {
         // Diálogos para primera interacción
@@ -18,23 +17,20 @@ export class Trainer extends NPC {
         ];
 
         // Diálogos normales (después de la primera vez)
-        const regularDialogues = ["Hola!", "¿Quieres entrenar para subir de nivel?"];
+        const regularDialogues = ["Hola!", "¿Quieres entrenar ahora para subir de nivel?"];
 
-        // Usar diálogos iniciales por defecto
         super(scene, x, y, texture, "Entrenador", initialDialogues);
 
-        // Variable para rastrear si es la primera interacción
         this.firstInteraction = true;
-
-        // Guardar ambos conjuntos de diálogos
         this.initialDialogues = initialDialogues;
         this.regularDialogues = regularDialogues;
+        this.setDialogChoices(["Sí", "No"], 9);
 
-        // Configurar opciones de diálogo
-        this.setDialogChoices(["Sí", "No"], 5); // Para diálogos iniciales, el índice es 5
+        // Otras respuestas específicas que necesitamos guardar
+        this.trainingStartText = "¡Comencemos el entrenamiento!";
+        this.trainingRejectText = "Entiendo. Vuelve cuando quieras entrenar.";
     }
 
-    // Nuevo método para verificar si el NPC ya ha sido descubierto
     checkDiscoveredStatus(player) {
         if (player && player.discoveredNPCs && player.discoveredNPCs.includes(this.name)) {
             this.firstInteraction = false;
@@ -42,14 +38,12 @@ export class Trainer extends NPC {
         }
     }
 
-    // Sobrescribir el método interact para controlar qué diálogos mostrar
     interact(player) {
+        // Configurar diálogos según estado de interacción
         if (this.firstInteraction) {
-            // Primera interacción: usar diálogos iniciales (ya están configurados en el constructor)
             this.dialogue = this.initialDialogues;
             this.setDialogChoices(["Sí", "No"], 9);
         } else {
-            // Interacciones posteriores: cambiar a diálogos regulares
             this.dialogue = this.regularDialogues;
             this.setDialogChoices(["Sí", "No"], 1);
         }
@@ -58,30 +52,42 @@ export class Trainer extends NPC {
         super.interact(player);
     }
 
-    // Método que será llamado por DialogManager cuando se seleccione una opción
     onChoiceSelected(choice, player) {
-        // Marcar que ya no es la primera interacción
+        // Registrar primera interacción
+        this.registerFirstInteraction(player);
+
+        const isYesChoice = choice === "Sí";
+
+        if (isYesChoice) {
+            this.handleTrainingChoice(player);
+        } else {
+            this.handleRejectionChoice();
+        }
+    }
+
+    registerFirstInteraction(player) {
         if (this.firstInteraction) {
             this.firstInteraction = false;
 
-            // Añadir el NPCs al array de NPCs descubiertos del jugador
-            player.discoveredNPCs.push(this.name);
-            player.savePlayerData();
+            // Añadir el NPC al array de NPCs descubiertos del jugador
+            if (player && player.discoveredNPCs && !player.discoveredNPCs.includes(this.name)) {
+                player.discoveredNPCs.push(this.name);
+                player.savePlayerData();
+            }
         }
+    }
 
-        if (choice === "Sí") {
-            // Iniciar entrenamiento
-            this.dialogManager.dialogueText.textContent = `${this.name}: ¡Comencemos el entrenamiento!`;
+    handleTrainingChoice(player) {
+        this.dialogManager.dialogueText.textContent = `${this.name}: ${this.trainingStartText}`;
 
-            // Cerrar diálogo después de un breve retraso y lanzar la escena de entrenamiento
-            setTimeout(() => {
-                this.dialogManager.closeDialog();
-                this.scene.scene.pause("GameScene");
-                this.scene.scene.launch("TrainingScene", { player: player });
-            }, 2000);
-        } else {
-            // Rechazar entrenamiento
-            this.dialogManager.dialogueText.textContent = `${this.name}: Entiendo. Vuelve cuando quieras entrenar.`;
-        }
+        setTimeout(() => {
+            this.dialogManager.closeDialog();
+            this.scene.scene.pause("GameScene");
+            this.scene.scene.launch("TrainingScene", { player: player });
+        }, 2000);
+    }
+
+    handleRejectionChoice() {
+        this.dialogManager.dialogueText.textContent = `${this.name}: ${this.trainingRejectText}`;
     }
 }
