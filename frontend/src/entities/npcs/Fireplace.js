@@ -35,14 +35,12 @@ export class Fireplace extends NPC {
             this.scene.fireplaces.push(this);
         }
 
-        // Mark as discovered regardless
+        // Marcar como descubierta
         this.discovered = true;
 
+        console.log(`Hoguera "${this.fireplaceName}" añadida a la lista del jugador`);
+
         console.log("Hoguera registrada:", this.fireplaceName);
-        console.log(
-            "Fireplaces in scene:",
-            this.scene.fireplaces.map((f) => f.fireplaceName)
-        );
     }
 
     // Sobrescribir el método interact para manejar el estado de descubrimiento
@@ -56,6 +54,10 @@ export class Fireplace extends NPC {
         // Si es la primera interacción, registrar la hoguera
         if (!this.discovered) {
             this.registerFireplace();
+
+            // Añadir a hogueras descubiertas
+            this.player.discoveredFireplaces.push(this.fireplaceName);
+            
             // Usar los diálogos iniciales
             this.dialogConfig.dialogue = [...this.initialDialogue];
             this.dialogConfig.choiceIndex = 1;

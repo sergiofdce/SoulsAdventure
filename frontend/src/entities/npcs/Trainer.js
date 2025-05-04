@@ -34,6 +34,14 @@ export class Trainer extends NPC {
         this.setDialogChoices(["Sí", "No"], 5); // Para diálogos iniciales, el índice es 5
     }
 
+    // Nuevo método para verificar si el NPC ya ha sido descubierto
+    checkDiscoveredStatus(player) {
+        if (player && player.discoveredNPCs && player.discoveredNPCs.includes(this.name)) {
+            this.firstInteraction = false;
+            console.log(`NPC ${this.name} ya ha sido descubierto anteriormente`);
+        }
+    }
+
     // Sobrescribir el método interact para controlar qué diálogos mostrar
     interact(player) {
         if (this.firstInteraction) {
@@ -55,6 +63,10 @@ export class Trainer extends NPC {
         // Marcar que ya no es la primera interacción
         if (this.firstInteraction) {
             this.firstInteraction = false;
+
+            // Añadir el NPCs al array de NPCs descubiertos del jugador
+            player.discoveredNPCs.push(this.name);
+            player.savePlayerData();
         }
 
         if (choice === "Sí") {

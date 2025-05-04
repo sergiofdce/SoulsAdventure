@@ -1163,6 +1163,11 @@ export default class BossScene extends Phaser.Scene {
             // Mostrar mensaje de recompensa en amarillo
             this.addCombatLogMessage(`¡Has obtenido ${this.enemy.souls} almas!`, "souls-reward");
 
+            // Registrar el boss derrotado en el array defeatedBosses del jugador
+            this.player.defeatedBosses.push(this.enemy.name);
+            // Guardar los datos del jugador para persistir esta información
+            this.player.savePlayerData();
+
             // Tiempo antes de cerrar escena
             this.time.delayedCall(3000, () => {
                 this.enemy.kill();

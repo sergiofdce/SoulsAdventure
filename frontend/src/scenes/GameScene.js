@@ -31,12 +31,18 @@ export default class GameScene extends Phaser.Scene {
         this.loadAssets();
     }
 
-    create() {
+    async create() {
         // Configurar controles de entrada
         this.setupInput();
 
         // Configurar el mapa y límites del mundo
         this.setupMap();
+
+        // Instanciar el jugador
+        this.spawnPlayer();
+
+        // Cargar datos guardados del jugador
+        await this.loadPlayerSavedData();
 
         // Generar Trainer
         this.spawnTrainer();
@@ -48,13 +54,10 @@ export default class GameScene extends Phaser.Scene {
         // this.spawnEnemies();
 
         // Generar Bosses
-        // this.spawnBosses();
+        this.spawnBosses();
 
         // Generar objetos en el mapa
         this.spawnObjects();
-
-        // Instanciar el jugador
-        this.spawnPlayer();
 
         // Configurar colisiones entre objetos
         this.setupCollisions();
@@ -165,27 +168,100 @@ export default class GameScene extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, this.mapManager.map.widthInPixels, this.mapManager.map.heightInPixels);
     }
 
+    spawnPlayer() {
+        // Intentar obtener el nombre del jugador del localStorage si existe
+        let playerName = "";
+
+        try {
+            const userData = JSON.parse(localStorage.getItem("userData"));
+            if (userData && userData.playerName) {
+                playerName = userData.playerName;
+            }
+        } catch (error) {
+            console.error("Error al obtener el nombre del jugador:", error);
+        }
+
+        this.player = new Player(this, 306, 454, "player", playerName);
+
+        // Usamos el inventario del jugador para el gameState
+        this.gameState.inventory = this.player.inventory;
+    }
+
+    async loadPlayerSavedData() {
+        try {
+            // Mostrar algún indicador de carga si lo deseas
+            console.log("Cargando datos del jugador...");
+
+            // Llamar al método de Player que recupera los datos
+            const success = await this.player.loadPlayerData();
+
+            if (success) {
+                console.log("Datos del jugador cargados correctamente");
+
+                // Actualizar la interfaz de usuario con los nuevos valores
+                this.updateHUD();
+            } else {
+                console.warn("No se pudieron cargar datos del jugador. Usando valores por defecto.");
+            }
+        } catch (error) {
+            console.error("Error al cargar datos:", error);
+        }
+    }
+
+    updateHUD() {
+        // Actualizar vida en el HUD
+        const healthElement = document.getElementById("health-amount");
+        if (healthElement) {
+            healthElement.textContent = this.player.maxHealth;
+
+            // Actualizar barra de progreso de vida
+            const healthBar = document.querySelector(".hud-progress");
+            if (healthBar) {
+                healthBar.style.width = "100%";
+            }
+        }
+
+        // Actualizar almas en el HUD
+        const soulsElement = document.getElementById("souls-amount");
+        if (soulsElement) {
+            soulsElement.textContent = this.player.souls;
+        }
+
+        // Actualizar nombre del jugador en el HUD
+        const nameElement = document.getElementById("hud-player-name");
+        if (nameElement && this.player.name) {
+            nameElement.textContent = this.player.name;
+        }
+    }
+
     spawnTrainer() {
         this.trainer = new Trainer(this, 261, 479, "trainer");
+
+        if (this.trainer.checkDiscoveredStatus(this.player)) {
+            this.trainer.firstInteraction = false;
+        }
     }
 
     spawnFireplaces() {
-        // Hoguera principal
-        const fireplace1 = new Fireplace(this, 630, 630, "fireplace");
-        fireplace1.fireplaceName = "Plaza del Pueblo";
-        fireplace1.sprite.setTint(0xff6b6b);
-        this.fireplaces.push(fireplace1);
+        const fireplaceConfigs = [
+            { x: 630, y: 630, name: "Plaza del Pueblo" },
+            { x: 1146, y: 2710, name: "Ruinas de Nuevo Londo" },
+            { x: 3291, y: 4276, name: "Izalith perdida" },
+        ];
 
-        // Otras hogueras
-        const fireplace2 = new Fireplace(this, 1146, 2710, "fireplace");
-        fireplace2.fireplaceName = "Ruinas de Nuevo Londo";
-        fireplace2.sprite.setTint(0xff6b6b);
-        this.fireplaces.push(fireplace2);
+        fireplaceConfigs.forEach((config) => {
+            const fireplace = new Fireplace(this, config.x, config.y, "fireplace");
+            fireplace.fireplaceName = config.name;
+            fireplace.sprite.setTint(0xff6b6b);
 
-        const fireplace3 = new Fireplace(this, 3291, 4276, "fireplace");
-        fireplace3.fireplaceName = "Izalith perdida";
-        fireplace3.sprite.setTint(0xff6b6b);
-        this.fireplaces.push(fireplace3);
+            // Verificar si esta hoguera ya está en el array de descubiertas
+            if (this.player.discoveredFireplaces.includes(fireplace.fireplaceName)) {
+                fireplace.discovered = true;
+                console.log(`Hoguera ${fireplace.fireplaceName} ya descubierta anteriormente`);
+            }
+
+            this.fireplaces.push(fireplace);
+        });
     }
 
     spawnEnemies() {
@@ -242,11 +318,17 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnBosses() {
-        const bossConfigs = [{ type: Lobo, x: 800, y: 600 }];
+        const bossConfigs = [{ type: Lobo, name: "Lobo", x: 800, y: 600 }];
 
-        bossConfigs.forEach(({ type, x, y }) => {
-            const boss = new type(this, x, y);
-            this.bosses.push(boss);
+        bossConfigs.forEach(({ type, name, x, y }) => {
+            // Verificar si el boss ya ha sido derrotado
+            if (!this.player.defeatedBosses.includes(name)) {
+                const boss = new type(this, x, y, undefined, name);
+                this.bosses.push(boss);
+                console.log(`Boss ${name} spawned at (${x}, ${y})`);
+            } else {
+                console.log(`Boss ${name} already defeated, not spawning`);
+            }
         });
     }
 
@@ -271,13 +353,6 @@ export default class GameScene extends Phaser.Scene {
         });
 
         console.log(`Spawned ${this.interactableObjects.length} interactable objects`);
-    }
-
-    spawnPlayer() {
-        this.player = new Player(this, 306, 454, "player");
-
-        // Usamos el inventario del jugador para el gameState
-        this.gameState.inventory = this.player.inventory;
     }
 
     setupCollisions() {
@@ -355,13 +430,15 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update() {
-        // Actualizar controles del jugador a través del objeto Controls
+        // Verificar que los controles y el jugador estén inicializados
         if (this.controls && this.player) {
             this.controls.update(this.player);
-        }
 
-        // Controles
-        this.player.update(this.controls.getCursors());
+            // Solo actualizar el jugador si los controles están disponibles
+            if (this.controls.getCursors) {
+                this.player.update(this.controls.getCursors());
+            }
+        }
 
         // // Mantiene solo los enemigos que no han sido destruidos
         // this.enemies = this.enemies.filter((enemy) => !enemy.isDestroyed);

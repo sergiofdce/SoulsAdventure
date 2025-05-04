@@ -210,6 +210,37 @@ exports.savePlayerData = async (req, res) => {
     }
 };
 
+// Obtener datos del jugador
+exports.getPlayerData = async (req, res) => {
+    try {
+        // Obtener el ID del usuario desde el token
+        const userId = req.user.userId;
+        
+        // Buscar usuario por ID
+        const user = await User.findById(userId).select("-password");
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado"
+            });
+        }
+        
+        // Devolver los datos del jugador
+        res.status(200).json({
+            success: true,
+            playerData: user.playerData || {}
+        });
+    } catch (error) {
+        console.error("Error obteniendo datos del jugador:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener datos del jugador",
+            error: error.message
+        });
+    }
+};
+
 // Controlador para verificar token
 exports.verifyToken = async (req, res) => {
     try {

@@ -3,9 +3,9 @@ import { STAT_UPGRADE_MULTIPLIERS, PLAYER_BASE_STATS } from "../../config/consta
 import Inventory from "../../data/items/Inventory.js";
 
 export default class Player extends Entity {
-    constructor(scene, x, y, texture) {
+    constructor(scene, x, y, texture, name = "") {
         // Llamamos al constructor de la clase padre
-        super(scene, x, y, texture, "Sergio");
+        super(scene, x, y, texture, name);
 
         // Atributos base del jugador
         this.level = 1;
@@ -238,6 +238,16 @@ export default class Player extends Entity {
                 resistance: this.resistance,
                 strength: this.strength,
                 speed: this.speed,
+                damage: this.damage,
+                defense: this.defense,
+            },
+            // Inventario
+            inventory: this.inventory.exportToJSON(),
+            // Progreso en el mundo
+            progress: {
+                defeatedBosses: this.defeatedBosses,
+                discoveredFireplaces: this.discoveredFireplaces,
+                discoveredNPCs: this.discoveredNPCs,
             },
             // Posición
             lastPosition: {
@@ -266,11 +276,6 @@ export default class Player extends Entity {
             // Obtener el token de autenticación del localStorage
             const token = localStorage.getItem("authToken");
 
-            if (!token) {
-                console.error("No se encontró token de autenticación. El usuario debe iniciar sesión.");
-                return false;
-            }
-
             // Realizar la petición al servidor con formato correcto para el backend
             const response = await fetch(apiUrl, {
                 method: "POST",
@@ -289,9 +294,6 @@ export default class Player extends Entity {
             const result = await response.json();
             console.log("✅ Datos guardados correctamente:", result.message);
 
-            // Mostrar una animación de guardado exitoso
-            this.showSaveNotification();
-
             return true;
         } catch (error) {
             console.error("❌ Error al guardar datos:", error);
@@ -299,35 +301,87 @@ export default class Player extends Entity {
         }
     }
 
-    // Método para mostrar notificación de guardado
-    showSaveNotification() {
-        // Implementamos una simple notificación en la esquina de la pantalla
-        const scene = this.sprite.scene;
-        const centerX = scene.cameras.main.width / 2;
-        const centerY = scene.cameras.main.height - 50;
-
-        // Crear texto de guardado
-        const saveText = scene.add
-            .text(centerX, centerY, "¡Partida Guardada!", {
-                fontSize: "24px",
-                fill: "#fff",
-                backgroundColor: "#28a745",
-                padding: { x: 10, y: 5 },
-            })
-            .setOrigin(0.5);
-
-        // Animación de fade out
-        scene.tweens.add({
-            targets: saveText,
-            alpha: 0,
-            y: centerY - 50,
-            duration: 2000,
-            onComplete: () => {
-                saveText.destroy();
-            },
-        });
-    }
-
     // Importar JSON
-    loadPlayerData(jsonString) {}
+    async loadPlayerData() {
+        try {
+            // URL del endpoint para obtener datos
+            const apiUrl = "/api/users/get-data";
+
+            // Obtener el token de autenticación del localStorage
+            const token = localStorage.getItem("authToken");
+            if (!token) {
+                throw new Error("No hay token de autenticación disponible");
+            }
+
+            // Realizar la petición al servidor
+            const response = await fetch(apiUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-auth-token": token, // El mismo token que identifica al usuario
+                },
+            });
+
+            // Comprobar respuesta
+            if (!response.ok) {
+                throw new Error(`Error al cargar datos: ${response.status}`);
+            }
+
+            // Obtener los datos
+            const result = await response.json();
+            const playerData = result.playerData;
+
+            if (!playerData) {
+                throw new Error("No se encontraron datos del jugador");
+            }
+
+            console.log("📥 Datos recuperados del servidor:", result);
+
+            // Actualizar nombre
+            if (result.user && result.user.playerName) {
+                this.name = result.user.playerName;
+                console.log(`Nombre del jugador actualizado: ${this.name}`);
+            }
+
+            // Actualizar atributos del jugador
+            if (playerData.attributes) {
+                this.level = playerData.attributes.level || this.level;
+                this.souls = playerData.attributes.souls || this.souls;
+                this.health = playerData.attributes.health || this.health;
+                this.maxHealth = playerData.attributes.maxHealth || this.maxHealth;
+                this.resistance = playerData.attributes.resistance || this.resistance;
+                this.strength = playerData.attributes.strength || this.strength;
+                this.speed = playerData.attributes.speed || this.speed;
+                this.damage = playerData.attributes.damage || this.damage;
+                this.defense = playerData.attributes.defense || this.defense;
+            }
+
+            // Actualizar inventario
+            if (playerData.inventory) {
+                this.inventory.importFromJSON(playerData.inventory);
+                this.inventory.recalculatePlayerStats(); // Recalcular stats basados en equipamiento
+            }
+
+            // Actualizar progreso
+            if (playerData.progress) {
+                this.defeatedBosses = playerData.progress.defeatedBosses || [];
+                this.discoveredFireplaces = playerData.progress.discoveredFireplaces || [];
+                this.discoveredNPCs = playerData.progress.discoveredNPCs || [];
+            }
+
+            // Actualizar posición si está disponible y el sprite existe
+            if (playerData.lastPosition && this.sprite) {
+                this.setPosition(
+                    playerData.lastPosition.x || this.sprite.x,
+                    playerData.lastPosition.y || this.sprite.y
+                );
+            }
+
+            console.log("✅ Datos del jugador cargados correctamente");
+            return true;
+        } catch (error) {
+            console.error("❌ Error al cargar datos del jugador:", error);
+            return false;
+        }
+    }
 }
