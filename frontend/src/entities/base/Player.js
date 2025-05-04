@@ -230,60 +230,104 @@ export default class Player extends Entity {
     savePlayerData() {
         const playerData = {
             // Atributos
-            level: this.level,
-            souls: this.souls,
-            health: this.health,
-            maxHealth: this.maxHealth,
-            resistance: this.resistance,
-            strength: this.strength,
-            speed: this.speed,
-            // Inventario
-            inventoryData: this.inventory.data,
-            // Bosses
-            defeatedBosses: this.defeatedBosses || [],
-            // Hogueras descubiertas
-            discoveredFireplaces: this.discoveredFireplaces || [],
-            // NPCs descubiertos
-            discoveredNPCs: this.discoveredNPCs || [],
+            attributes: {
+                level: this.level,
+                souls: this.souls,
+                health: this.health,
+                maxHealth: this.maxHealth,
+                resistance: this.resistance,
+                strength: this.strength,
+                speed: this.speed,
+            },
             // Posición
             lastPosition: {
                 x: this.sprite.x,
                 y: this.sprite.y,
             },
+            // Timestamp del guardado
+            savedAt: new Date().toISOString(),
         };
 
-        return JSON.stringify(playerData);
+        // Enviar datos al backend
+        this.sendToServer(playerData);
+
+        // Mostrar mensaje de confirmación en la consola
+        console.log("Datos del jugador enviado al backend:", playerData);
+
+        return playerData;
     }
 
-    // Importar JSON
-    loadPlayerData(jsonString) {
+    // Enviar datos al backend
+    async sendToServer(data) {
         try {
-            const data = JSON.parse(jsonString);
+            // URL del endpoint de guardado (corregida para coincidir con las rutas del backend)
+            const apiUrl = "/api/users/save-data";
 
-            // Cargar atributos base
-            this.level = data.level || this.level;
-            this.souls = data.souls || this.souls;
-            this.health = data.health || this.health;
-            this.maxHealth = data.maxHealth || this.maxHealth;
-            this.resistance = data.resistance || this.resistance;
-            this.strength = data.strength || this.strength;
-            this.speed = data.speed || this.speed;
+            // Obtener el token de autenticación del localStorage
+            const token = localStorage.getItem("authToken");
 
-            // Cargar datos
-            this.inventory.importFromJSON(data.inventoryData);
-            this.defeatedBosses = data.defeatedBosses || [];
-            this.discoveredFireplaces = data.discoveredFireplaces || [];
-            this.discoveredNPCs = data.discoveredNPCs || [];
+            if (!token) {
+                console.error("No se encontró token de autenticación. El usuario debe iniciar sesión.");
+                return false;
+            }
 
-            // Reconectar el inventario con el jugador después de cargar
-            this.inventory.setPlayer(this);
-            // Recalcular stats basados en equipamiento
-            this.inventory.recalculatePlayerStats();
+            // Realizar la petición al servidor con formato correcto para el backend
+            const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-auth-token": token, // Usar el formato que espera el middleware auth.js
+                },
+                body: JSON.stringify({ playerData: data }), // Enviar en el formato que espera el controlador
+            });
+
+            // Comprobar respuesta
+            if (!response.ok) {
+                throw new Error(`Error al guardar: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log("✅ Datos guardados correctamente:", result.message);
+
+            // Mostrar una animación de guardado exitoso
+            this.showSaveNotification();
 
             return true;
         } catch (error) {
-            console.error("Error al cargar los datos del jugador:", error);
+            console.error("❌ Error al guardar datos:", error);
             return false;
         }
     }
+
+    // Método para mostrar notificación de guardado
+    showSaveNotification() {
+        // Implementamos una simple notificación en la esquina de la pantalla
+        const scene = this.sprite.scene;
+        const centerX = scene.cameras.main.width / 2;
+        const centerY = scene.cameras.main.height - 50;
+
+        // Crear texto de guardado
+        const saveText = scene.add
+            .text(centerX, centerY, "¡Partida Guardada!", {
+                fontSize: "24px",
+                fill: "#fff",
+                backgroundColor: "#28a745",
+                padding: { x: 10, y: 5 },
+            })
+            .setOrigin(0.5);
+
+        // Animación de fade out
+        scene.tweens.add({
+            targets: saveText,
+            alpha: 0,
+            y: centerY - 50,
+            duration: 2000,
+            onComplete: () => {
+                saveText.destroy();
+            },
+        });
+    }
+
+    // Importar JSON
+    loadPlayerData(jsonString) {}
 }

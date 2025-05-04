@@ -11,7 +11,6 @@ const router = express.Router();
 router.post("/register", userController.register);
 router.post("/login", userController.login);
 
-
 // Rutas protegidas
 router.get("/verify", auth, userController.verifyToken);
 router.post("/save-data", auth, userController.savePlayerData);

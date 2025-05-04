@@ -175,7 +175,8 @@ exports.login = async (req, res) => {
 // Guardar progreso
 exports.savePlayerData = async (req, res) => {
     try {
-        const userId = req.user.id; // Obtenido del middleware auth
+        // Corregir para obtener userId del token decodificado por el middleware auth
+        const userId = req.user.userId;
         const { playerData } = req.body;
 
         if (!playerData) {
@@ -186,6 +187,13 @@ exports.savePlayerData = async (req, res) => {
         }
 
         const updatedUser = await User.findByIdAndUpdate(userId, { playerData }, { new: true }).select("-password");
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado",
+            });
+        }
 
         res.status(200).json({
             success: true,
