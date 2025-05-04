@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 
 // Clave secreta para firmar JWT
 const JWT_SECRET = process.env.JWT_SECRET;
-const TOKEN_EXPIRY = "24h";
+const TOKEN_EXPIRY = "7d";
 
 // Registrarse
 exports.register = async (req, res) => {
@@ -28,6 +28,18 @@ exports.register = async (req, res) => {
     } catch (error) {
         console.error("Error en registro:", error);
     }
+};
+
+// Verificar token
+exports.validateToken = async (req, res) => {
+    // El middleware auth ya verificó el token, así que solo devolvemos éxito
+    res.status(200).json({
+        success: true,
+        user: {
+            userId: req.user.userId,
+            username: req.user.username,
+        },
+    });
 };
 
 // Guardar en MongoDB

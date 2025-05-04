@@ -5,11 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Souls Adventure</title>
+    <script src="js/validateToken.js"></script>
     <script>
-        // Si ya hay un token, redirigir directamente a game.html
-        if (localStorage.getItem('authToken')) {
-            window.location.href = '/game.html';
+        // Validar token y redirigir si es válido
+        async function checkAndRedirect() {
+            if (localStorage.getItem('authToken')) {
+                const isValid = await validateToken();
+                if (isValid) {
+                    window.location.href = '/game.html';
+                } else {
+                    // Si el token no es válido, lo eliminamos
+                    localStorage.removeItem('authToken');
+                }
+            }
         }
+
+        // Ejecutar al cargar la página
+        checkAndRedirect();
     </script>
     <link rel="stylesheet" type="text/css" href="css/styles.css">
     <link rel="stylesheet" type="text/css" href="css/reset.css">

@@ -8,12 +8,28 @@
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://unpkg.com/spritespin@4.0.11/release/spritespin.min.js"></script>
-
     <!-- Comprobar token -->
+    <script src="js/validateToken.js"></script>
     <script>
-        if (localStorage.getItem("authToken") === null) {
-            window.location.href = '/index.html';
+        async function checkAuth() {
+            const token = localStorage.getItem("authToken");
+
+            // Si no hay token, redirigir inmediatamente
+            if (!token) {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            // Validar token con el backend
+            const isValid = await validateToken();
+            if (!isValid) {
+                localStorage.removeItem("authToken");
+                window.location.href = '/index.html';
+            }
         }
+
+        // Ejecutar la validación al cargar
+        checkAuth();
     </script>
     <link rel="stylesheet" type="text/css" href="css/game.css">
     <link rel="stylesheet" type="text/css" href="css/reset.css">
