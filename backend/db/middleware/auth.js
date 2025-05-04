@@ -3,12 +3,10 @@ const jwt = require("jsonwebtoken");
 // Clave secreta para verificar JWT
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Middleware básico para rutas API (devuelve error JSON)
+// Middleware para rutas API
 const auth = (req, res, next) => {
-    // Obtener el token del header
     const token = req.header("x-auth-token");
 
-    // Verificar si no hay token
     if (!token) {
         return res.status(401).json({
             success: false,
@@ -17,14 +15,10 @@ const auth = (req, res, next) => {
     }
 
     try {
-        // Verificar token
         const decoded = jwt.verify(token, JWT_SECRET);
-
-        // Añadir usuario a la solicitud
         req.user = decoded;
         next();
     } catch (error) {
-        console.error("Error de autenticación:", error);
         res.status(401).json({
             success: false,
             message: "Token no válido",
@@ -32,24 +26,25 @@ const auth = (req, res, next) => {
     }
 };
 
-// Middleware para rutas web (redirecciona al login)
+// Middleware para rutas web - modificado para usar token del query param
 const requireAuth = (req, res, next) => {
-    // Obtener el token de las cookies o del encabezado de autorización
-    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    // Buscamos el token en query param o headers
+    const token = req.query.token || req.headers.authorization?.split(" ")[1] || req.header("x-auth-token");
 
-    // Si no hay token, redirigir al inicio de sesión
+    // Si no hay token, permitimos el acceso a la página
+    // La verificación del lado cliente redirigirá si es necesario
     if (!token) {
-        return res.redirect("/index.html");
+        return next();
     }
 
     try {
-        // Verificar el token
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded;
         next();
     } catch (error) {
-        // Si el token no es válido, redirigir al inicio de sesión
-        return res.redirect("/index.html");
+        // Si hay un token pero es inválido, permitimos
+        // que el cliente maneje la redirección
+        next();
     }
 };
 

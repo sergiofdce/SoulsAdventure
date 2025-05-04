@@ -11,17 +11,30 @@ function isAuthenticated() {
 // Función para cerrar sesión
 function logout() {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("soulsAdventure_user");
+    localStorage.removeItem("soulsAdventure_playerData");
     window.location.href = "/index.html";
 }
 
 // Función para añadir el token a las solicitudes API
 function getAuthHeader() {
     const token = localStorage.getItem("authToken");
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return token ? { "x-auth-token": token } : {};
 }
 
-// Verificar autenticación al cargar game.html
+// Verificar autenticación al cargar game.html y capturar token de URL si existe
 document.addEventListener("DOMContentLoaded", function () {
+    // Capturar token de la URL si existe
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+    
+    if (tokenFromUrl) {
+        // Guardar token de la URL en localStorage
+        localStorage.setItem("authToken", tokenFromUrl);
+        // Limpiar parámetro de la URL
+        window.history.replaceState({}, document.title, "/game.html");
+    }
+    
     // Si estamos en game.html pero no hay token de autenticación
     if (window.location.pathname.includes("/game.html") && !isAuthenticated()) {
         // Redirigir al inicio de sesión

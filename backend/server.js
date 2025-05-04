@@ -3,7 +3,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const cookieParser = require("cookie-parser");
 const userRoutes = require("./db/routes/userRoutes");
 const { requireAuth } = require("./db/middleware/auth");
 
@@ -18,12 +17,11 @@ app.use(
         credentials: true,
     })
 );
-app.use(cookieParser()); // Añadimos cookie-parser para manejar cookies
 
 // Rutas API
-app.use("/api/users", userRoutes);
+app.use("/api/users", userRoutes); 
 
-// Proteger la ruta del juego
+// Proteger la ruta del juego pero dejamos que el cliente maneje la redirección
 app.get("/game.html", requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend/game.html"));
 });

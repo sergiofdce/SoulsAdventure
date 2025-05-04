@@ -25,57 +25,53 @@
 
             <div class="menu-options">
                 <button id="new-game-btn" class="menu-button">Nueva Partida</button>
-                <button id="continue-btn" class="menu-button">Continuar</button>
+                <button id="how-to-play-btn" class="menu-button">Cómo Jugar</button>
             </div>
 
-            <!-- Formulario de registro (oculto inicialmente) -->
+            <!-- Formulario de registro (oculto inicialmente) - Simplificado -->
             <div id="register-form" class="auth-form hidden">
                 <h2>Crear Nueva Partida</h2>
                 <form id="signup-form">
-                    <div class="form-group">
-                        <label for="reg-username">Usuario único:</label>
-                        <input type="text" id="reg-username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="reg-password">Contraseña:</label>
-                        <input type="password" id="reg-password" required>
-                    </div>
                     <div class="form-group">
                         <label for="player-name">Nombre del personaje:</label>
                         <input type="text" id="player-name" required>
                     </div>
                     <div class="form-buttons">
-                        <button type="submit" class="form-button">Crear cuenta</button>
+                        <button type="submit" class="form-button">Crear personaje</button>
                         <button type="button" id="back-from-register" class="form-button secondary">Volver</button>
                     </div>
                     <div id="register-message" class="auth-message"></div>
                 </form>
             </div>
 
-            <!-- Formulario de inicio de sesión (oculto inicialmente) -->
-            <div id="login-form" class="auth-form hidden">
-                <h2>Continuar Partida</h2>
-                <form id="signin-form">
-                    <div class="form-group">
-                        <label for="login-username">Usuario:</label>
-                        <input type="text" id="login-username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">Contraseña:</label>
-                        <input type="password" id="login-password" required>
-                    </div>
-                    <div class="form-buttons">
-                        <button type="submit" class="form-button">Iniciar sesión</button>
-                        <button type="button" id="back-from-login" class="form-button secondary">Volver</button>
-                    </div>
-                    <div id="login-message" class="auth-message"></div>
-                </form>
+            <!-- Sección de instrucciones (oculta inicialmente) -->
+            <div id="how-to-play" class="auth-form hidden">
+                <h2>Cómo Jugar</h2>
+                <div class="instructions">
+                    <p>Bienvenido a Souls Adventure, un juego de rol en el que tendrás que:</p>
+                    <ul>
+                        <li>Explorar mazmorras peligrosas</li>
+                        <li>Luchar contra enemigos</li>
+                        <li>Conseguir tesoros</li>
+                        <li>Mejorar tus habilidades</li>
+                    </ul>
+                    <p>Controles:</p>
+                    <ul>
+                        <li>WASD - Movimiento</li>
+                        <li>Espacio - Interactuar</li>
+                        <li>E - Abrir inventario</li>
+                        <li>Clic izquierdo - Atacar</li>
+                    </ul>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" id="back-from-howto" class="form-button secondary">Volver</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="js/auth.js"></script>
-    <script src="startScreen.js"></script>
+    <script type="module" src="js/startScreen.js"></script>
 </body>
 
 </html>
