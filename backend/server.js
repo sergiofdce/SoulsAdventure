@@ -20,7 +20,7 @@ app.use(
 );
 app.use(cookieParser()); // Añadimos cookie-parser para manejar cookies
 
-// Rutas API (importante: definir antes de la autenticación para game.html)
+// Rutas API
 app.use("/api/users", userRoutes);
 
 // Proteger la ruta del juego
@@ -56,7 +56,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({
         success: false,
         message: "Error interno del servidor",
-        error: err.message
+        error: err.message,
     });
 });
 

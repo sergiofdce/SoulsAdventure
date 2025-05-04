@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
     // Elementos del DOM
     const startScreen = document.getElementById("start-screen");
@@ -15,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const menuOptions = document.querySelector(".menu-options");
 
     // Comprobar si hay un token guardado
-    const token = localStorage.getItem("soulsAdventure_token");
+    const token = localStorage.getItem("authToken");
     if (token) {
         // Verificar si el token es válido
         verifyToken(token);
@@ -210,14 +209,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 continueBtn.disabled = false;
             } else {
                 // Token inválido, eliminar
-                localStorage.removeItem("soulsAdventure_token");
+                localStorage.removeItem("authToken");
                 localStorage.removeItem("soulsAdventure_user");
                 localStorage.removeItem("soulsAdventure_playerData");
             }
         } catch (error) {
             console.error("Error al verificar token:", error);
             // Limpiar datos en caso de error
-            localStorage.removeItem("soulsAdventure_token");
+            localStorage.removeItem("authToken");
             localStorage.removeItem("soulsAdventure_user");
             localStorage.removeItem("soulsAdventure_playerData");
         }
@@ -225,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Función para guardar datos del jugador
     window.savePlayerData = async function (playerData) {
-        const token = localStorage.getItem("soulsAdventure_token");
+        const token = localStorage.getItem("authToken");
         if (!token) {
             console.error("No hay token de autenticación");
             return false;

@@ -5,6 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Souls Adventure</title>
+    <!-- Verificación de autenticación -->
+    <script>
+        // Si ya hay un token, redirigir directamente a game.html
+        if (localStorage.getItem('authToken')) {
+            window.location.href = '/game.html';
+        }
+    </script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
