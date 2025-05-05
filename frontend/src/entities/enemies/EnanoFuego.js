@@ -1,17 +1,16 @@
 import { Enemy } from "./Enemy.js";
+import { ENEMIES } from "../../config/constants.js";
 
 export class EnanoFuego extends Enemy {
-    constructor(scene, x, y, texture = "enemy-EnanoFuego", name = "Enano de fuego") {
-        // Asignar tamaño del sprite
-        const scale = 0.5;
-        super(scene, x, y, texture, name, scale);
+    constructor(scene, x, y, texture = "enemy-EnanoFuego") {
+        const enemyData = ENEMIES.EnanoFuego;
+        super(scene, x, y, texture, enemyData.name, enemyData.scale);
 
         // Atributos específicos
-        this.health = 10;
-        this.strength = 3;
-        this.speed = 5;
-
-        this.souls = 20;
+        this.health = enemyData.health;
+        this.strength = enemyData.strength;
+        this.speed = enemyData.speed;
+        this.souls = enemyData.souls;
 
         // Animaciones
         this.createAnimations(scene);

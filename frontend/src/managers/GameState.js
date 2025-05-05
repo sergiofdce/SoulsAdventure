@@ -8,6 +8,7 @@ export default class GameStateManager {
                 discoveredFireplaces: [],
                 discoveredNPCs: [],
                 discoveredItems: [],
+                completedIntroDialog: false,
             },
             inventory: null,
             lastSaveTime: null,
@@ -86,6 +87,7 @@ export default class GameStateManager {
                 discoveredFireplaces: this.gameState.worldState.discoveredFireplaces,
                 discoveredNPCs: this.gameState.worldState.discoveredNPCs,
                 discoveredItems: this.gameState.worldState.discoveredItems,
+                completedIntroDialog: this.gameState.worldState.completedIntroDialog,
             },
             // Posición
             lastPosition: {
@@ -155,6 +157,7 @@ export default class GameStateManager {
                 this.gameState.worldState.discoveredFireplaces = data.progress.discoveredFireplaces || [];
                 this.gameState.worldState.discoveredNPCs = data.progress.discoveredNPCs || [];
                 this.gameState.worldState.discoveredItems = data.progress.discoveredItems || [];
+                this.gameState.worldState.completedIntroDialog = data.progress.completedIntroDialog || false;
 
                 // Sincronizar con el jugador
                 this.syncToPlayer();
@@ -245,7 +248,7 @@ export default class GameStateManager {
             }
 
             const combinedData = {
-                ...(result.playerData), 
+                ...result.playerData,
                 username: result.username,
             };
 
@@ -308,5 +311,18 @@ export default class GameStateManager {
             return true;
         }
         return false;
+    }
+
+    // Método para verificar si se ha completado el diálogo de introducción
+    hasCompletedIntroDialog() {
+        return this.gameState.worldState.completedIntroDialog;
+    }
+
+    // Método para marcar el diálogo de introducción como completado
+    setCompletedIntroDialog() {
+        this.gameState.worldState.completedIntroDialog = true;
+        // Sincronizar con el jugador para mantener compatibilidad
+        this.syncToPlayer();
+        return true;
     }
 }

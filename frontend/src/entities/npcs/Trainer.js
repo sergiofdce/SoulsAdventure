@@ -4,13 +4,13 @@ export class Trainer extends NPC {
     constructor(scene, x, y, texture) {
         // Diálogos para primera interacción
         const initialDialogues = [
-            "¡Saludos, viajero! Veo que por fin has despertado!",
+            "¡Vaya! Veo que por fin has despertado!",
             "Déjame pedirte un favor, esas criaturas han vuelto a invadir nuestra región, todo el pueblo está refugiado en sus casas ",
             "Parece que una maldición ha cubierto estas tierras...",
             "Cuando derrotes enemigos, obtendrás sus almas, si necesitas fortalecer tus habilidades, te puedo enseñar a cambio de las almas que recojas.",
             "Pero ten cuidado, ya son varios los guerreros que lo han intentado y no han vuelto con noticias...",
             "Quizás encuentres partes de su equipamiento repartido por el suelo, búscalo, te vendrá bien.",
-            "Recuerda volver a encender las diferentes hogueras que hay dispersas. Te permitirá descansar de los combates.",
+            "Recuerda encender las hogueras que encuentres. Te permitirá descansar de los combates.",
             "Primero, enciende la hoguera que hay en la plaza del pueblo.",
             "Cuando tengas suficientes almas, podré enseñarte técnicas que aumentarán tu nivel de poder.",
             "¿Quieres entrenar ahora para subir de nivel?",

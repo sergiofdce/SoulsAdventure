@@ -1,17 +1,16 @@
 import { Enemy } from "./Enemy.js";
+import { ENEMIES } from "../../config/constants.js";
 
 export class EnanoEscudo extends Enemy {
-    constructor(scene, x, y, texture = "enemy-EnanoEscudo", name = "Bestia Alada") {
-        // Asignar tamaño del sprite
-        const scale = 0.7;
-        super(scene, x, y, texture, name, scale);
+    constructor(scene, x, y, texture = "enemy-EnanoEscudo") {
+        const enemyData = ENEMIES.EnanoEscudo;
+        super(scene, x, y, texture, enemyData.name, enemyData.scale);
 
         // Atributos específicos
-        this.health = 8;
-        this.strength = 2;
-        this.speed = 8;
-
-        this.souls = 30;
+        this.health = enemyData.health;
+        this.strength = enemyData.strength;
+        this.speed = enemyData.speed;
+        this.souls = enemyData.souls;
 
         // Animaciones
         this.createAnimations(scene);

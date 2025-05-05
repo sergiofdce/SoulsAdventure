@@ -60,3 +60,41 @@ export const COMBAT = {
         RESISTANCE_BONUS: 2, // +2 puntos de curación por cada punto de resistencia
     },
 };
+
+/*****************************************************
+Enemigos
+*****************************************************/
+export const ENEMIES = {
+    EnanoObservador: {
+        name: "Vigilón",
+        scale: 0.6,
+        health: 18,
+        strength: 3,
+        speed: 2,
+        souls: 15,
+    },
+    EnanoMayor: {
+        name: "Nublocular",
+        scale: 0.6,
+        health: 15,
+        strength: 4,
+        speed: 3,
+        souls: 25,
+    },
+    EnanoFuego: {
+        name: "Tenebrillo ",
+        scale: 0.5,
+        health: 10,
+        strength: 3,
+        speed: 5,
+        souls: 20,
+    },
+    EnanoEscudo: {
+        name: "Pupistral",
+        scale: 0.7,
+        health: 8,
+        strength: 2,
+        speed: 8,
+        souls: 30,
+    },
+};

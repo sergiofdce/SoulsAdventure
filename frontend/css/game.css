@@ -3595,3 +3595,39 @@ MARK: Combate
 .combat-button {
     position: relative;
 }
+
+/*****************************************************
+MARK: InfoBox
+*****************************************************/
+
+/* Estilos para el cuadro de información */
+#infoBox {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    max-width: 300px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+    pointer-events: none;
+    /* Para que no interfiera con los clics */
+    border: 1px solid #4b5563;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+#infoBox.visible {
+    opacity: 1;
+}
+
+#infoText {
+    margin: 0;
+    line-height: 1.5;
+    font-family: 'Arial', sans-serif;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}

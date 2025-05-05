@@ -5,8 +5,8 @@ export class Enemy extends CombatEntity {
         // Configuración de hitbox específica para enemigos
         const enemyOptions = {
             scale: scale,
-            interactionRadius: 60,
-            followSpeed: 180,
+            interactionRadius: 120,
+            followSpeed: 70,
             hitboxWidthRatio: 0.4,
             hitboxHeightRatio: 0.2,
             hitboxOffsetYRatio: 0.8,

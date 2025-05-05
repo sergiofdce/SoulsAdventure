@@ -3,6 +3,7 @@ import Player from "../entities/base/Player.js";
 import Controls from "../managers/Controls.js";
 import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
+import { DialogManager } from "../managers/Dialog.js";
 
 // Enemigos
 import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
@@ -69,6 +70,9 @@ export default class GameScene extends Phaser.Scene {
 
         // Generar objetos en el mapa
         this.spawnObjects();
+
+        // Dialogo inicial
+        this.showFirstDialog();
 
         // Configurar colisiones entre objetos
         this.setupCollisions();
@@ -284,7 +288,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnTrainer() {
-        this.trainer = new Trainer(this, 261, 479, "trainer");
+        this.trainer = new Trainer(this, 659, 519, "trainer");
+
+        // Girar el sprite del trainer horizontalmente (efecto espejo)
+        this.trainer.sprite.flipX = true;
 
         // Verificar si el NPC ya ha sido descubierto usando GameStateManager
         if (this.gameStateManager.isNPCDiscovered(this.trainer.name)) {
@@ -499,6 +506,81 @@ export default class GameScene extends Phaser.Scene {
                 enemy.sprite.body.debugBodyColor = 0xff0000;
             }
         });
+    }
+
+    showFirstDialog() {
+        // Verificar si el diálogo ya ha sido completado
+        if (this.gameStateManager.hasCompletedIntroDialog()) {
+            console.log("Diálogo de introducción ya completado anteriormente");
+            return;
+        }
+
+        // Crear un objeto para el narrador
+        const narrator = {
+            name: this.player.name,
+            dialogue: [
+                "¿Cuánto tiempo estuve dormido...? El sol ya casi se está escondiendo.",
+                "Me despertaron unos gritos... vienen del vecindario. Algo no va bien.",
+                "Tengo un mal presentimiento.",
+                "Quizá algún vecino haya visto algo. Necesito respuestas.",
+            ],
+            hasChoices: false,
+            isInRange: () => true, // El narrador siempre está en rango
+        };
+
+        // Inicializar el gestor de diálogos si no existe
+        const dialogManager = DialogManager.getInstance();
+
+        // Mostrar diálogo
+        dialogManager.startDialog(narrator, this.player);
+
+        // Mostrar ayuda
+        this.showHelpMessages();
+
+        // Agregar evento de tecla para avanzar el diálogo con la tecla "e"
+        const handleDialogKeyPress = (e) => {
+            if (e.key === "e" && dialogManager.isDialogOpen()) {
+                dialogManager.nextDialog();
+            } else if (!dialogManager.isDialogOpen()) {
+                // Cuando se cierra el diálogo, marcar como completado y guardar
+                this.gameStateManager.setCompletedIntroDialog();
+                this.gameStateManager.saveGame();
+
+                // Eliminar el evento una vez completado
+                document.removeEventListener("keydown", handleDialogKeyPress);
+            }
+        };
+
+        document.addEventListener("keydown", handleDialogKeyPress);
+    }
+
+    // Método para mostrar mensajes de ayuda secuenciales
+    showHelpMessages() {
+        const messages = [
+            "Usa WASD para poder moverte",
+            "Puedes interactuar con la tecla E",
+            "Para abrir tu inventario, usa I",
+        ];
+
+        const infoText = document.getElementById("infoText");
+        const infoBox = document.getElementById("infoBox");
+
+        if (infoText && infoBox) {
+            setTimeout(() => {
+                infoText.textContent = messages[0];
+                infoBox.classList.add("visible");
+                // Mostrar los mensajes restantes con retraso de 5 segundos
+                for (let i = 1; i < messages.length; i++) {
+                    setTimeout(() => {
+                        infoText.textContent = messages[i];
+                    }, i * 5000);
+                }
+                // Ocultar después de mostrar el último mensaje (+ 5 segundos)
+                setTimeout(() => {
+                    infoBox.classList.remove("visible");
+                }, messages.length * 5000);
+            }, 10000);
+        }
     }
 
     update() {

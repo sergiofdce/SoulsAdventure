@@ -1,17 +1,16 @@
 import { Enemy } from "./Enemy.js";
+import { ENEMIES } from "../../config/constants.js";
 
 export class EnanoObservador extends Enemy {
-    constructor(scene, x, y, texture = "enemy-EnanoObservador", name = "Zombie Podrido") {
-        // Asignar tamaño del sprite
-        const scale = 0.6;
-        super(scene, x, y, texture, name, scale);
+    constructor(scene, x, y, texture = "enemy-EnanoObservador") {
+        const enemyData = ENEMIES.EnanoObservador;
+        super(scene, x, y, texture, enemyData.name, enemyData.scale);
 
         // Atributos específicos
-        this.health = 18;
-        this.strength = 3;
-        this.speed = 2;
-
-        this.souls = 15;
+        this.health = enemyData.health;
+        this.strength = enemyData.strength;
+        this.speed = enemyData.speed;
+        this.souls = enemyData.souls;
 
         // Animaciones
         this.createAnimations(scene);
