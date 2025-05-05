@@ -16,6 +16,15 @@ export class CombatEntity extends Entity {
         this.interactionRadius = options.interactionRadius;
         this.followSpeed = options.followSpeed;
 
+        // Propiedades para el movimiento libre
+        this.initialPosition = { x, y };
+        this.wanderingRadius = options.wanderingRadius || 100; // Radio predeterminado
+        this.wanderingSpeed = 25;
+        this.isWandering = false;
+        this.wanderingTargetPosition = null;
+        this.wanderingCooldown = options.wanderingCooldown || 3000; // 3 segundos por defecto
+        this.lastWanderingChange = 0;
+
         // Sprite
         this.sprite = scene.physics.add.sprite(x, y, texture);
         this.sprite.setOrigin(0.5, 0.5);
@@ -108,8 +117,12 @@ export class CombatEntity extends Entity {
             return;
         }
 
+        const now = Date.now();
+
+        // Si está en rango del jugador, seguirlo
         if (this.isInRange(player)) {
-            // console.log(`${this.name} está siguiendo al jugador`);
+            this.isWandering = false; // Dejar de vagar si está siguiendo al jugador
+
             // Calcular dirección
             const directionX = player.sprite.x - this.sprite.x;
             const directionY = player.sprite.y - this.sprite.y;
@@ -129,12 +142,78 @@ export class CombatEntity extends Entity {
                 }
             }
         } else {
+            // Si no está en rango del jugador, vagar aleatoriamente
+            this.wander(now);
+        }
+    }
+
+    // Método para gestionar el movimiento aleatorio
+    wander(now) {
+        // Verificar si es tiempo de cambiar la dirección o si aún no se ha establecido un objetivo
+        if (!this.wanderingTargetPosition || now - this.lastWanderingChange > this.wanderingCooldown) {
+            // Generar un punto aleatorio dentro del radio de vagabundeo
+            this.generateWanderingTarget();
+            this.lastWanderingChange = now;
+        }
+
+        // Si tenemos un objetivo, movernos hacia él
+        if (this.wanderingTargetPosition) {
+            const dirX = this.wanderingTargetPosition.x - this.sprite.x;
+            const dirY = this.wanderingTargetPosition.y - this.sprite.y;
+            const dist = Math.sqrt(dirX * dirX + dirY * dirY);
+
+            // Si estamos cerca del objetivo, generar uno nuevo
+            if (dist < 5) {
+                this.generateWanderingTarget();
+            } else {
+                // Moverse hacia el objetivo
+                this.sprite.setVelocityX((dirX / dist) * this.wanderingSpeed);
+                this.sprite.setVelocityY((dirY / dist) * this.wanderingSpeed);
+
+                // Sentido
+                this.sprite.setFlipX(dirX < 0);
+
+                // Animación caminar
+                if (this.sprite.anims.currentAnim?.key !== `${this.type}-walk`) {
+                    this.sprite.play(`${this.type}-walk`);
+                }
+
+                this.isWandering = true;
+            }
+        } else {
+            // Si no hay objetivo, quedarse quieto
             this.sprite.setVelocity(0);
 
             // Animación idle
             if (this.sprite.anims.currentAnim?.key !== `${this.type}-idle`) {
                 this.sprite.play(`${this.type}-idle`);
             }
+
+            this.isWandering = false;
+        }
+    }
+
+    // Método para generar una posición objetivo aleatoria
+    generateWanderingTarget() {
+        // Calcular distancia actual desde la posición inicial
+        const dx = this.sprite.x - this.initialPosition.x;
+        const dy = this.sprite.y - this.initialPosition.y;
+        const distanceFromStart = Math.sqrt(dx * dx + dy * dy);
+
+        // Si está demasiado lejos de la posición inicial, regresar hacia ella
+        if (distanceFromStart > this.wanderingRadius * 0.8) {
+            this.wanderingTargetPosition = {
+                x: this.initialPosition.x + (Math.random() * 0.4 - 0.2) * this.wanderingRadius,
+                y: this.initialPosition.y + (Math.random() * 0.4 - 0.2) * this.wanderingRadius,
+            };
+        } else {
+            // Generar un punto aleatorio dentro del radio
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * this.wanderingRadius;
+            this.wanderingTargetPosition = {
+                x: this.initialPosition.x + Math.cos(angle) * distance,
+                y: this.initialPosition.y + Math.sin(angle) * distance,
+            };
         }
     }
 
