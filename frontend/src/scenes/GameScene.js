@@ -196,15 +196,10 @@ export default class GameScene extends Phaser.Scene {
 
     async loadSavedData() {
         try {
-            // Mostrar algún indicador de carga
-            console.log("Cargando datos de partida guardada...");
-
             // Usar el GameStateManager para cargar los datos
             const success = await this.gameStateManager.loadGame();
 
             if (success) {
-                console.log("Datos de partida cargados correctamente");
-
                 // Actualizar la interfaz de usuario con los nuevos valores
                 this.updateHUD();
 
@@ -268,10 +263,6 @@ export default class GameScene extends Phaser.Scene {
         if (nameElement && this.player.name) {
             nameElement.textContent = this.player.name;
         }
-
-        console.log(
-            `HUD actualizado: Nombre: ${this.player.name} Vida ${this.player.health}/${this.player.maxHealth}, Almas: ${this.player.souls}`
-        );
     }
 
     spawnTrainer() {
@@ -311,8 +302,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnEnemies() {
-        console.log("Limpiando enemigos existentes:", this.enemies.length);
-
         // Destruir enemigos existentes y limpiar eventos
         this.enemies.forEach((enemy) => {
             if (enemy.sprite) {
@@ -333,8 +322,6 @@ export default class GameScene extends Phaser.Scene {
             this.enemies.push(enemy);
             console.log(`Enemigo creado: ${enemy.name}`, enemy);
         });
-
-        console.log("Nuevos enemigos creados:", this.enemies.length);
 
         // Configurar colisiones con el mapa
         this.setupEnemyMapCollisions();
@@ -372,7 +359,6 @@ export default class GameScene extends Phaser.Scene {
             if (this.gameStateManager.shouldSpawnBoss(config.name)) {
                 const boss = new config.type(this, config.x, config.y, undefined, config.name);
                 this.bosses.push(boss);
-                console.log(`Boss ${config.name} spawned at (${config.x}, ${config.y})`);
             } else {
                 console.log(`Boss ${config.name} already defeated, not spawning`);
             }
@@ -405,9 +391,9 @@ export default class GameScene extends Phaser.Scene {
         });
 
         console.log(
-            `Spawned ${this.interactableObjects.length} interactable objects (${
+            `Creados ${this.interactableObjects.length} items recolectables (${
                 objectsToSpawn.length - filteredObjects.length
-            } skipped as already discovered)`
+            } ya fue descubierto)`
         );
     }
 

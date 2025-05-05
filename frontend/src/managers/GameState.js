@@ -25,7 +25,6 @@ export default class GameStateManager {
         this.gameState.inventory = player.inventory;
         this.gameState.initialized = true;
 
-        console.log("GameStateManager inicializado");
         return this;
     }
 
@@ -130,7 +129,6 @@ export default class GameStateManager {
             // Actualizar nombre
             if (data.username) {
                 this.gameState.player.name = data.username;
-                console.log(`Nombre de usuario cargado: ${data.username}`);
             }
 
             // Actualizar atributos del jugador
@@ -169,7 +167,6 @@ export default class GameStateManager {
                 this.gameState.player.setPosition(data.lastPosition.x, data.lastPosition.y);
             }
 
-            console.log("Partida cargada con éxito");
             return true;
         } catch (error) {
             console.error("Error al cargar partida:", error);

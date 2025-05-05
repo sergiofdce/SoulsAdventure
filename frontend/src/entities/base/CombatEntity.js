@@ -74,12 +74,10 @@ export class CombatEntity extends Entity {
             // Si la escena está en el evento create o después
             if (scene.sys.settings.status >= Phaser.Scenes.CREATING) {
                 scene.events.on("update", this.updateEntity);
-                console.log(`${this.name} - Evento update configurado inmediatamente`);
             } else {
                 // Si la escena aún no está lista, esperar al evento create
                 scene.events.once("create", () => {
                     scene.events.on("update", this.updateEntity);
-                    console.log(`${this.name} - Evento update configurado después de create`);
                 });
             }
         } else {
