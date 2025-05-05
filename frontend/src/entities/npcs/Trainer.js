@@ -32,7 +32,14 @@ export class Trainer extends NPC {
     }
 
     checkDiscoveredStatus(player) {
-        if (player && player.discoveredNPCs && player.discoveredNPCs.includes(this.name)) {
+        // Usar GameStateManager
+        if (player && this.scene.gameStateManager) {
+            if (this.scene.gameStateManager.isNPCDiscovered(this.name)) {
+                this.firstInteraction = false;
+                console.log(`NPC ${this.name} ya ha sido descubierto anteriormente`);
+            }
+        } else if (player && player.discoveredNPCs && player.discoveredNPCs.includes(this.name)) {
+            // Mantener compatibilidad con código anterior
             this.firstInteraction = false;
             console.log(`NPC ${this.name} ya ha sido descubierto anteriormente`);
         }
@@ -69,10 +76,14 @@ export class Trainer extends NPC {
         if (this.firstInteraction) {
             this.firstInteraction = false;
 
-            // Añadir el NPC al array de NPCs descubiertos del jugador
-            if (player && player.discoveredNPCs && !player.discoveredNPCs.includes(this.name)) {
+            // Usar GameStateManager para registrar el NPC
+            if (this.scene.gameStateManager) {
+                this.scene.gameStateManager.registerDiscoveredNPC(this.name);
+                console.log(`NPC ${this.name} registrado en GameStateManager`);
+            } else if (player && player.discoveredNPCs && !player.discoveredNPCs.includes(this.name)) {
+                // Mantener compatibilidad con código anterior
                 player.discoveredNPCs.push(this.name);
-                player.savePlayerData();
+                player.savePlayerData && player.savePlayerData();
             }
         }
     }

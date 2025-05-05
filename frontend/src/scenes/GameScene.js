@@ -277,8 +277,14 @@ export default class GameScene extends Phaser.Scene {
     spawnTrainer() {
         this.trainer = new Trainer(this, 261, 479, "trainer");
 
-        if (this.trainer.checkDiscoveredStatus(this.player)) {
+        // Verificar si el NPC ya ha sido descubierto usando GameStateManager
+        if (this.gameStateManager.isNPCDiscovered(this.trainer.name)) {
             this.trainer.firstInteraction = false;
+            console.log(`Trainer "${this.trainer.name}" ya descubierto según GameStateManager`);
+        }
+        // Mantener la verificación anterior por compatibilidad
+        else if (this.trainer.checkDiscoveredStatus) {
+            this.trainer.checkDiscoveredStatus(this.player);
         }
     }
 
