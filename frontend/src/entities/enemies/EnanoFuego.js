@@ -1,7 +1,7 @@
 import { Enemy } from "./Enemy.js";
 
 export class EnanoFuego extends Enemy {
-    constructor(scene, x, y, texture = "enemy-enanoFuego", name = "Enano de fuego") {
+    constructor(scene, x, y, texture = "enemy-EnanoFuego", name = "Enano de fuego") {
         // Asignar tamaño del sprite
         const scale = 0.5;
         super(scene, x, y, texture, name, scale);
@@ -11,16 +11,16 @@ export class EnanoFuego extends Enemy {
         this.strength = 3;
         this.speed = 5;
 
-        this.souls= 20;
+        this.souls = 20;
 
         // Animaciones
         this.createAnimations(scene);
 
-        // Tipo de entidad para animaciones
-        this.type = "enanoFuego";
+        // Atributo para definir animaciones {this.type}-idle
+        this.type = "EnanoFuego";
 
         // Iniciar con la animación idle
-        this.sprite.play("enanoFuego-idle");
+        this.sprite.play("EnanoFuego-idle");
 
         // Ruta del spritesheet
         this.spritesheet = "./assets/enemies/enemy-EnanoFuego.png";
@@ -28,15 +28,15 @@ export class EnanoFuego extends Enemy {
 
     createAnimations(scene) {
         scene.anims.create({
-            key: "enanoFuego-idle",
-            frames: scene.anims.generateFrameNumbers("enemy-enanoFuego", { start: 0, end: 5 }),
+            key: "EnanoFuego-idle",
+            frames: scene.anims.generateFrameNumbers("enemy-EnanoFuego", { start: 0, end: 5 }),
             frameRate: 5,
             repeat: -1,
         });
 
         scene.anims.create({
-            key: "enanoFuego-walk",
-            frames: scene.anims.generateFrameNumbers("enemy-enanoFuego", { start: 0, end: 5 }),
+            key: "EnanoFuego-walk",
+            frames: scene.anims.generateFrameNumbers("enemy-EnanoFuego", { start: 0, end: 5 }),
             frameRate: 10,
             repeat: -1,
         });

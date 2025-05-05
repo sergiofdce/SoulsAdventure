@@ -5,7 +5,7 @@ export class Enemy extends CombatEntity {
         // Configuración de hitbox específica para enemigos
         const enemyOptions = {
             scale: scale,
-            interactionRadius: 150,
+            interactionRadius: 60,
             followSpeed: 180,
             hitboxWidthRatio: 0.4,
             hitboxHeightRatio: 0.2,
@@ -14,10 +14,6 @@ export class Enemy extends CombatEntity {
 
         super(scene, x, y, texture, name, enemyOptions);
 
-        // Extraer el tipo de enemigo del texture para las animaciones
-        // Por ejemplo, de "enemy-enanoFuego" extraemos "enanoFuego"
-        this.type = texture.split("-")[1] || texture;
-        console.log(`Enemigo ${this.name} inicializado con tipo: ${this.type}`);
     }
 
     // Sobrescribir setupCollision para añadir más logs

@@ -99,9 +99,7 @@ export default class GameStateManager {
         try {
             const success = await this.sendToServer(saveData);
             if (success) {
-                console.log("Partida guardada con éxito");
                 this.gameState.lastSaveTime = new Date();
-
                 return true;
             }
             return false;
@@ -198,7 +196,7 @@ export default class GameStateManager {
             const result = await response.json();
 
             if (result.success) {
-                console.log("Datos guardados correctamente en el servidor");
+                console.log("✅ Partida guardada.");
                 return true;
             } else {
                 console.error("Error al guardar datos:", result.message || "Error desconocido");

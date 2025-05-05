@@ -22,6 +22,12 @@ export default class Player extends Entity {
         this.damage = 0;
         this.defense = 0;
 
+        // Inicializar arrays de progreso
+        this.defeatedBosses = [];
+        this.discoveredFireplaces = [];
+        this.discoveredNPCs = [];
+        this.discoveredItems = [];
+
         // Crear sprite con Phaser
         this.sprite = scene.physics.add.sprite(x, y, texture);
         // Aplicar scale

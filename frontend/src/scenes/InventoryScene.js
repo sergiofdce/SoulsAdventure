@@ -40,7 +40,6 @@ export default class InventoryScene extends Phaser.Scene {
             }
             this.scene.resume("GameScene");
             this.scene.stop("InventoryScene");
-            this.player.savePlayerData();
         });
     }
 

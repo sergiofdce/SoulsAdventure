@@ -91,7 +91,7 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         // Cargar assets Enemigos
-        this.load.spritesheet("enemy-enanoFuego", "./assets/enemies/enemy-EnanoFuego.png", {
+        this.load.spritesheet("enemy-EnanoFuego", "./assets/enemies/enemy-EnanoFuego.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
@@ -314,13 +314,11 @@ export default class GameScene extends Phaser.Scene {
         // Limpiar el array de enemigos
         this.enemies = [];
 
-        //const enemyConfigs = [{ type: EnanoFuego, x: 400, y: 600 }];
-        const enemyConfigs = [];
+        const enemyConfigs = [{ type: EnanoFuego, x: 692, y: 1000 }];
 
         enemyConfigs.forEach(({ type, x, y }) => {
             const enemy = new type(this, x, y);
             this.enemies.push(enemy);
-            console.log(`Enemigo creado: ${enemy.name}`, enemy);
         });
 
         // Configurar colisiones con el mapa
@@ -352,7 +350,9 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnBosses() {
-        const bossConfigs = [{ type: Lobo, name: "Lobo", x: 800, y: 600 }];
+        //const bossConfigs = [{ type: Lobo, name: "Lobo", x: 800, y: 600 }];
+
+        const bossConfigs = [];
 
         bossConfigs.forEach((config) => {
             // Verificar si el boss ya ha sido derrotado usando GameStateManager
@@ -442,13 +442,20 @@ export default class GameScene extends Phaser.Scene {
         // Aseguramos que estamos usando el inventario del jugador
         this.gameState.inventory = this.player.inventory;
 
+        // ñadir una referencia al player con acceso al gameStateManager
+        this.gameState.player = {
+            ...this.player,
+            scene: {
+                ...this.player.scene,
+                gameStateManager: this.gameStateManager,
+            },
+        };
+
         // Configuramos los comandos de consola
         setupConsoleCommands(this.gameState);
 
         // Mensaje informativo en consola
-        console.log(
-            "💡 Comandos disponibles en consola: addItem(), listItems(), showInventory(), equipItem(), itemDetails(), saveGame()"
-        );
+        console.log("💡 Comandos disponibles en consola: saveGame()");
     }
 
     enableDebugMode() {
