@@ -22,12 +22,6 @@ export default class Player extends Entity {
         this.damage = 0;
         this.defense = 0;
 
-        // Arrays de progreso
-        this.defeatedBosses = [];
-        this.discoveredFireplaces = [];
-        this.discoveredNPCs = [];
-        this.discoveredItems = [];
-
         // Crear sprite con Phaser
         this.sprite = scene.physics.add.sprite(x, y, texture);
         // Aplicar scale
@@ -42,10 +36,7 @@ export default class Player extends Entity {
 
         // Inventario
         this.inventory = new Inventory();
-        // Conectar el inventario con el jugador
         this.inventory.setPlayer(this);
-
-        // Después de crear el inventario, calculamos los stats iniciales basados en equipamiento
         this.inventory.recalculatePlayerStats();
     }
 
@@ -227,10 +218,9 @@ export default class Player extends Entity {
         return this;
     }
 
-    // Guardar en MongoDB
-    savePlayerData() {
-        const playerData = {
-            // Atributos
+    // MongoDB
+    getSaveData() {
+        return {
             attributes: {
                 level: this.level,
                 souls: this.souls,
@@ -242,144 +232,31 @@ export default class Player extends Entity {
                 damage: this.damage,
                 defense: this.defense,
             },
-            // Inventario
-            inventory: this.inventory.exportToJSON(),
-            // Progreso en el mundo
-            progress: {
-                defeatedBosses: this.defeatedBosses,
-                discoveredFireplaces: this.discoveredFireplaces,
-                discoveredNPCs: this.discoveredNPCs,
-                discoveredItems: this.discoveredItems,
-            },
-            // Posición
             lastPosition: {
                 x: this.sprite.x,
                 y: this.sprite.y,
             },
-            // Timestamp del guardado
-            savedAt: new Date().toISOString(),
         };
-
-        this.sendToServer(playerData);
-        return playerData;
     }
 
-    async sendToServer(data) {
-        try {
-            // Obtener el token JWT del almacenamiento local
-            const token = localStorage.getItem("authToken");
-
-            const response = await fetch("/api/users/save-data", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-auth-token": token,
-                },
-                body: JSON.stringify(data),
-            });
-
-            const result = await response.json();
-            console.log("Datos de jugador guardados correctamente");
-
-            return true;
-        } catch (error) {
-            console.error("Error al enviar datos al servidor:", error);
-            return false;
+    // MongoDB
+    loadSaveData(data) {
+        if (data.attributes) {
+            this.level = data.attributes.level;
+            this.souls = data.attributes.souls;
+            this.health = data.attributes.health;
+            this.maxHealth = data.attributes.maxHealth;
+            this.resistance = data.attributes.resistance;
+            this.strength = data.attributes.strength;
+            this.speed = data.attributes.speed;
+            this.damage = data.attributes.damage;
+            this.defense = data.attributes.defense;
         }
-    }
 
-    // Cargar desde MongoDB
-    async loadPlayerData() {
-        try {
-            // Obtener el token JWT del almacenamiento local
-            const token = localStorage.getItem("authToken");
-
-            if (!token) {
-                console.error("No hay token de autenticación disponible");
-                return false;
-            }
-
-            // Verificar validez básica del token (formato)
-            const tokenParts = token.split(".");
-            if (tokenParts.length !== 3) {
-                console.error("El formato del token es inválido");
-                localStorage.removeItem("authToken"); // Eliminar token inválido
-                return false;
-            }
-
-            console.log("Intentando cargar datos del jugador...");
-            const response = await fetch("/api/users/get-data", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-auth-token": token,
-                },
-            });
-
-            console.log("Respuesta del servidor:", response.status, response.statusText);
-
-            if (response.status === 404) {
-                // Usuario no encontrado - probablemente necesita registrarse nuevamente
-                console.warn("Usuario no encontrado. Es posible que necesites registrarte nuevamente.");
-                return false;
-            } else if (response.status === 401) {
-                // Token expirado o inválido
-                console.warn("Sesión expirada. Por favor, inicia sesión nuevamente.");
-                localStorage.removeItem("authToken");
-                return false;
-            } else if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Error del servidor:", errorText);
-                throw new Error(`Error al obtener datos del servidor: ${response.status} ${response.statusText}`);
-            }
-
-            const result = await response.json();
-
-            if (!result.success || !result.playerData) {
-                console.error("No se encontraron datos del jugador");
-                return false;
-            }
-
-            const playerData = result.playerData;
-
-            // Actualizar atributos del jugador
-            if (playerData.attributes) {
-                this.level = playerData.attributes.level || this.level;
-                this.souls = playerData.attributes.souls || this.souls;
-                this.health = playerData.attributes.health || this.health;
-                this.maxHealth = playerData.attributes.maxHealth || this.maxHealth;
-                this.resistance = playerData.attributes.resistance || this.resistance;
-                this.strength = playerData.attributes.strength || this.strength;
-                this.speed = playerData.attributes.speed || this.speed;
-                this.damage = playerData.attributes.damage || this.damage;
-                this.defense = playerData.attributes.defense || this.defense;
-            }
-
-            // Actualizar inventario
-            if (playerData.inventory) {
-                this.inventory.importFromJSON(playerData.inventory);
-                // Recalcular estadísticas basadas en equipamiento
-                this.inventory.recalculatePlayerStats();
-            }
-
-            // Actualizar progreso
-            if (playerData.progress) {
-                this.defeatedBosses = playerData.progress.defeatedBosses || this.defeatedBosses;
-                this.discoveredFireplaces = playerData.progress.discoveredFireplaces || this.discoveredFireplaces;
-                this.discoveredNPCs = playerData.progress.discoveredNPCs || this.discoveredNPCs;
-                this.discoveredItems = playerData.progress.discoveredItems || this.discoveredItems;
-            }
-
-            // Actualizar posición si está disponible y si tenemos acceso al sprite
-            if (playerData.lastPosition && this.sprite) {
-                this.setPosition(playerData.lastPosition.x, playerData.lastPosition.y);
-            }
-
-            console.log("Datos del jugador cargados correctamente");
-            return true;
-        } catch (error) {
-            console.error("Error al cargar datos del jugador:", error);
-            return false;
+        if (data.lastPosition) {
+            this.setPosition(data.lastPosition.x, data.lastPosition.y);
         }
+
+        return true;
     }
 }

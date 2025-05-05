@@ -50,8 +50,10 @@ export class Fireplace extends NPC {
 
         this.discovered = true;
 
-        if (this.player && !this.player.discoveredFireplaces.includes(this.fireplaceName)) {
-            this.player.discoveredFireplaces.push(this.fireplaceName);
+        // Añadir al Array de GameState
+        if (this.scene.gameStateManager) {
+            this.scene.gameStateManager.registerDiscoveredFireplace(this.fireplaceName);
+            console.log(`Hoguera "${this.fireplaceName}" registrada usando GameStateManager`);
         }
 
         console.log(`Hoguera "${this.fireplaceName}" registrada y añadida a la lista del jugador`);
@@ -94,7 +96,11 @@ export class Fireplace extends NPC {
         this.createMistAnimation();
         this.scene.spawnEnemies();
         this.replenishHealthPotions(this.player);
-        this.player.savePlayerData();
+
+        // Guardar partida
+        if (this.scene.gameStateManager) {
+            this.scene.gameStateManager.saveGame();
+        }
 
         // Mostrar opción de viajar después de descansar
         setTimeout(() => {

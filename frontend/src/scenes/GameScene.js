@@ -17,6 +17,9 @@ import { InteractableObject } from "../entities/interactables/Objects.js";
 // Consola
 import { setupConsoleCommands } from "../utils/consoleCommands.js";
 
+// MongoDB
+import GameStateManager from "../managers/GameState.js";
+
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameScene" });
@@ -25,6 +28,7 @@ export default class GameScene extends Phaser.Scene {
         this.fireplaces = [];
         this.interactableObjects = [];
         this.gameState = {};
+        this.gameStateManager = new GameStateManager();
     }
 
     preload() {
@@ -41,8 +45,11 @@ export default class GameScene extends Phaser.Scene {
         // Instanciar el jugador
         this.spawnPlayer();
 
-        // Cargar datos guardados del jugador
-        await this.loadPlayerSavedData();
+        // Inicializar el GameStateManager con la escena y el jugador
+        this.gameStateManager.initialize(this, this.player);
+
+        // Cargar datos guardados usando el GameStateManager
+        await this.loadSavedData();
 
         // Generar Trainer
         this.spawnTrainer();
@@ -187,21 +194,20 @@ export default class GameScene extends Phaser.Scene {
         this.gameState.inventory = this.player.inventory;
     }
 
-    async loadPlayerSavedData() {
+    async loadSavedData() {
         try {
             // Mostrar algún indicador de carga si lo deseas
-            console.log("Cargando datos del jugador...");
+            console.log("Cargando datos de partida guardada...");
 
-            // Llamar al método de Player que recupera los datos
-            const success = await this.player.loadPlayerData();
+            // Usar el GameStateManager para cargar los datos
+            const success = await this.gameStateManager.loadGame();
 
             if (success) {
-                console.log("Datos del jugador cargados correctamente");
-
+                console.log("Datos de partida cargados correctamente");
                 // Actualizar la interfaz de usuario con los nuevos valores
                 this.updateHUD();
             } else {
-                console.warn("No se pudieron cargar datos del jugador. Usando valores por defecto.");
+                console.warn("No se pudieron cargar datos de partida. Usando valores por defecto.");
             }
         } catch (error) {
             console.error("Error al cargar datos:", error);
@@ -254,8 +260,8 @@ export default class GameScene extends Phaser.Scene {
             fireplace.fireplaceName = config.name;
             fireplace.sprite.setTint(0xff6b6b);
 
-            // Verificar si esta hoguera ya está en el array de descubiertas
-            if (this.player.discoveredFireplaces.includes(fireplace.fireplaceName)) {
+            // Verificar si esta hoguera ya está descubierta
+            if (this.gameStateManager.isFireplaceDiscovered(fireplace.fireplaceName)) {
                 fireplace.discovered = true;
                 console.log(`Hoguera ${fireplace.fireplaceName} ya descubierta anteriormente`);
             }
@@ -319,17 +325,16 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnBosses() {
-        //const bossConfigs = [{ type: Lobo, name: "Lobo", x: 800, y: 600 }];
-        const bossConfigs = [];
+        const bossConfigs = [{ type: Lobo, name: "Lobo", x: 800, y: 600 }];
 
-        bossConfigs.forEach(({ type, name, x, y }) => {
-            // Verificar si el boss ya ha sido derrotado
-            if (!this.player.defeatedBosses.includes(name)) {
-                const boss = new type(this, x, y, undefined, name);
+        bossConfigs.forEach((config) => {
+            // Verificar si el boss ya ha sido derrotado usando GameStateManager
+            if (this.gameStateManager.shouldSpawnBoss(config.name)) {
+                const boss = new config.type(this, config.x, config.y, undefined, config.name);
                 this.bosses.push(boss);
-                console.log(`Boss ${name} spawned at (${x}, ${y})`);
+                console.log(`Boss ${config.name} spawned at (${config.x}, ${config.y})`);
             } else {
-                console.log(`Boss ${name} already defeated, not spawning`);
+                console.log(`Boss ${config.name} already defeated, not spawning`);
             }
         });
     }
@@ -348,9 +353,9 @@ export default class GameScene extends Phaser.Scene {
             { itemId: "pocion-salud", x: 650, y: 500, texture: "pocion-salud" },
         ];
 
-        // Filtrar objetos que ya han sido recogidos
-        const filteredObjects = objectsToSpawn.filter(
-            (objConfig) => !this.player.discoveredItems.includes(objConfig.itemId)
+        // Filtrar objetos que ya han sido recogidos usando GameStateManager
+        const filteredObjects = objectsToSpawn.filter((objConfig) =>
+            this.gameStateManager.shouldSpawnItem(objConfig.itemId)
         );
 
         // Crear los objetos interactuables que no han sido recogidos
@@ -416,7 +421,7 @@ export default class GameScene extends Phaser.Scene {
 
         // Mensaje informativo en consola
         console.log(
-            "💡 Comandos disponibles en consola: addItem(), listItems(), showInventory(), equipItem(), itemDetails()"
+            "💡 Comandos disponibles en consola: addItem(), listItems(), showInventory(), equipItem(), itemDetails(), saveGame()"
         );
     }
 
