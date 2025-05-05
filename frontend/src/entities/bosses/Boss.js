@@ -20,6 +20,7 @@ export class Boss extends CombatEntity {
         this.scene.scene.launch("BossScene", {
             player: this.scene.player,
             enemy: this,
+            gameStateManager: this.scene.gameStateManager,
         });
     }
 }

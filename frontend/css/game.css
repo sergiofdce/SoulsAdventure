@@ -2645,13 +2645,14 @@ MARK: HUD
 }
 
 /* Animación para cuando cambian valores */
-@keyframes pulse-value {
+@keyframes pulse {
     0% {
         transform: scale(1);
     }
 
     50% {
         transform: scale(1.2);
+        color: #ffdd00;
     }
 
     100% {
@@ -2660,7 +2661,7 @@ MARK: HUD
 }
 
 .value-changed {
-    animation: pulse-value 0.5s var(--transition-effect);
+    animation: pulse 0.5s var(--transition-effect);
 }
 
 /* Barra de progreso para la salud */

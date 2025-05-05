@@ -196,7 +196,7 @@ export default class GameScene extends Phaser.Scene {
 
     async loadSavedData() {
         try {
-            // Mostrar algún indicador de carga si lo deseas
+            // Mostrar algún indicador de carga
             console.log("Cargando datos de partida guardada...");
 
             // Usar el GameStateManager para cargar los datos
@@ -204,13 +204,25 @@ export default class GameScene extends Phaser.Scene {
 
             if (success) {
                 console.log("Datos de partida cargados correctamente");
+
                 // Actualizar la interfaz de usuario con los nuevos valores
                 this.updateHUD();
+
+                // Efecto visual en el elemento de vida para indicar actualización
+                const healthElement = document.getElementById("health-amount");
+                healthElement.classList.add("value-changed");
+                setTimeout(() => {
+                    healthElement.classList.remove("value-changed");
+                }, 1000);
+
+                return true;
             } else {
                 console.warn("No se pudieron cargar datos de partida. Usando valores por defecto.");
+                return false;
             }
         } catch (error) {
             console.error("Error al cargar datos:", error);
+            return false;
         }
     }
 
@@ -218,12 +230,24 @@ export default class GameScene extends Phaser.Scene {
         // Actualizar vida en el HUD
         const healthElement = document.getElementById("health-amount");
         if (healthElement) {
-            healthElement.textContent = this.player.maxHealth;
+            // Mostrar la vida actual, no la máxima
+            healthElement.textContent = this.player.health;
 
             // Actualizar barra de progreso de vida
             const healthBar = document.querySelector(".hud-progress");
             if (healthBar) {
-                healthBar.style.width = "100%";
+                // Calcular porcentaje de vida actual respecto al máximo
+                const healthPercentage = Math.max(0, Math.min((this.player.health / this.player.maxHealth) * 100, 100));
+                healthBar.style.width = `${healthPercentage}%`;
+
+                // Cambiar color según el porcentaje de vida
+                if (healthPercentage > 60) {
+                    healthBar.style.backgroundColor = "#4ade80"; // Verde
+                } else if (healthPercentage > 30) {
+                    healthBar.style.backgroundColor = "#facc15"; // Amarillo
+                } else {
+                    healthBar.style.backgroundColor = "#ef4444"; // Rojo
+                }
             }
         }
 
@@ -231,6 +255,12 @@ export default class GameScene extends Phaser.Scene {
         const soulsElement = document.getElementById("souls-amount");
         if (soulsElement) {
             soulsElement.textContent = this.player.souls;
+
+            // Efecto visual de actualización
+            soulsElement.classList.add("value-changed");
+            setTimeout(() => {
+                soulsElement.classList.remove("value-changed");
+            }, 1000);
         }
 
         // Actualizar nombre del jugador en el HUD
@@ -238,6 +268,10 @@ export default class GameScene extends Phaser.Scene {
         if (nameElement && this.player.name) {
             nameElement.textContent = this.player.name;
         }
+
+        console.log(
+            `HUD actualizado: Nombre: ${this.player.name} Vida ${this.player.health}/${this.player.maxHealth}, Almas: ${this.player.souls}`
+        );
     }
 
     spawnTrainer() {

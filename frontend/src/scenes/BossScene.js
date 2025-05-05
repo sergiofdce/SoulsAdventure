@@ -27,6 +27,9 @@ export default class BossScene extends Phaser.Scene {
         this.player = data.player;
         this.enemy = data.enemy;
 
+        // Recibir el GameStateManager
+        this.gameStateManager = data.gameStateManager;
+
         // Salud Player
         this.playerMaxHealth = this.player.maxHealth;
         this.playerCurrentHealth = this.player.health;
@@ -1163,9 +1166,17 @@ export default class BossScene extends Phaser.Scene {
             // Mostrar mensaje de recompensa en amarillo
             this.addCombatLogMessage(`¡Has obtenido ${this.enemy.souls} almas!`, "souls-reward");
 
-            // Registrar el boss derrotado en el array defeatedBosses del jugador
-            this.player.defeatedBosses.push(this.enemy.name);
-            this.player.savePlayerData();
+            // Registra el boss derrotado en el GameStateManager
+            this.gameStateManager.registerDefeatedBoss(this.enemy.name);
+
+            // Guardar la partida después de derrotar al boss
+            this.gameStateManager.saveGame().then((success) => {
+                if (success) {
+                    console.log(`Boss ${this.enemy.name} registrado como derrotado y partida guardada`);
+                } else {
+                    console.warn(`No se pudo guardar la partida después de derrotar al boss ${this.enemy.name}`);
+                }
+            });
 
             // Tiempo antes de cerrar escena
             this.time.delayedCall(3000, () => {
@@ -1193,6 +1204,10 @@ export default class BossScene extends Phaser.Scene {
         // Asegurarse de que la vida actual del jugador esté actualizada en el objeto del jugador
         if (this.player) {
             this.player.health = this.playerCurrentHealth;
+
+            // Sincronizar explícitamente la salud actual
+            this.gameStateManager.gameState.player.health = this.playerCurrentHealth;
+            this.gameStateManager.saveGame();
 
             // Actualizar el HUD con la vida actual del jugador
             const healthAmount = document.getElementById("health-amount");

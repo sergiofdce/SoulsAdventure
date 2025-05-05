@@ -103,36 +103,11 @@ export default class GameStateManager {
                 console.log("Partida guardada con éxito");
                 this.gameState.lastSaveTime = new Date();
 
-                // También guardamos una copia local como respaldo
-                localStorage.setItem(
-                    "soulsAdventureBackup",
-                    JSON.stringify({
-                        data: saveData,
-                        timestamp: Date.now(),
-                    })
-                );
-
                 return true;
             }
             return false;
         } catch (error) {
             console.error("Error al guardar partida:", error);
-
-            // Intentar guardar localmente como respaldo
-            try {
-                localStorage.setItem(
-                    "soulsAdventureBackup",
-                    JSON.stringify({
-                        data: saveData,
-                        timestamp: Date.now(),
-                        offlineStorage: true,
-                    })
-                );
-                console.warn("Partida guardada localmente como respaldo");
-            } catch (e) {
-                console.error("No se pudo guardar ni siquiera localmente:", e);
-            }
-
             return false;
         }
     }
@@ -150,6 +125,12 @@ export default class GameStateManager {
             if (!data) {
                 console.warn("No hay datos guardados para cargar");
                 return false;
+            }
+
+            // Actualizar nombre
+            if (data.username) {
+                this.gameState.player.name = data.username;
+                console.log(`Nombre de usuario cargado: ${data.username}`);
             }
 
             // Actualizar atributos del jugador
@@ -192,20 +173,6 @@ export default class GameStateManager {
             return true;
         } catch (error) {
             console.error("Error al cargar partida:", error);
-
-            // Intentar cargar desde el respaldo local
-            try {
-                const localBackup = localStorage.getItem("soulsAdventureBackup");
-                if (localBackup) {
-                    const backupData = JSON.parse(localBackup).data;
-                    console.warn("Intentando cargar desde respaldo local");
-                    // Aplicar el mismo proceso de carga pero con los datos locales
-                    // [Código similar al de arriba para aplicar los datos de backupData]
-                    return true;
-                }
-            } catch (e) {
-                console.error("Error al intentar cargar desde respaldo local:", e);
-            }
 
             return false;
         }
@@ -277,12 +244,17 @@ export default class GameStateManager {
 
             const result = await response.json();
 
-            if (!result.success || !result.playerData) {
+            if (!result.success) {
                 console.error("No se encontraron datos del jugador");
                 return null;
             }
 
-            return result.playerData;
+            const combinedData = {
+                ...(result.playerData), 
+                username: result.username,
+            };
+
+            return combinedData;
         } catch (error) {
             console.error("Error al obtener datos del servidor:", error);
             return null;

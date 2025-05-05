@@ -83,6 +83,7 @@ exports.getPlayerData = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Datos del jugador obtenidos correctamente",
+            username: user.username,
             playerData: user.playerData,
         });
     } catch (error) {

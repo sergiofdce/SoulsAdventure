@@ -36,13 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (response.ok) {
                 localStorage.setItem("authToken", data.token);
-                localStorage.setItem(
-                    "soulsAdventure_user",
-                    JSON.stringify({
-                        id: data.user.id,
-                        username: data.user.username,
-                    })
-                );
+
 
                 registerMessage.textContent = "¡Personaje creado con éxito! Iniciando juego...";
                 registerMessage.classList.remove("error");
