@@ -1,3 +1,5 @@
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+
 async function validateToken() {
     const token = localStorage.getItem("authToken");
 

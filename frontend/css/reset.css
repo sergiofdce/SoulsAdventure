@@ -1,6 +1,58 @@
 /*****************************************************
 MARK: Reset-CSS
 *****************************************************/
+* {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-touch-callout: none;
+    /* iOS */
+    -webkit-tap-highlight-color: transparent;
+    /* Android/iOS */
+}
+
+/* Desactiva arrastrar imágenes o texto */
+img,
+a,
+input,
+textarea {
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
+/* Elimina subrayado automático en iOS */
+a,
+button,
+input,
+textarea {
+    text-decoration: none;
+    outline: none;
+    -webkit-touch-callout: none;
+}
+
+/* Formularios sin autocompletar ni resaltado */
+input,
+textarea,
+select {
+    autocomplete: off;
+    -webkit-autofill: off;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    caret-color: transparent;
+    /* Opcional si no quieres ver el cursor */
+}
+
+/* Esto impide zoom táctil en móviles (opcional, si es un juego tipo canvas) */
+html,
+body {
+    touch-action: manipulation;
+    -ms-touch-action: manipulation;
+    overflow: hidden;
+    /* También útil para evitar scrolls */
+}
 
 html,
 body,

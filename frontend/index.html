@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Souls Adventure</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
     <script src="js/validateToken.js"></script>
     <script>
         // Validar token y redirigir si es válido
@@ -23,13 +26,13 @@
         // Ejecutar al cargar la página
         checkAndRedirect();
     </script>
-    <link rel="stylesheet" type="text/css" href="css/styles.css">
-    <link rel="stylesheet" type="text/css" href="css/reset.css">
 </head>
 
 <body>
     <!-- Pantalla de inicio -->
     <div id="start-screen" class="start-screen">
+        <div class="particles-container" id="particles-container"></div>
+
         <div class="start-container">
             <div class="game-title">
                 <h1>Souls Adventure</h1>
@@ -40,7 +43,7 @@
                 <button id="how-to-play-btn" class="menu-button">Cómo Jugar</button>
             </div>
 
-            <!-- Formulario de registro (oculto inicialmente) - Simplificado -->
+            <!-- Formulario de registro (oculto inicialmente) -->
             <div id="register-form" class="auth-form hidden">
                 <h2>Crear Nueva Partida</h2>
                 <form id="signup-form">
@@ -56,25 +59,45 @@
                 </form>
             </div>
 
-            <!-- Sección de instrucciones (oculta inicialmente) -->
+            <!-- Sección de instrucciones con carrusel (oculta inicialmente) -->
             <div id="how-to-play" class="auth-form hidden">
                 <h2>Cómo Jugar</h2>
-                <div class="instructions">
-                    <p>Bienvenido a Souls Adventure, un juego de rol en el que tendrás que:</p>
-                    <ul>
-                        <li>Explorar mazmorras peligrosas</li>
-                        <li>Luchar contra enemigos</li>
-                        <li>Conseguir tesoros</li>
-                        <li>Mejorar tus habilidades</li>
-                    </ul>
-                    <p>Controles:</p>
-                    <ul>
-                        <li>WASD - Movimiento</li>
-                        <li>Espacio - Interactuar</li>
-                        <li>E - Abrir inventario</li>
-                        <li>Clic izquierdo - Atacar</li>
-                    </ul>
+
+                <div class="carousel-container">
+                    <div class="carousel-slides" id="instructionsCarousel">
+                        <!-- Slide 1: Introducción -->
+                        <div class="carousel-slide">
+                            <h3 class="carousel-title">Bienvenido a Souls Adventure</h3>
+
+                        </div>
+
+                        <!-- Slide 2: Controles -->
+                        <div class="carousel-slide">
+                            <h3 class="carousel-title">Controles</h3>
+
+                        </div>
+
+                        <!-- Slide 3: Combate -->
+                        <div class="carousel-slide">
+                            <h3 class="carousel-title">Sistema de Combate</h3>
+
+                        </div>
+
+                        <!-- Slide 4: Progresión -->
+                        <div class="carousel-slide">
+                            <h3 class="carousel-title">Progresión</h3>
+
+                        </div>
+                    </div>
+
+                    <div class="carousel-arrow carousel-prev" id="prevSlide">❮</div>
+                    <div class="carousel-arrow carousel-next" id="nextSlide">❯</div>
+
+                    <div class="carousel-dots" id="carouselDots">
+                        <!-- Dots will be added by JavaScript -->
+                    </div>
                 </div>
+
                 <div class="form-buttons">
                     <button type="button" id="back-from-howto" class="form-button secondary">Volver</button>
                 </div>
@@ -82,7 +105,8 @@
         </div>
     </div>
 
-    <script src="js/auth.js"></script>
+
+    <script src="js/homepage.js"></script>
     <script type="module" src="js/startScreen.js"></script>
 </body>
 
