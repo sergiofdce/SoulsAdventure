@@ -6,6 +6,10 @@ import Map from "../managers/Map.js";
 
 // Enemigos
 import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
+import { EnanoEscudo } from "../entities/enemies/EnanoEscudo.js";
+import { EnanoMayor } from "../entities/enemies/EnanoMayor.js";
+import { EnanoObservador } from "../entities/enemies/EnanoObservador.js";
+
 // Bosses
 import { Lobo } from "../entities/bosses/Lobo.js";
 
@@ -92,6 +96,20 @@ export default class GameScene extends Phaser.Scene {
         });
         // Cargar assets Enemigos
         this.load.spritesheet("enemy-EnanoFuego", "./assets/enemies/enemy-EnanoFuego.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-EnanoEscudo", "./assets/enemies/enemy-EnanoEscudo.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+
+        this.load.spritesheet("enemy-EnanoMayor", "./assets/enemies/enemy-EnanoMayor.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+
+        this.load.spritesheet("enemy-EnanoObservador", "./assets/enemies/enemy-EnanoObservador.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
@@ -314,7 +332,12 @@ export default class GameScene extends Phaser.Scene {
         // Limpiar el array de enemigos
         this.enemies = [];
 
-        const enemyConfigs = [{ type: EnanoFuego, x: 692, y: 1000 }];
+        const enemyConfigs = [
+            { type: EnanoFuego, x: 692, y: 1000 },
+            { type: EnanoEscudo, x: 750, y: 1050 },
+            { type: EnanoMayor, x: 870, y: 1050 },
+            { type: EnanoObservador, x: 930, y: 1000 },
+        ];
 
         enemyConfigs.forEach(({ type, x, y }) => {
             const enemy = new type(this, x, y);
