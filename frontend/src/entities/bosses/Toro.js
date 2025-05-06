@@ -1,7 +1,7 @@
 import { Boss } from "./Boss.js";
 
-export class Lobo extends Boss {
-    constructor(scene, x, y, texture = "boss-Lobo", name = "Lobo") {
+export class Toro extends Boss {
+    constructor(scene, x, y, texture = "boss-Toro", name = "Toro") {
         // Asignar tamaño del sprite
         const scale = 1.2;
         super(scene, x, y, texture, name, scale);
@@ -14,7 +14,7 @@ export class Lobo extends Boss {
         this.strength = 10;
         this.speed = 5;
 
-        this.souls= 200;
+        this.souls = 200;
 
         // Patrón de ataque (0 = ataque, 1 = indefenso)
         this.attackPattern = [0, 0, 1, 0, 1];
@@ -23,17 +23,15 @@ export class Lobo extends Boss {
         // Intervalo entre ataques (en milisegundos)
         this.attackInterval = 2000;
 
-        // Tiempo de ventana para el dodge (en milisegundos)
-        this.dodgeWindow = 2500;
-
         // Crear animaciones
         this.createAnimations(scene);
 
         // Tipo de entidad para animaciones
-        this.type = "lobo";
+        this.type = "toro";
+
 
         // Ruta del spritesheet
-        this.spritesheet = "./assets/bosses/boss-Lobo.png";
+        this.spritesheet = "./assets/bosses/boss-Toro.png";
     }
 
     getNextAction() {
@@ -48,15 +46,15 @@ export class Lobo extends Boss {
 
     createAnimations(scene) {
         scene.anims.create({
-            key: "lobo-idle",
-            frames: scene.anims.generateFrameNumbers("boss-Lobo", { start: 0, end: 5 }),
+            key: "toro-idle",
+            frames: scene.anims.generateFrameNumbers("boss-Toro", { start: 0, end: 5 }),
             frameRate: 5,
             repeat: -1,
         });
 
         scene.anims.create({
-            key: "lobo-walk",
-            frames: scene.anims.generateFrameNumbers("boss-Lobo", { start: 6, end: 11 }),
+            key: "toro-walk",
+            frames: scene.anims.generateFrameNumbers("boss-Toro", { start: 6, end: 11 }),
             frameRate: 10,
             repeat: -1,
         });
@@ -65,11 +63,10 @@ export class Lobo extends Boss {
     getAnimationConfigs() {
         return {
             idle: { start: 0, end: 5, frameRate: 5, repeat: -1 },
-            walk: { start: 0, end: 5, frameRate: 10, repeat: -1 },
-            hit: { start: 18, end: 23, frameRate: 8, repeat: 0 },
-            "light-attack": { start: 12, end: 17, frameRate: 8, repeat: 0 },
-            "heavy-attack": { start: 12, end: 17, frameRate: 8, repeat: 0 },
-            death: { start: 24, end: 29, frameRate: 5, repeat: 0 },
+            walk: { start: 6, end: 11, frameRate: 10, repeat: -1 },
+            attack: { start: 18, end: 23, frameRate: 8, repeat: 0 },
+            hit: { start: 24, end: 29, frameRate: 8, repeat: 0 },
+            death: { start: 30, end: 35, frameRate: 5, repeat: 0 },
         };
     }
 

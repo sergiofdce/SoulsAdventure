@@ -7,9 +7,9 @@ export class Boss extends CombatEntity {
             scale: scale,
             interactionRadius: 150,
             followSpeed: 180,
-            hitboxWidthRatio: 0.6,
-            hitboxHeightRatio: 0.3,
-            hitboxOffsetYRatio: 0.7,
+            hitboxWidthRatio: 0.5,
+            hitboxHeightRatio: 0.5,
+            hitboxOffsetYRatio: 0.5,
         };
 
         super(scene, x, y, texture, name, bossOptions);

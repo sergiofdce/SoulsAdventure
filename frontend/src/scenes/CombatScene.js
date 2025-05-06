@@ -1075,9 +1075,29 @@ export default class CombatScene extends Phaser.Scene {
         return false; // El combate continúa
     }
 
+    // Método para destruir las instancias de Phaser Game de animaciones
+    destroyAnimationGames() {
+        // Destruir el juego de animación del jugador si existe
+        if (this.playerAnimGame) {
+            console.log("Destruyendo instancia de animación del jugador...");
+            this.playerAnimGame.destroy(true);
+            this.playerAnimGame = null;
+        }
+
+        // Destruir el juego de animación del enemigo si existe
+        if (this.enemyAnimGame) {
+            console.log("Destruyendo instancia de animación del enemigo...");
+            this.enemyAnimGame.destroy(true);
+            this.enemyAnimGame = null;
+        }
+    }
+
     exitCombat() {
         // Finalizar el combate activo
         this.combatActive = false;
+
+        // Destruir las instancias de juegos de animación
+        this.destroyAnimationGames();
 
         // Limpiar eventos y restablecer variables
         this.cleanupListeners();
@@ -1127,6 +1147,25 @@ export default class CombatScene extends Phaser.Scene {
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
+    }
+
+    // También debemos asegurarnos de destruir las instancias en shutdown y destroy
+    shutdown() {
+        // Destruir las instancias de animación al cerrar la escena
+        this.destroyAnimationGames();
+        // Llamar a shutdown del padre si existe
+        if (Phaser.Scene.prototype.shutdown) {
+            Phaser.Scene.prototype.shutdown.call(this);
+        }
+    }
+
+    destroy() {
+        // Destruir las instancias de animación al destruir la escena
+        this.destroyAnimationGames();
+        // Llamar a destroy del padre si existe
+        if (Phaser.Scene.prototype.destroy) {
+            Phaser.Scene.prototype.destroy.call(this);
+        }
     }
 
     cleanupListeners() {

@@ -5,14 +5,21 @@ import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
 import { DialogManager } from "../managers/Dialog.js";
 
-// Enemigos
+// Enemigos Pueblo
 import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
 import { EnanoEscudo } from "../entities/enemies/EnanoEscudo.js";
 import { EnanoMayor } from "../entities/enemies/EnanoMayor.js";
 import { EnanoObservador } from "../entities/enemies/EnanoObservador.js";
 
+// Enemigos Pantano
+import { SlimeFuego } from "../entities/enemies/SlimeFuego.js";
+import { SlimeHumano } from "../entities/enemies/SlimeHumano.js";
+import { SlimeNormal } from "../entities/enemies/SlimeNormal.js";
+import { SlimePinchos } from "../entities/enemies/SlimePinchos.js";
+
 // Bosses
-import { Lobo } from "../entities/bosses/Lobo.js";
+import { Toro } from "../entities/bosses/Toro.js";
+import { Nasus } from "../entities/bosses/Nasus.js";
 
 // Entidades
 import { Trainer } from "../entities/npcs/Trainer.js";
@@ -84,7 +91,7 @@ export default class GameScene extends Phaser.Scene {
         this.setupConsoleCommands();
 
         // Activar modo debug
-        //this.enableDebugMode();
+        this.enableDebugMode();
     }
 
     loadAssets() {
@@ -117,11 +124,31 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 96,
         });
+        this.load.spritesheet("enemy-SlimeFuego", "./assets/enemies/enemy-SlimeFuego.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-SlimeHumano", "./assets/enemies/enemy-SlimeHumano.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-SlimeNormal", "./assets/enemies/enemy-SlimeNormal.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-SlimePinchos", "./assets/enemies/enemy-SlimePinchos.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
 
         // Cargar assets Bosses
-        this.load.spritesheet("boss-Lobo", "./assets/bosses/boss-Lobo.png", {
-            frameWidth: 64,
-            frameHeight: 64,
+        this.load.spritesheet("boss-Toro", "./assets/bosses/boss-Toro.png", {
+            frameWidth: 80,
+            frameHeight: 80,
+        });
+        this.load.spritesheet("boss-Nasus", "./assets/bosses/boss-Nasus.png", {
+            frameWidth: 80,
+            frameHeight: 80,
         });
 
         // Cargar asset hoguera
@@ -131,9 +158,9 @@ export default class GameScene extends Phaser.Scene {
         });
 
         // Cargar assets objetos
-        this.load.image("escudo-dragon", "./assets/items/shields/escudo-dragon.png");
-        this.load.image("espada-larga", "./assets/items/weapons/espada-larga.png");
-        this.load.image("pocion-salud", "./assets/items/consumables/pocion-salud.png");
+        this.load.image("escudo-torre", "./assets/items/shields/escudo-torre.png");
+        this.load.image("botas-vigilante", "./assets/items/armor/botas-vigilante.png");
+        this.load.image("casco-vigilante", "./assets/items/armor/casco-vigilante.png");
 
         // Cargar assets Mapa
         this.load.tilemapTiledJSON("map", "assets/maps/Map.json");
@@ -339,16 +366,59 @@ export default class GameScene extends Phaser.Scene {
         // Limpiar el array de enemigos
         this.enemies = [];
 
-        const enemyConfigs = [
-            { type: EnanoFuego, x: 692, y: 1000 },
-            { type: EnanoEscudo, x: 750, y: 1050 },
-            { type: EnanoMayor, x: 870, y: 1050 },
-            { type: EnanoObservador, x: 930, y: 1000 },
+        // Definir zonas con sus enemigos específicos
+        const enemyZones = [
+            {
+                name: "Pueblo",
+                enemies: [
+                    { type: EnanoFuego, x: 678, y: 1058 },
+                    { type: EnanoEscudo, x: 755, y: 1135 },
+                    { type: EnanoMayor, x: 711, y: 1233 },
+                    { type: EnanoObservador, x: 661, y: 1348 },
+                    { type: EnanoFuego, x: 756, y: 1465 },
+                    { type: EnanoEscudo, x: 1008, y: 1371 },
+                    { type: EnanoMayor, x: 1218, y: 1290 },
+                    { type: EnanoObservador, x: 1441, y: 1195 },
+                    { type: EnanoFuego, x: 1551, y: 1291 },
+                    { type: EnanoEscudo, x: 1648, y: 1211 },
+                    { type: EnanoMayor, x: 1758, y: 1309 },
+                    { type: EnanoObservador, x: 1896, y: 1401 },
+                    { type: EnanoFuego, x: 1868, y: 1875 },
+                    { type: EnanoEscudo, x: 1696, y: 1935 },
+                    { type: EnanoMayor, x: 1471, y: 1985 },
+                    { type: EnanoObservador, x: 1246, y: 2042 },
+                ],
+            },
+            {
+                name: "Pantano",
+                enemies: [
+                    { type: SlimeFuego, x: 1473, y: 2708 },
+                    { type: SlimeHumano, x: 1759, y: 2710 },
+                    { type: SlimeNormal, x: 1674, y: 2865 },
+                    { type: SlimePinchos, x: 1863, y: 2955 },
+                    { type: SlimeFuego, x: 1913, y: 3096 },
+                    { type: SlimeHumano, x: 1436, y: 3152 },
+                    { type: SlimeNormal, x: 1436, y: 3312 },
+                    { type: SlimePinchos, x: 1487, y: 3500 },
+                    { type: SlimeFuego, x: 1912, y: 3433 },
+                    { type: SlimeHumano, x: 1670, y: 3666 },
+                    { type: SlimeNormal, x: 1670, y: 3822 },
+                    { type: SlimePinchos, x: 1889, y: 3832 },
+                    { type: SlimeFuego, x: 2024, y: 3939 },
+                    { type: SlimeHumano, x: 2024, y: 4083 },
+                ],
+            },
+            // Puedes añadir más zonas aquí siguiendo el mismo patrón
         ];
 
-        enemyConfigs.forEach(({ type, x, y }) => {
-            const enemy = new type(this, x, y);
-            this.enemies.push(enemy);
+        // Generar todos los enemigos de todas las zonas
+        enemyZones.forEach((zone) => {
+            console.log(`Generando ${zone.enemies.length} enemigos en la zona: ${zone.name}`);
+
+            zone.enemies.forEach((enemyConfig) => {
+                const enemy = new enemyConfig.type(this, enemyConfig.x, enemyConfig.y);
+                this.enemies.push(enemy);
+            });
         });
 
         // Configurar colisiones con el mapa
@@ -380,9 +450,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnBosses() {
-        //const bossConfigs = [{ type: Lobo, name: "Lobo", x: 800, y: 600 }];
-
-        const bossConfigs = [];
+        const bossConfigs = [
+            { type: Toro, name: "Toro", x: 1100, y: 2307 },
+            { type: Nasus, name: "Nasus", x: 2028, y: 4356 },
+        ];
 
         bossConfigs.forEach((config) => {
             // Verificar si el boss ya ha sido derrotado usando GameStateManager
@@ -404,9 +475,9 @@ export default class GameScene extends Phaser.Scene {
 
         // Definir objetos en el mapa
         const objectsToSpawn = [
-            { itemId: "escudo-dragon", x: 540, y: 550, texture: "escudo-dragon" },
-            { itemId: "espada-larga", x: 700, y: 600, texture: "espada-larga" },
-            { itemId: "pocion-salud", x: 650, y: 500, texture: "pocion-salud" },
+            { itemId: "escudo-torre", x: 257, y: 650, texture: "escudo-torre" },
+            { itemId: "botas-vigilante", x: 695, y: 281, texture: "botas-vigilante" },
+            { itemId: "casco-vigilante", x: 1057, y: 852, texture: "casco-vigilante" },
         ];
 
         // Filtrar objetos que ya han sido recogidos usando GameStateManager

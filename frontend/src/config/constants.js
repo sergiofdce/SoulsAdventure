@@ -4,9 +4,9 @@ Atributos de Player
 export const PLAYER_BASE_STATS = {
     maxHealth: 25,
     health: 25,
-    resistance: 3243243,
-    strength: 32342432,
-    speed: 234234,
+    resistance: 5,
+    strength: 7,
+    speed: 3,
 };
 
 /*****************************************************
@@ -65,6 +65,7 @@ export const COMBAT = {
 Enemigos
 *****************************************************/
 export const ENEMIES = {
+    // Pueblo
     EnanoObservador: {
         name: "Vigilón",
         scale: 0.6,
@@ -96,5 +97,61 @@ export const ENEMIES = {
         strength: 2,
         speed: 8,
         souls: 30,
+    },
+    // Pantano
+    SlimeNormal: {
+        name: "Babosa Común",
+        scale: 0.7,
+        health: 20,
+        strength: 4,
+        speed: 3,
+        souls: 25,
+    },
+    SlimeFuego: {
+        name: "Babosa de Fuego",
+        scale: 0.7,
+        health: 18,
+        strength: 6,
+        speed: 4,
+        souls: 35,
+    },
+    SlimePinchos: {
+        name: "Babosa Espinosa",
+        scale: 0.8,
+        health: 25,
+        strength: 5,
+        speed: 2,
+        souls: 40,
+    },
+    SlimeHumano: {
+        name: "Babosa Humanoide",
+        scale: 0.75,
+        health: 22,
+        strength: 7,
+        speed: 5,
+        souls: 50,
+    },
+    // Lava
+};
+
+/*****************************************************
+Jefes
+*****************************************************/
+export const BOSSES = {
+    Toro: {
+        name: "Toro",
+        scale: 1.2,
+        health: 10,
+        strength: 10,
+        speed: 5,
+        souls: 200,
+    },
+    Nasus: {
+        name: "Nasus",
+        scale: 1.2,
+        health: 10,
+        strength: 10,
+        speed: 5,
+        souls: 200,
     },
 };

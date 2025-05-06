@@ -19,6 +19,7 @@ export default class BossScene extends Phaser.Scene {
         this.syncMarker = null;
         this.syncZone = null;
         this.syncTween = null;
+        this.syncEventTimer = null; // Nueva variable para el temporizador de eventos
     }
 
     // Método init que recibe instancia de Player y Enemy
@@ -137,6 +138,14 @@ export default class BossScene extends Phaser.Scene {
         // Posicionar la zona de sincronización aleatoriamente cada vez
         this.randomizeSyncZone();
 
+        // Obtener la posición de la zona como porcentaje
+        const zoneTopStyle = this.syncZone.style.top;
+        const zoneTop = parseInt(zoneTopStyle.replace("%", ""));
+        const zoneHeight = 30; // Altura de la zona es 30%
+
+        // Calcular cuándo el marcador saldrá de la zona (cruza el límite superior)
+        const timeToExitZone = ((100 - zoneTop) / 100) * this.enemy.attackInterval;
+
         // Crear animación
         const animation = this.syncMarker.animate([{ bottom: "0%" }, { bottom: "100%" }], {
             duration: this.enemy.attackInterval,
@@ -146,18 +155,33 @@ export default class BossScene extends Phaser.Scene {
         // Guardar referencia a la animación
         this.syncTween = animation;
 
-        // Añadir evento para cuando termine la animación
-        animation.onfinish = () => {
+        // Cancelar cualquier temporizador existente
+        if (this.syncEventTimer) {
+            this.syncEventTimer.remove();
+        }
+
+        // Programar el evento para cuando el marcador salga de la zona
+        this.syncEventTimer = this.time.delayedCall(timeToExitZone, () => {
             if (this.combatActive && this.isBlockWindowActive) {
+                // Cancelar la animación para que el marcador se detenga donde está
+                if (this.syncTween && this.syncTween.playState !== "finished") {
+                    this.syncTween.cancel();
+                }
+
+                // Fijar el marcador en la posición donde se encontraba al salir de la zona
+                this.syncMarker.style.bottom = `${100 - zoneTop}%`;
+
+                // El enemigo ataca ya que se pasó la ventana de oportunidad
                 this.handleBlockWindowEnd();
             }
-        };
+        });
     }
 
     handleBlockWindowEnd() {
         this.isBlockWindowActive = false;
         if (this.combatActive) {
             this.addCombatLogMessage("¡No has intentado bloquear! Has recibido daño.", "enemy-action");
+            this.playEnemyAnimation("attack");
             this.applyDamageToPlayer();
         }
     }
@@ -179,6 +203,12 @@ export default class BossScene extends Phaser.Scene {
         const zoneStart = (zoneRect.top - barRect.top) / barRect.height;
         const zoneEnd = (zoneRect.bottom - barRect.top) / barRect.height;
 
+        // Cancelar el temporizador programado que verifica cuando el marcador sale de la zona
+        if (this.syncEventTimer) {
+            this.syncEventTimer.remove();
+            this.syncEventTimer = null;
+        }
+
         // Detener la animación actual
         if (this.syncTween) {
             this.syncTween.cancel();
@@ -186,6 +216,9 @@ export default class BossScene extends Phaser.Scene {
 
         // Desactivar la ventana de bloqueo para evitar múltiples intentos
         this.isBlockWindowActive = false;
+
+        // Animacion ataque Boss
+        this.playEnemyAnimation("attack");
 
         if (markerPosition >= zoneStart && markerPosition <= zoneEnd) {
             // Bloqueo perfecto - evita completamente el daño
@@ -229,7 +262,6 @@ export default class BossScene extends Phaser.Scene {
         if (!this.combatActive) return;
 
         this.addCombatLogMessage("¡El jefe se prepara para atacar!", "enemy-action");
-        this.playEnemyAnimation("light-attack");
 
         // Activar ventana de bloqueo
         this.isBlockWindowActive = true;
@@ -270,18 +302,21 @@ export default class BossScene extends Phaser.Scene {
     handleAttackLight() {
         if (!this.combatActive) return;
 
+        this.playPlayerAnimation("light-attack");
+
         // Verificar si hay una ventana de bloqueo activa
         if (this.isBlockWindowActive) {
             this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            this.applyDamageToPlayer();
+            this.playEnemyAnimation("attack");
+
             return;
         }
 
         // Verificar si el enemigo está cansado
         if (!this.isEnemyTired) {
             this.addCombatLogMessage("¡Has atacado en mal momento! El enemigo contraataca.", "enemy-action");
-
-            // Reproducir animación del enemigo contraatacando
-            this.playEnemyAnimation("light-attack");
+            this.playEnemyAnimation("attack");
 
             // Reproducir animación del jugador recibiendo daño
             this.time.delayedCall(300, () => {
@@ -313,9 +348,6 @@ export default class BossScene extends Phaser.Scene {
 
             return;
         }
-
-        // Reproducir animación de ataque ligero
-        this.playPlayerAnimation("light-attack");
 
         // Ejecutar ataque ligero
         this.addCombatLogMessage("Has realizado un ataque rápido.", "player-action");
@@ -379,9 +411,14 @@ export default class BossScene extends Phaser.Scene {
     handleAttackHeavy() {
         if (!this.combatActive) return;
 
+        this.playPlayerAnimation("heavy-attack");
+
         // Verificar si hay una ventana de bloqueo activa
         if (this.isBlockWindowActive) {
             this.addCombatLogMessage("¡El enemigo ha golpeado antes! Debes bloquear primero.", "enemy-action");
+            this.applyDamageToPlayer();
+            this.playEnemyAnimation("attack");
+
             return;
         }
 
@@ -390,7 +427,7 @@ export default class BossScene extends Phaser.Scene {
             this.addCombatLogMessage("¡Has atacado en mal momento! El enemigo contraataca con fuerza.", "enemy-action");
 
             // Reproducir animación del enemigo contraatacando
-            this.playEnemyAnimation("heavy-attack");
+            this.playEnemyAnimation("attack");
 
             // Reproducir animación del jugador recibiendo daño
             this.time.delayedCall(300, () => {
@@ -836,8 +873,8 @@ export default class BossScene extends Phaser.Scene {
                 preload: function () {
                     // Usar el spritesheet del enemigo desde su propiedad
                     this.load.spritesheet("enemy-combat", this.game.mainScene.enemy.spritesheet, {
-                        frameWidth: 64,
-                        frameHeight: 64,
+                        frameWidth: 80,
+                        frameHeight: 80,
                     });
                 },
                 create: function () {
@@ -852,8 +889,7 @@ export default class BossScene extends Phaser.Scene {
                         idle: `${enemyType}-idle`,
                         walk: `${enemyType}-walk`,
                         hit: `${enemyType}-hit`,
-                        "light-attack": `${enemyType}-light-attack`,
-                        "heavy-attack": `${enemyType}-heavy-attack`,
+                        attack: `${enemyType}-attack`,
                         death: `${enemyType}-death`,
                     };
 
@@ -875,49 +911,6 @@ export default class BossScene extends Phaser.Scene {
                                 frameRate: config.frameRate,
                                 repeat: config.repeat,
                             });
-                        });
-                    } else {
-                        // Fallback con las animaciones genéricas (código anterior)
-                        this.anims.create({
-                            key: "idle",
-                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
-                            frameRate: 5,
-                            repeat: -1,
-                        });
-
-                        this.anims.create({
-                            key: "walk",
-                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 0, end: 5 }),
-                            frameRate: 10,
-                            repeat: -1,
-                        });
-
-                        this.anims.create({
-                            key: "hit",
-                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 18, end: 23 }),
-                            frameRate: 8,
-                            repeat: 0,
-                        });
-
-                        this.anims.create({
-                            key: "light-attack",
-                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
-                            frameRate: 8,
-                            repeat: 0,
-                        });
-
-                        this.anims.create({
-                            key: "heavy-attack",
-                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
-                            frameRate: 8,
-                            repeat: 0,
-                        });
-
-                        this.anims.create({
-                            key: "death",
-                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 24, end: 29 }),
-                            frameRate: 5,
-                            repeat: 0,
                         });
                     }
 
@@ -945,18 +938,6 @@ export default class BossScene extends Phaser.Scene {
 
         // Guardar referencia para poder acceder desde los métodos de la escena de combate
         this.enemyAnimGame.mainScene = this;
-
-        // Agregar un listener para redimensionar el juego si cambia el tamaño del contenedor
-        const resizeObserver = new ResizeObserver((entries) => {
-            for (let entry of entries) {
-                if (entry.target === animContainer && this.enemyAnimGame) {
-                    this.enemyAnimGame.scale.resize(entry.contentRect.width, entry.contentRect.height);
-                }
-            }
-        });
-
-        // Observar cambios en el contenedor
-        resizeObserver.observe(animContainer);
     }
 
     // Método para reproducir una animación específica del enemigo
@@ -976,7 +957,7 @@ export default class BossScene extends Phaser.Scene {
         }
 
         // Reproducir la animación solicitada o la animación por defecto si el tipo no existe
-        const validTypes = ["hit", "idle", "light-attack", "heavy-attack", "death"];
+        const validTypes = ["hit", "idle", "attack", "death"];
         const animationType = validTypes.includes(animType) ? animType : "idle"; // Usar idle como fallback
 
         scene.enemySprite.play(animationType);
@@ -1190,9 +1171,35 @@ export default class BossScene extends Phaser.Scene {
         return false; // El combate continúa
     }
 
+    // Método para destruir las instancias de Phaser Game de animaciones
+    destroyAnimationGames() {
+        // Destruir el juego de animación del jugador si existe
+        if (this.playerAnimGame) {
+            console.log("Destruyendo instancia de animación del jugador del boss...");
+            this.playerAnimGame.destroy(true);
+            this.playerAnimGame = null;
+        }
+
+        // Destruir el juego de animación del enemigo si existe
+        if (this.enemyAnimGame) {
+            console.log("Destruyendo instancia de animación del enemigo del boss...");
+            this.enemyAnimGame.destroy(true);
+            this.enemyAnimGame = null;
+        }
+    }
+
     exitCombat() {
         // Finalizar el combate activo
         this.combatActive = false;
+
+        // Destruir las instancias de juegos de animación
+        this.destroyAnimationGames();
+
+        // Limpiar el temporizador de evento de sincronización
+        if (this.syncEventTimer) {
+            this.syncEventTimer.remove();
+            this.syncEventTimer = null;
+        }
 
         // Limpiar eventos y restablecer variables
         this.cleanupListeners();
@@ -1259,6 +1266,25 @@ export default class BossScene extends Phaser.Scene {
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
+    }
+
+    // También debemos asegurarnos de destruir las instancias en shutdown y destroy
+    shutdown() {
+        // Destruir las instancias de animación al cerrar la escena
+        this.destroyAnimationGames();
+        // Llamar a shutdown del padre si existe
+        if (Phaser.Scene.prototype.shutdown) {
+            Phaser.Scene.prototype.shutdown.call(this);
+        }
+    }
+
+    destroy() {
+        // Destruir las instancias de animación al destruir la escena
+        this.destroyAnimationGames();
+        // Llamar a destroy del padre si existe
+        if (Phaser.Scene.prototype.destroy) {
+            Phaser.Scene.prototype.destroy.call(this);
+        }
     }
 
     cleanupListeners() {
