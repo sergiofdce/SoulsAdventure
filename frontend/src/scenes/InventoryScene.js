@@ -3,6 +3,8 @@ export default class InventoryScene extends Phaser.Scene {
         super({ key: "InventoryScene" });
         this.player = null;
         this.selectedItem = null;
+        // Nuevo: Agregar un temporizador para el delay
+        this.attributesTimer = null;
     }
 
     init(data) {
@@ -17,13 +19,14 @@ export default class InventoryScene extends Phaser.Scene {
         const inventoryDiv = document.getElementById("inventory-container");
         inventoryDiv.classList.remove("hidden");
 
-        // Configurar la imagen del jugador y el evento para mostrar atributos
-        const playerBox = document.querySelector(".inventory-equipment #inventory-equipment-box-player");
-        playerBox.querySelector("img").src = this.player.img;
-        playerBox.addEventListener("click", () => this.showAttributes());
+        // Configurar el contenedor para el juego Phaser del jugador
+        this.setupPlayerAnimationGame();
 
         // Llenar el inventario con los datos del jugador
         this.populateInventory();
+
+        // Mostrar los atributos del jugador inicialmente sin delay
+        this.showAttributes(false);
 
         // Detectar la tecla I
         this.input.keyboard.on("keydown-I", () => {
@@ -31,9 +34,111 @@ export default class InventoryScene extends Phaser.Scene {
             inventoryDiv.classList.add("hidden");
             // Mostrar HUD
             document.getElementById("hud-container").classList.remove("hidden");
+            // Limpiar el juego Phaser del jugador si existe
+            if (this.playerAnimGame) {
+                this.playerAnimGame.destroy(true);
+            }
             this.scene.resume("GameScene");
             this.scene.stop("InventoryScene");
         });
+    }
+
+    /**
+     * Configura el sistema de animaciones para el jugador en el inventario
+     */
+    setupPlayerAnimationGame() {
+        const animContainer = document.querySelector(".inventory-equipment #inventory-equipment-box-player");
+
+        // Limpiar cualquier contenido previo
+        while (animContainer.firstChild) {
+            animContainer.removeChild(animContainer.firstChild);
+        }
+
+        // Crear un div para el nuevo juego Phaser
+        const animDiv = document.createElement("div");
+        animDiv.id = "inventory-player-anim-game";
+        animDiv.style.width = "100%";
+        animDiv.style.height = "100%";
+
+        // Configurar estilos para que ocupe todo el espacio disponible
+        animDiv.style.display = "flex";
+        animDiv.style.justifyContent = "center";
+        animDiv.style.alignItems = "center";
+
+        animContainer.appendChild(animDiv);
+
+        // Obtener las dimensiones actuales del contenedor
+        const containerWidth = animContainer.clientWidth || 100;
+        const containerHeight = animContainer.clientHeight || 100;
+
+        // Configuración del nuevo juego Phaser
+        const animConfig = {
+            type: Phaser.AUTO,
+            width: containerWidth,
+            height: containerHeight,
+            transparent: true,
+            parent: "inventory-player-anim-game",
+            scale: {
+                mode: Phaser.Scale.RESIZE,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+            },
+            scene: {
+                preload: function () {
+                    this.load.spritesheet("player-inventory", this.game.mainScene.player.spritesheet, {
+                        frameWidth: 96,
+                        frameHeight: 96,
+                    });
+                },
+                create: function () {
+                    // Referencia a la escena principal (para acceder desde métodos)
+                    this.mainScene = this.game.mainScene;
+
+                    // Crear manualmente las animaciones para este contexto específico
+                    this.anims.create({
+                        key: "idle",
+                        frames: this.anims.generateFrameNumbers("player-inventory", { start: 0, end: 5 }),
+                        frameRate: 10,
+                        repeat: -1,
+                        repeatDelay: 5000,
+                    });
+
+                    // Ajustar el sprite al centro de la escala actual
+                    this.playerSprite = this.add.sprite(
+                        this.cameras.main.width / 2,
+                        this.cameras.main.height / 2,
+                        "player-inventory"
+                    );
+
+                    // Hacer el sprite considerablemente más grande
+                    this.playerSprite.setScale(3);
+
+                    // Reproducir animación por defecto
+                    this.playerSprite.play("idle");
+
+                    // Ya no necesitamos el evento pointerover porque ahora siempre se mostrarán los atributos
+                    // Mantener el sprite interactivo para posible funcionalidad futura
+                    this.playerSprite.setInteractive();
+                },
+            },
+        };
+
+        // Iniciar el juego secundario para la animación
+        this.playerAnimGame = new Phaser.Game(animConfig);
+
+        // Guardar referencia para poder acceder desde los métodos de la escena
+        this.playerAnimGame.mainScene = this;
+
+        // Agregar un listener para redimensionar el juego si cambia el tamaño del contenedor
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                if (entry.target === animContainer && this.playerAnimGame) {
+                    this.playerAnimGame.scale.resize(entry.contentRect.width, entry.contentRect.height);
+                }
+            }
+        });
+
+        // Observar cambios en el contenedor
+        resizeObserver.observe(animContainer);
     }
 
     /**
@@ -59,12 +164,39 @@ export default class InventoryScene extends Phaser.Scene {
             }
         });
 
+        // Ordenar los items no equipados por categoría
+        unequippedItems.sort((a, b) => {
+            return this.getCategoryOrderValue(a.item.category) - this.getCategoryOrderValue(b.item.category);
+        });
+
         // Mostrar primero los ítems equipados
         this.renderItemsList(equippedItems, inventoryItemsContainer, true);
         this.renderItemsList(unequippedItems, inventoryItemsContainer, false);
 
         // Actualizar la visualización del equipo
         this.updateEquipmentDisplay();
+
+        // Mostrar los atributos del jugador después de actualizar el inventario
+        this.showAttributes();
+    }
+
+    /**
+     * Devuelve un valor numérico para ordenar categorías de ítems
+     * Orden: weapons, armor, shields, accessories, consumables
+     */
+    getCategoryOrderValue(category) {
+        const categoryOrder = {
+            weapon: 1,
+            shield: 2,
+            helmet: 3,
+            chest: 3,
+            glove: 3,
+            shoes: 3,
+            accessory: 4,
+            consumable: 5,
+        };
+
+        return categoryOrder[category];
     }
 
     /**
@@ -74,11 +206,14 @@ export default class InventoryScene extends Phaser.Scene {
         items.forEach(({ key, item }) => {
             const li = document.createElement("li");
 
+            // Ocultar cantidad si solo hay 1 unidad
+            const quantityDisplay =
+                item.quantity > 1 ? `<p class='inventory-items-Quantity'>X${item.quantity}</p>` : "";
+
             li.innerHTML = `
                 <img src="${item.image}" alt="${key}">
                 <p class='inventory-items-Name'>${item.name}</p>
-                ${item.equipped ? "<span>&#9876;</span>" : ""}
-                <p class='inventory-items-Quantity'>X${item.quantity}</p>
+                ${quantityDisplay}
             `;
 
             // Añadir la clase de equipado si corresponde
@@ -86,9 +221,21 @@ export default class InventoryScene extends Phaser.Scene {
                 li.classList.add("inventory-items-equipped");
             }
 
-            // Eventos
-            li.addEventListener("click", () => this.showItemDetails(item, key));
-            li.addEventListener("dblclick", () => this.toggleEquipItem(key));
+            // Eventos - mouseenter para mostrar detalles y click para equipar
+            li.addEventListener("mouseenter", () => {
+                // Cancelar cualquier temporizador pendiente
+                this.clearAttributesTimer();
+                this.showItemDetails(item, key);
+            });
+
+            // Añadir evento mouseleave para volver a mostrar los atributos con delay
+            li.addEventListener("mouseleave", () => {
+                // Establecer un temporizador para mostrar los atributos después de 1.5 segundos
+                this.scheduleAttributesDisplay();
+            });
+
+            // Cambiado de dblclick a click para equipar/desequipar
+            li.addEventListener("click", () => this.toggleEquipItem(key));
 
             container.appendChild(li);
         });
@@ -114,10 +261,7 @@ export default class InventoryScene extends Phaser.Scene {
                     <h3>${item.name}</h3>
                 </li>
                 <li id="inventory-stats-item-descripcion">
-                    <p>Descripción: ${item.description}</p>
-                </li>
-                <li id="inventory-stats-item-type">
-                    <p>Tipo: ${item.category}</p>
+                    <p>${item.description}</p>
                 </li>
                 <li id="inventory-stats-item-utility">
                     <p>${this.getItemUtilityText(item)}</p>
@@ -141,35 +285,64 @@ export default class InventoryScene extends Phaser.Scene {
         }
     }
 
-    /**
-     * Muestra los atributos del jugador
-     */
-    showAttributes() {
+    showAttributes(useDelay = true) {
+        // Si se requiere delay y no estamos ya dentro de un callback de temporizador
+        if (useDelay && !this.attributesTimer) {
+            this.scheduleAttributesDisplay();
+            return;
+        }
+
+        // Resetear el temporizador si existe
+        this.clearAttributesTimer();
+
+        // Asegurar que el contenedor de estadísticas tenga scroll cuando sea necesario
         const statsContainer = document.querySelector(".inventory-stats");
 
+        // Forzar recálculo de estadísticas para asegurar valores actualizados
+        this.player.inventory.recalculatePlayerStats();
+
+        // Asegurarse de que los valores nunca sean undefined
+        const strength = this.player.strength || 0;
+        const weaponDamage = this.player.damage || 0;
+        const totalDamage = strength + weaponDamage;
+
+        const resistance = this.player.resistance || 0;
+        const defense = this.player.defense || 0;
+        const totalResistance = resistance + defense;
+
+        // Crear contenido usando grid para mejor organización
         statsContainer.innerHTML = `
-            <ul id="inventory-stats-player">
-                <li id="inventory-stats-player-health">
-                    <p>Vida:</p>
-                    <p class="p-stats">${this.player.health}</p>
-                </li>
-                <li id="inventory-stats-player-strength">
-                    <p>Fuerza:</p>
-                    <p class="p-stats">${this.player.strength}</p>
-                </li>
-                <li id="inventory-stats-player-energy">
-                    <p>Energia:</p>
-                    <p class="p-stats">${this.player.energy}</p>
-                </li>
-                <li id="inventory-stats-player-speed">
-                    <p>Velocidad:</p>
-                    <p class="p-stats">${this.player.speed}</p>
-                </li>
-                <li id="inventory-stats-player-souls">
-                    <p>Almas:</p>
-                    <p class="p-stats">${this.player.souls}</p>
-                </li>
-            </ul>`;
+            <div id="inventory-stats-player" class="stats-grid">
+
+            <div class="stats-label">Fuerza:</div>
+            <div class="stats-value">${strength} + (${weaponDamage}) = ${totalDamage}</div>
+            
+            <div class="stats-label">Resistencia:</div>
+            <div class="stats-value">${resistance} + (${defense}) = ${totalResistance}</div>
+            `;
+    }
+
+    /**
+     * Programa la visualización de atributos después de un delay
+     */
+    scheduleAttributesDisplay() {
+        // Cancelar cualquier temporizador existente para evitar múltiples llamadas
+        this.clearAttributesTimer();
+
+        // Crear un nuevo temporizador para mostrar atributos después de 1.5 segundos
+        this.attributesTimer = setTimeout(() => {
+            this.showAttributes();
+        }, 250);
+    }
+
+    /**
+     * Cancelar temporizador pendiente
+     */
+    clearAttributesTimer() {
+        if (this.attributesTimer) {
+            clearTimeout(this.attributesTimer);
+            this.attributesTimer = null;
+        }
     }
 
     /**
@@ -204,8 +377,8 @@ export default class InventoryScene extends Phaser.Scene {
         slots.forEach((slotId) => {
             const imgElement = document.querySelector(`#inventory-equipment-box #${slotId} img`);
             if (imgElement) {
-                imgElement.src = "./assets/imagenPruebaNada.png";
-                imgElement.alt = "No equipado";
+                imgElement.src = "./assets/items/placeholder.png";
+                imgElement.alt = "Slot vacío";
 
                 // Eliminar eventos antiguos clonando y reemplazando el elemento
                 const newImg = imgElement.cloneNode(true);
@@ -247,9 +420,26 @@ export default class InventoryScene extends Phaser.Scene {
             const newImg = imgElement.cloneNode(true);
             imgElement.parentNode.replaceChild(newImg, imgElement);
 
-            // Añadir nuevos eventos al clon
-            newImg.addEventListener("click", () => this.showItemDetails(item, key)); // Mostrar detalles con un clic
-            newImg.addEventListener("dblclick", () => this.removeEquipItem(key)); // Quitar equipo con doble clic
+            // Añadir nuevos eventos - mouseenter para mostrar detalles
+            newImg.addEventListener("mouseenter", () => {
+                // Cancelar cualquier temporizador pendiente
+                this.clearAttributesTimer();
+                this.showItemDetails(item, key);
+            });
+
+            // Añadir evento mouseleave para volver a mostrar los atributos con delay
+            newImg.addEventListener("mouseleave", () => {
+                // Establecer un temporizador para mostrar los atributos después de 1.5 segundos
+                this.scheduleAttributesDisplay();
+            });
+
+            // Cambiado de dblclick a click para desequipar
+            if (slotId.startsWith("accessory")) {
+                const accessoryNum = slotId.endsWith("1") ? 1 : 2;
+                newImg.addEventListener("click", () => this.removeEquipItem(key, accessoryNum));
+            } else {
+                newImg.addEventListener("click", () => this.removeEquipItem(key));
+            }
         }
     }
 
@@ -270,14 +460,25 @@ export default class InventoryScene extends Phaser.Scene {
             this.removeEquipItem(key);
         }
 
+        // Recalcular estadísticas del jugador
+        this.player.inventory.recalculatePlayerStats();
+
         // Actualizar la interfaz
         this.populateInventory();
+
+        // Mostrar atributos inmediatamente después de equipar/desequipar
+        this.showAttributes(false);
     }
 
     /**
      * Equipa un ítem
      */
     equipItem(key, item, itemData) {
+        // No permitir equipar consumibles
+        if (item.category === "consumable") {
+            return;
+        }
+
         if (item.category === "accessory") {
             this.equipAccessory(key, itemData);
         } else {
@@ -450,6 +651,17 @@ export default class InventoryScene extends Phaser.Scene {
             itemData.equipped = false;
         }
 
+        // Recalcular estadísticas del jugador
+        this.player.inventory.recalculatePlayerStats();
+
         this.populateInventory();
+
+        // Mostrar atributos inmediatamente después de desequipar
+        this.showAttributes(false);
+    }
+
+    // Asegurar que limpiamos el temporizador cuando se cierre la escena
+    shutdown() {
+        this.clearAttributesTimer();
     }
 }

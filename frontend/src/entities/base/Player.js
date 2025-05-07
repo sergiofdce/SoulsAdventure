@@ -1,21 +1,32 @@
 import { Entity } from "./Entity.js";
-import { STAT_UPGRADE_MULTIPLIERS } from "../../config/constants.js";
+import { STAT_UPGRADE_MULTIPLIERS, PLAYER_BASE_STATS } from "../../config/constants.js";
 import Inventory from "../../data/items/Inventory.js";
 
 export default class Player extends Entity {
-    constructor(scene, x, y, texture) {
+    constructor(scene, x, y, texture, name = "") {
         // Llamamos al constructor de la clase padre
-        super(scene, x, y, texture, "Sergio");
+        super(scene, x, y, texture, name);
 
         // Atributos base del jugador
         this.level = 1;
-        this.souls = 1000000;
-        this.armor = 0;
-        this.maxHealth = 100;
-        this.health = 100;
-        this.resistance = 10;
-        this.strength = 10;
-        this.speed = 15;
+        this.souls = 0;
+
+        // Estadísticas base
+        this.maxHealth = PLAYER_BASE_STATS.maxHealth;
+        this.health = PLAYER_BASE_STATS.health;
+        this.resistance = PLAYER_BASE_STATS.resistance;
+        this.strength = PLAYER_BASE_STATS.strength;
+        this.speed = PLAYER_BASE_STATS.speed;
+
+        // Atributos equipación
+        this.damage = 0;
+        this.defense = 0;
+
+        // Inicializar arrays de progreso
+        this.defeatedBosses = [];
+        this.discoveredFireplaces = [];
+        this.discoveredNPCs = [];
+        this.discoveredItems = [];
 
         // Crear sprite con Phaser
         this.sprite = scene.physics.add.sprite(x, y, texture);
@@ -29,8 +40,10 @@ export default class Player extends Entity {
         // Animaciones
         this.createAnimations(scene, texture);
 
-        // Inventario - ahora como objeto independiente
+        // Inventario
         this.inventory = new Inventory();
+        this.inventory.setPlayer(this);
+        this.inventory.recalculatePlayerStats();
     }
 
     createAnimations(scene, texture) {
@@ -119,38 +132,46 @@ export default class Player extends Entity {
         this.inventory.deleteItem(itemId);
     }
 
-    // Controles
+    // Métodos para equipar/desequipar ítems
+    equipItem(itemId) {
+        const result = this.inventory.equipItem(itemId);
+        if (result) {
+            // Recalcular stats basados en equipamiento
+            this.inventory.recalculatePlayerStats();
+            console.log(`Ítem equipado: ${itemId}`);
+        }
+        return result;
+    }
+
+    unequipItem(itemId) {
+        const result = this.inventory.unequipItem(itemId);
+        if (result) {
+            // Recalcular stats basados en equipamiento
+            this.inventory.recalculatePlayerStats();
+            console.log(`Ítem desequipado: ${itemId}`);
+        }
+        return result;
+    }
+
+    // Método para obtener ítems equipados
+    getEquippedItems() {
+        const equipped = {};
+        const inventoryItems = this.inventory.getInventory();
+
+        for (const itemId in inventoryItems) {
+            if (inventoryItems[itemId].equipped) {
+                equipped[itemId] = this.inventory.getItemData(itemId);
+            }
+        }
+
+        return equipped;
+    }
+
+    // Controles - actualizamos el método para usar Controls
     update(cursors) {
-        let isMoving = false;
-
-        if (cursors.left.isDown) {
-            this.sprite.setVelocityX(-160);
-            this.sprite.setFlipX(true);
-            isMoving = true;
-        } else if (cursors.right.isDown) {
-            this.sprite.setVelocityX(160);
-            this.sprite.setFlipX(false);
-            isMoving = true;
-        } else {
-            this.sprite.setVelocityX(0);
-        }
-
-        if (cursors.up.isDown) {
-            this.sprite.setVelocityY(-160);
-            isMoving = true;
-        } else if (cursors.down.isDown) {
-            this.sprite.setVelocityY(160);
-            isMoving = true;
-        } else {
-            this.sprite.setVelocityY(0);
-        }
-
-        // Corregimos la forma de reproducir las animaciones
-        if (isMoving) {
-            this.sprite.anims.play("player-walk", true);
-        } else {
-            this.sprite.anims.play("player-idle", true);
-        }
+        // Este método ya no maneja directamente los controles
+        // Ahora solo recibe información del controlador externo
+        // La lógica de movimiento se ha trasladado a la clase Controls
     }
 
     getPlayerInfo() {
@@ -161,23 +182,21 @@ export default class Player extends Entity {
     }
 
     applyPlayerStats(statUpgrades, totalLevels) {
-        // Vida
-        if (statUpgrades.health) {
-            this.health += Math.ceil(this.health * STAT_UPGRADE_MULTIPLIERS.health * statUpgrades.health);
+        // MaxHealth (en lugar de health) - incremento porcentual
+        if (statUpgrades.maxHealth) {
+            this.maxHealth += Math.ceil(this.maxHealth * STAT_UPGRADE_MULTIPLIERS.maxHealth * statUpgrades.maxHealth);
+            // Opcionalmente, podemos también actualizar health para que se refleje la mejora
+            this.health = this.maxHealth;
         }
-        // Resistencia
+        // Para estadísticas con incremento fijo (resistance, strength, speed)
         if (statUpgrades.resistance) {
-            this.resistance += Math.ceil(
-                this.resistance * STAT_UPGRADE_MULTIPLIERS.resistance * statUpgrades.resistance
-            );
+            this.resistance += STAT_UPGRADE_MULTIPLIERS.resistance * statUpgrades.resistance;
         }
-        // Fuerza
         if (statUpgrades.strength) {
-            this.strength += Math.ceil(this.strength * STAT_UPGRADE_MULTIPLIERS.strength * statUpgrades.strength);
+            this.strength += STAT_UPGRADE_MULTIPLIERS.strength * statUpgrades.strength;
         }
-        // Velocidad
         if (statUpgrades.speed) {
-            this.speed += Math.ceil(this.speed * STAT_UPGRADE_MULTIPLIERS.speed * statUpgrades.speed);
+            this.speed += STAT_UPGRADE_MULTIPLIERS.speed * statUpgrades.speed;
         }
 
         // Actualizar nivel
@@ -205,45 +224,45 @@ export default class Player extends Entity {
         return this;
     }
 
-    // Método para guardar el estado del jugador (incluyendo inventario)
-    savePlayerData() {
-        const playerData = {
-            level: this.level,
-            souls: this.souls,
-            health: this.health,
-            maxHealth: this.maxHealth,
-            resistance: this.resistance,
-            strength: this.strength,
-            speed: this.speed,
-            inventoryData: this.inventory.data, // Guardamos el objeto data directamente
+    // MongoDB
+    getSaveData() {
+        return {
+            attributes: {
+                level: this.level,
+                souls: this.souls,
+                health: this.health,
+                maxHealth: this.maxHealth,
+                resistance: this.resistance,
+                strength: this.strength,
+                speed: this.speed,
+                damage: this.damage,
+                defense: this.defense,
+            },
+            lastPosition: {
+                x: this.sprite.x,
+                y: this.sprite.y,
+            },
         };
-
-        return JSON.stringify(playerData);
     }
 
-    // Método para cargar el estado del jugador
-    loadPlayerData(jsonString) {
-        try {
-            const data = JSON.parse(jsonString);
-
-            // Cargar atributos base
-            this.level = data.level || this.level;
-            this.souls = data.souls || this.souls;
-            this.health = data.health || this.health;
-            this.maxHealth = data.maxHealth || this.maxHealth;
-            this.resistance = data.resistance || this.resistance;
-            this.strength = data.strength || this.strength;
-            this.speed = data.speed || this.speed;
-
-            // Cargar inventario si existe
-            if (data.inventoryData) {
-                this.inventory.importFromJSON(data.inventoryData);
-            }
-
-            return true;
-        } catch (error) {
-            console.error("Error al cargar los datos del jugador:", error);
-            return false;
+    // MongoDB
+    loadSaveData(data) {
+        if (data.attributes) {
+            this.level = data.attributes.level;
+            this.souls = data.attributes.souls;
+            this.health = data.attributes.health;
+            this.maxHealth = data.attributes.maxHealth;
+            this.resistance = data.attributes.resistance;
+            this.strength = data.attributes.strength;
+            this.speed = data.attributes.speed;
+            this.damage = data.attributes.damage;
+            this.defense = data.attributes.defense;
         }
+
+        if (data.lastPosition) {
+            this.setPosition(data.lastPosition.x, data.lastPosition.y);
+        }
+
+        return true;
     }
 }

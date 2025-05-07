@@ -1,3 +1,5 @@
+import { COMBAT } from "../config/constants.js";
+
 export default class CombatScene extends Phaser.Scene {
     constructor() {
         super({ key: "CombatScene" });
@@ -9,6 +11,9 @@ export default class CombatScene extends Phaser.Scene {
         // Variables combate
         this.isPlayerTurn = true;
         this.combatActive = false;
+
+        // Variable para rastrear si el jugador está bloqueando
+        this.playerIsBlocking = false;
     }
 
     // Método init que recibe instancia de Player y Enemy
@@ -27,6 +32,9 @@ export default class CombatScene extends Phaser.Scene {
         // Salud Enemy
         this.enemyMaxHealth = this.enemy.health;
         this.enemyCurrentHealth = this.enemy.health;
+
+        // Inicializar variable de aturdimiento del enemigo
+        this.enemy.stunned = 0;
     }
 
     create() {
@@ -100,11 +108,34 @@ export default class CombatScene extends Phaser.Scene {
         this.updateHealthBar("player", this.player.health, this.player.maxHealth);
         this.updateHealthBar("enemy", this.enemy.health, this.enemy.health);
 
+        // Actualizar contador de pociones
+        this.updatePotionCounter();
+
         // Añadir animaciones de Player
         this.setupPlayerAnimations();
 
         // Añadir animaciones del enemigo
         this.setupEnemyAnimations();
+    }
+
+    // Nuevo método para actualizar el contador de pociones
+    updatePotionCounter() {
+        const potionCounter = document.getElementById("potion-counter");
+        let potionItem = this.player.inventory.getItemData("pocion-salud");
+        let potionCount = potionItem ? potionItem.quantity : 0;
+
+        potionCounter.textContent = potionCount;
+
+        // Deshabilitar el botón de curación si no hay pociones
+        const healButton = document.querySelector(".combat-button.heal");
+        if (healButton) {
+            healButton.disabled = potionCount <= 0;
+            if (potionCount <= 0) {
+                healButton.classList.add("disabled");
+            } else {
+                healButton.classList.remove("disabled");
+            }
+        }
     }
 
     // Configurar sistema de animaciones para el jugador
@@ -457,7 +488,7 @@ export default class CombatScene extends Phaser.Scene {
             const healthPercent = Math.max(0, Math.min((currentHealth / maxHealth) * 100, 100));
             // Establecer el ancho de la barra según el porcentaje de vida
             healthBar.style.width = `${healthPercent}%`;
-            type === "player";
+
             // Aplicar un degradado de color basado en el porcentaje de vida
             if (healthPercent > 60) {
                 // Verde a amarillo para vida alta
@@ -503,14 +534,20 @@ export default class CombatScene extends Phaser.Scene {
             healBtn.addEventListener("click", () => {
                 // Verificar explícitamente si es el turno del jugador antes de procesar
                 if (this.isPlayerTurn && this.combatActive && !healBtn.disabled) {
-                    //this.handleHeal();
+                    this.handleHeal();
                 }
             });
         }
 
-        // Huir
-        const dodgeBtn = document.querySelector(".combat-button.dodge");
-        if (dodgeBtn) {
+        // Bloquear
+        const blockBtn = document.querySelector(".combat-button.dodge");
+        if (blockBtn) {
+            blockBtn.addEventListener("click", () => {
+                // Verificar explícitamente si es el turno del jugador antes de procesar
+                if (this.isPlayerTurn && this.combatActive && !blockBtn.disabled) {
+                    this.handleBlock();
+                }
+            });
         }
     }
 
@@ -524,27 +561,67 @@ export default class CombatScene extends Phaser.Scene {
         this.playPlayerAnimation("light-attack");
 
         // Ejecutar ataque ligero
-        this.addCombatLogMessage("Has realizado un ataque ligero.", "player-action");
-        // Calcular y aplicar daño
-        const damage = Math.ceil(8 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
-        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
-        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-        this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+        this.addCombatLogMessage("Has realizado un ataque rápido.", "player-action");
 
-        // Verificar fin de combate antes de programar la animación de hit
-        if (!this.checkCombatEnd()) {
-            // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
-            this.time.delayedCall(300, () => {
-                if (!this.checkCombatEnd()) {
+        // Calcular probabilidad de acierto basada en velocidad
+        const speedDifference = this.player.speed - this.enemy.speed;
+        const hitChance = COMBAT.LIGHT_ATTACK.BASE_HIT_CHANCE + speedDifference * COMBAT.LIGHT_ATTACK.SPEED_HIT_BONUS;
+        const roll = Math.random();
+
+        // Verificar si el ataque acierta
+        if (roll <= hitChance) {
+            // Calcular daño base según velocidad
+            let damage = Math.ceil(this.player.speed * COMBAT.LIGHT_ATTACK.DAMAGE_MULTIPLIER);
+
+            // Verificar si es golpe crítico (si la diferencia de velocidad supera el umbral)
+            let isCritical = false;
+            if (speedDifference >= COMBAT.LIGHT_ATTACK.CRITICAL_THRESHOLD) {
+                damage = Math.ceil(damage * COMBAT.LIGHT_ATTACK.CRITICAL_MULTIPLIER);
+                isCritical = true;
+            }
+
+            // Aplicar daño
+            this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+
+            // Mostrar mensaje según si fue crítico o no
+            if (isCritical) {
+                this.addCombatLogMessage(`¡CRÍTICO! Has causado ${damage} puntos de daño al enemigo.`, "critical-hit");
+            } else {
+                this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+            }
+
+            // Verificar si el combate ha terminado después de aplicar daño
+            const combatEnded = this.checkCombatEnd();
+
+            // Solo continuar con las animaciones si el combate no ha terminado
+            if (!combatEnded) {
+                // Reproducir animación de golpe recibido
+                this.time.delayedCall(300, () => {
                     this.playEnemyAnimation("hit");
-                }
-            });
+                });
+
+                // Esperar a que termine la animación antes de finalizar el turno
+                this.time.delayedCall(1000, () => {
+                    // Volver a la animación de idle
+                    this.playPlayerAnimation("idle");
+                    this.playEnemyAnimation("idle");
+
+                    // Finalizar turno después de un momento adicional
+                    this.time.delayedCall(500, () => {
+                        this.endTurn();
+                    });
+                });
+            }
+        } else {
+            // El ataque falla
+            this.addCombatLogMessage("Tu ataque ha fallado.", "combat-info");
 
             // Esperar a que termine la animación antes de finalizar el turno
             this.time.delayedCall(1000, () => {
                 // Volver a la animación de idle
                 this.playPlayerAnimation("idle");
-                this.playEnemyAnimation("idle");
+
                 // Finalizar turno después de un momento adicional
                 this.time.delayedCall(500, () => {
                     this.endTurn();
@@ -564,26 +641,69 @@ export default class CombatScene extends Phaser.Scene {
 
         // Ejecutar ataque pesado
         this.addCombatLogMessage("Has realizado un ataque pesado.", "player-action");
-        // Calcular y aplicar daño (más alto que el ataque ligero)
-        const damage = Math.ceil(15 * (1 + Math.max(0, (this.player.strength - 10) * 0.1)));
-        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
-        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
-        this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
 
-        // Verificar fin de combate antes de programar la animación de hit
-        if (!this.checkCombatEnd()) {
-            // Reproducir animación de golpe recibido solo si el enemigo sigue vivo
-            this.time.delayedCall(300, () => {
-                if (!this.checkCombatEnd()) {
+        // Calcular probabilidad de acierto basada en velocidad
+        const speedDifference = this.player.speed - this.enemy.speed;
+        const hitChance = COMBAT.HEAVY_ATTACK.BASE_HIT_CHANCE + speedDifference * COMBAT.HEAVY_ATTACK.SPEED_HIT_BONUS;
+        const roll = Math.random();
+
+        // Verificar si el ataque acierta
+        if (roll <= hitChance) {
+            // Calcular daño basado en fuerza
+            const damage = Math.ceil(this.player.strength * COMBAT.HEAVY_ATTACK.DAMAGE_MULTIPLIER);
+
+            // Aplicar daño
+            this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - damage);
+            this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+            this.addCombatLogMessage(`Has causado ${damage} puntos de daño al enemigo.`, "combat-info");
+
+            // Verificar si el combate ha terminado después de aplicar daño
+            const combatEnded = this.checkCombatEnd();
+
+            // Solo continuar con las animaciones y el efecto de aturdimiento si el combate no ha terminado
+            if (!combatEnded) {
+                // Reproducir animación de golpe recibido
+                this.time.delayedCall(300, () => {
                     this.playEnemyAnimation("hit");
+                });
+
+                // Calcular probabilidad de aturdimiento
+                const strengthDifference = this.player.strength - this.enemy.strength;
+                const stunChance =
+                    COMBAT.HEAVY_ATTACK.BASE_STUN_CHANCE + strengthDifference * COMBAT.HEAVY_ATTACK.STRENGTH_STUN_BONUS;
+                const stunRoll = Math.random();
+
+                // Verificar si el enemigo queda aturdido
+                if (stunRoll <= stunChance) {
+                    // El enemigo queda aturdido
+                    this.enemy.stunned = COMBAT.HEAVY_ATTACK.STUN_DURATION; // Duración del aturdimiento en turnos
+                    this.addCombatLogMessage(
+                        `¡El enemigo ha quedado aturdido durante ${this.enemy.stunned} turno!`,
+                        "critical-hit"
+                    );
                 }
-            });
+
+                // Esperar a que termine la animación antes de finalizar el turno
+                this.time.delayedCall(1000, () => {
+                    // Volver a la animación de idle
+                    this.playPlayerAnimation("idle");
+                    this.playEnemyAnimation("idle");
+
+                    // Finalizar turno después de un momento adicional
+                    this.time.delayedCall(500, () => {
+                        this.endTurn();
+                    });
+                });
+            }
+        } else {
+            // El ataque falla
+            this.addCombatLogMessage("Tu ataque pesado ha fallado. Has perdido el turno.", "combat-info");
 
             // Esperar a que termine la animación antes de finalizar el turno
             this.time.delayedCall(1000, () => {
                 // Volver a la animación de idle
                 this.playPlayerAnimation("idle");
-                this.playEnemyAnimation("idle");
+
                 // Finalizar turno después de un momento adicional
                 this.time.delayedCall(500, () => {
                     this.endTurn();
@@ -595,17 +715,53 @@ export default class CombatScene extends Phaser.Scene {
     handleHeal() {
         if (!this.isPlayerTurn || !this.combatActive) return;
 
+        // Comprobar si el jugador tiene pociones
+        const potionItem = this.player.inventory.getItemData("pocion-salud");
+        if (!potionItem || potionItem.quantity <= 0) {
+            this.addCombatLogMessage("¡No tienes pociones de salud!", "combat-info");
+            return;
+        }
+
+        // Verificar si la salud ya está al máximo
+        if (this.playerCurrentHealth >= this.playerMaxHealth) {
+            // Mostrar mensaje especial
+            this.addCombatLogMessage(
+                "¡Wow! Has malgastado una poción con la vida al máximo, así no funciona",
+                "combat-info"
+            );
+
+            // Consumir una poción de todos modos
+            this.player.deleteItem("pocion-salud");
+
+            // Actualizar contador de pociones
+            this.updatePotionCounter();
+
+            // Finalizar turno después de un momento
+            this.time.delayedCall(1000, () => {
+                this.endTurn();
+            });
+            return;
+        }
+
         // Desactivar controles para evitar múltiples acciones
         this.disablePlayerControls();
 
-        // Calcular curación basada en resistencia
-        const healPercent = 0.1 + this.player.resistance * 0.005;
-        const healAmount = Math.ceil(this.playerMaxHealth * healPercent);
+        // Aplicar curación usando las constantes definidas en COMBAT.POTION
+        const healAmount = Math.ceil(
+            this.playerMaxHealth * COMBAT.POTION.BASE_PERCENTAGE +
+                this.player.resistance * COMBAT.POTION.RESISTANCE_BONUS
+        );
 
         // Aplicar curación
         this.playerCurrentHealth = Math.min(this.playerMaxHealth, this.playerCurrentHealth + healAmount);
         this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-        this.addCombatLogMessage(`Te has curado ${healAmount} puntos de vida.`, "heal-action");
+        this.addCombatLogMessage(`Has usado una poción y recuperado ${healAmount} puntos de vida.`, "heal-action");
+
+        // Consumir una poción
+        this.player.deleteItem("pocion-salud");
+
+        // Actualizar contador de pociones
+        this.updatePotionCounter();
 
         // Finalizar turno después de que termine la animación
         this.time.delayedCall(1000, () => {
@@ -615,6 +771,28 @@ export default class CombatScene extends Phaser.Scene {
             this.time.delayedCall(500, () => {
                 this.endTurn();
             });
+        });
+    }
+
+    // Nuevo método para manejar la acción de bloqueo
+    handleBlock() {
+        if (!this.isPlayerTurn || !this.combatActive) return;
+
+        // Desactivar controles para evitar múltiples acciones
+        this.disablePlayerControls();
+
+        // Activar el estado de bloqueo
+        this.playerIsBlocking = true;
+
+        // Mostrar mensaje de que el jugador está bloqueando
+        this.addCombatLogMessage("Te preparas para bloquear el próximo ataque del enemigo.", "player-action");
+
+        // Volver a la animación de idle (podría agregarse una animación específica de bloqueo en el futuro)
+        this.playPlayerAnimation("idle");
+
+        // Finalizar el turno después de un momento
+        this.time.delayedCall(1000, () => {
+            this.endTurn();
         });
     }
 
@@ -659,62 +837,180 @@ export default class CombatScene extends Phaser.Scene {
         this.time.delayedCall(1000, () => {
             this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
 
-            // Añadir un delay adicional para dar tiempo a leer el mensaje antes de realizar la acción
-            this.time.delayedCall(1500, () => {
-                // El enemigo solo puede elegir entre ataque ligero y pesado
-                const action = Math.random() < 0.5 ? "light" : "heavy";
+            // Verificar si el enemigo está aturdido
+            if (this.enemy.stunned && this.enemy.stunned > 0) {
+                this.addCombatLogMessage(`${this.enemy.name} está aturdido y no puede actuar.`, "enemy-action");
+                this.enemy.stunned--; // Reducir duración del aturdimiento
 
-                if (action === "light") {
-                    // Ataque ligero del enemigo
-                    this.addCombatLogMessage(`${this.enemy.name} ha realizado un ataque ligero.`, "enemy-action");
-                    // Reproducir animación de ataque ligero
-                    this.playEnemyAnimation("light-attack");
-                    // Calcular daño
-                    const baseDamage = 6;
-                    const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
-                    const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
-                    const damage = Math.ceil(baseDamage * enemyStrengthMultiplier * resistanceMultiplier);
-                    // Mostrar animación de jugador recibiendo daño
-                    this.playPlayerAnimation("hit");
-                    // Aplicar daño
-                    this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
-                    this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-                    this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
-                } else {
-                    // Ataque pesado del enemigo
-                    this.addCombatLogMessage(`${this.enemy.name} ha realizado un ataque pesado.`, "enemy-action");
-                    // Reproducir animación de ataque pesado
-                    this.playEnemyAnimation("heavy-attack");
-                    // Calcular daño (mayor al ataque ligero)
-                    const baseDamage = 12;
-                    const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
-                    const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
-                    const damage = Math.ceil(baseDamage * enemyStrengthMultiplier * resistanceMultiplier);
-
-                    // Mostrar animación de jugador recibiendo daño
-                    this.playPlayerAnimation("hit");
-
-                    // Aplicar daño
-                    this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
-                    this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
-                    this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
+                // Desactivar el estado de bloqueo si estaba activado, ya que no hubo ataque
+                if (this.playerIsBlocking) {
+                    this.playerIsBlocking = false;
+                    this.addCombatLogMessage("Mantienes tu postura de bloqueo, pero no fue necesaria.", "combat-info");
                 }
 
-                // Verificar fin de combate
-                if (!this.checkCombatEnd()) {
-                    // Esperar a que termine la animación de daño/ataque
-                    this.time.delayedCall(1000, () => {
-                        // Volver a la animación de idle para ambos
-                        this.playPlayerAnimation("idle");
-                        this.playEnemyAnimation("idle");
-                        // Finalizar turno del enemigo
+                // Esperar un momento y finalizar el turno
+                this.time.delayedCall(1500, () => {
+                    this.endTurn();
+                });
+                return;
+            }
+
+            // Añadir un delay adicional para dar tiempo a leer el mensaje antes de realizar la acción
+            this.time.delayedCall(1500, () => {
+                // El enemigo ataca
+                this.addCombatLogMessage(`${this.enemy.name} te ha atacado.`, "enemy-action");
+
+                // Reproducir animación de ataque del enemigo
+                this.playEnemyAnimation("attack");
+
+                // Comprobar si el jugador está bloqueando
+                if (this.playerIsBlocking) {
+                    // Calcular la probabilidad de bloqueo total basada en resistencia
+                    const resistance = this.player.resistance;
+                    let totalBlockChance =
+                        COMBAT.BLOCK.BASE_TOTAL_BLOCK_CHANCE + resistance * COMBAT.BLOCK.RESISTANCE_BLOCK_BONUS;
+
+                    // Limitar la probabilidad máxima de bloqueo total
+                    totalBlockChance = Math.min(totalBlockChance, COMBAT.BLOCK.MAX_TOTAL_BLOCK_CHANCE);
+
+                    // Mostrar información sobre la probabilidad de bloqueo
+                    const blockPercentage = Math.round(totalBlockChance * 100);
+                    this.addCombatLogMessage(`Probabilidad de bloqueo total: ${blockPercentage}%`, "combat-info");
+
+                    // Tirar los dados para ver si el bloqueo es total
+                    const roll = Math.random();
+
+                    if (roll <= totalBlockChance) {
+                        // ¡Bloqueo total exitoso!
+                        this.addCombatLogMessage("¡Has bloqueado completamente el ataque!", "critical-hit");
+
+                        // No reproducir animación de daño para el jugador
+                        // En su lugar, preparar el contraataque
                         this.time.delayedCall(500, () => {
-                            this.endTurn();
+                            this.handleCounterAttack();
                         });
-                    });
+                    } else {
+                        // Bloqueo parcial - reducir el daño
+                        const baseDamage = this.enemy.strength;
+
+                        // Calcular reducción de daño
+                        let damageReduction =
+                            COMBAT.BLOCK.BASE_DAMAGE_REDUCTION +
+                            (this.player.defense || 0) * COMBAT.BLOCK.DEFENSE_REDUCTION_BONUS +
+                            this.player.resistance * COMBAT.BLOCK.RESISTANCE_REDUCTION_BONUS;
+
+                        // Limitar la reducción máxima de daño
+                        damageReduction = Math.min(damageReduction, COMBAT.BLOCK.MAX_DAMAGE_REDUCTION);
+
+                        // Calcular daño final
+                        const finalDamage = Math.max(1, Math.floor(baseDamage * (1 - damageReduction)));
+
+                        // Mostrar animación de daño para el jugador (menos intensa)
+                        this.playPlayerAnimation("hit");
+
+                        // Aplicar daño reducido
+                        this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - finalDamage);
+                        this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+
+                        // Mostrar mensaje de bloqueo parcial
+                        const reducedPercent = Math.round(damageReduction * 100);
+                        this.addCombatLogMessage(
+                            `Has bloqueado parcialmente el ataque, reduciendo el daño en un ${reducedPercent}%.`,
+                            "combat-info"
+                        );
+                        this.addCombatLogMessage(
+                            `Has recibido ${finalDamage} puntos de daño (reducido de ${baseDamage}).`,
+                            "enemy-action"
+                        );
+
+                        // Resetear el estado de bloqueo
+                        this.playerIsBlocking = false;
+
+                        // Verificar fin de combate
+                        if (!this.checkCombatEnd()) {
+                            // Esperar a que termine la animación de daño
+                            this.time.delayedCall(1000, () => {
+                                // Volver a animación idle
+                                this.playPlayerAnimation("idle");
+                                this.playEnemyAnimation("idle");
+                                // Finalizar turno
+                                this.time.delayedCall(500, () => {
+                                    this.endTurn();
+                                });
+                            });
+                        }
+                    }
+                } else {
+                    // El jugador no está bloqueando, aplicar daño normal
+                    const damage = this.enemy.strength;
+
+                    // Mostrar animación de jugador recibiendo daño
+                    this.playPlayerAnimation("hit");
+
+                    // Aplicar daño
+                    this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
+                    this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+                    this.addCombatLogMessage(`Has recibido ${damage} puntos de daño.`, "enemy-action");
+
+                    // Verificar fin de combate
+                    if (!this.checkCombatEnd()) {
+                        // Esperar a que termine la animación de daño/ataque
+                        this.time.delayedCall(1000, () => {
+                            // Volver a la animación de idle para ambos
+                            this.playPlayerAnimation("idle");
+                            this.playEnemyAnimation("idle");
+                            // Finalizar turno del enemigo
+                            this.time.delayedCall(500, () => {
+                                this.endTurn();
+                            });
+                        });
+                    }
                 }
             });
         });
+    }
+
+    // Método para manejar el contraataque cuando el bloqueo es total
+    handleCounterAttack() {
+        // Mostrar mensaje de contraataque
+        this.addCombatLogMessage("¡Contraatacas con un movimiento rápido!", "player-action");
+
+        // Reproducir animación de ataque ligero
+        this.playPlayerAnimation("light-attack");
+
+        // Calcular daño del contraataque usando la fórmula específica
+        const counterDamage = Math.ceil(
+            this.player.speed * COMBAT.BLOCK.COUNTER_ATTACK_DAMAGE_SPEED +
+                this.player.strength * COMBAT.BLOCK.COUNTER_ATTACK_DAMAGE_STRENGTH
+        );
+
+        // Aplicar daño al enemigo
+        this.enemyCurrentHealth = Math.max(0, this.enemyCurrentHealth - counterDamage);
+        this.updateHealthBar("enemy", this.enemyCurrentHealth, this.enemyMaxHealth);
+
+        // Reproducir animación de golpe recibido por el enemigo
+        this.playEnemyAnimation("hit");
+
+        // Mostrar mensaje de daño
+        this.addCombatLogMessage(`Tu contraataque ha causado ${counterDamage} puntos de daño.`, "critical-hit");
+
+        // Resetear el estado de bloqueo
+        this.playerIsBlocking = false;
+
+        // Verificar si el combate ha terminado después del contraataque
+        if (!this.checkCombatEnd()) {
+            // Esperar a que termine la animación
+            this.time.delayedCall(1000, () => {
+                // Volver a animaciones idle
+                this.playPlayerAnimation("idle");
+                this.playEnemyAnimation("idle");
+
+                // Finalizar turno
+                this.time.delayedCall(500, () => {
+                    this.endTurn();
+                });
+            });
+        }
     }
 
     endTurn() {
@@ -755,7 +1051,17 @@ export default class CombatScene extends Phaser.Scene {
             this.playEnemyAnimation("death");
             this.addCombatLogMessage(`¡Has derrotado a ${this.enemy.name}!`, "player-action");
 
-            // Recompensa de almas por victoria
+            // Otorgar almas al jugador
+            this.player.souls += this.enemy.souls;
+
+            // Actualizar el HUD de almas
+            const soulsAmount = document.getElementById("souls-amount");
+            if (soulsAmount) {
+                soulsAmount.textContent = this.player.souls;
+            }
+
+            // Mostrar mensaje de recompensa en amarillo
+            this.addCombatLogMessage(`¡Has obtenido ${this.enemy.souls} almas!`, "souls-reward");
 
             // Tiempo antes de cerrar escena
             this.time.delayedCall(3000, () => {
@@ -769,15 +1075,56 @@ export default class CombatScene extends Phaser.Scene {
         return false; // El combate continúa
     }
 
+    // Método para destruir las instancias de Phaser Game de animaciones
+    destroyAnimationGames() {
+        // Destruir el juego de animación del jugador si existe
+        if (this.playerAnimGame) {
+            console.log("Destruyendo instancia de animación del jugador...");
+            this.playerAnimGame.destroy(true);
+            this.playerAnimGame = null;
+        }
+
+        // Destruir el juego de animación del enemigo si existe
+        if (this.enemyAnimGame) {
+            console.log("Destruyendo instancia de animación del enemigo...");
+            this.enemyAnimGame.destroy(true);
+            this.enemyAnimGame = null;
+        }
+    }
+
     exitCombat() {
         // Finalizar el combate activo
         this.combatActive = false;
+
+        // Destruir las instancias de juegos de animación
+        this.destroyAnimationGames();
 
         // Limpiar eventos y restablecer variables
         this.cleanupListeners();
 
         // Resetear variables de estado
         this.isPlayerTurn = true;
+
+        // Asegurarse de que la vida actual del jugador esté actualizada en el objeto del jugador
+        if (this.player) {
+            this.player.health = this.playerCurrentHealth;
+
+            // Actualizar el HUD con la vida actual del jugador
+            const healthAmount = document.getElementById("health-amount");
+            if (healthAmount) {
+                healthAmount.textContent = this.playerCurrentHealth;
+            }
+
+            // Actualizar la barra de progreso del HUD
+            const hudProgressBar = document.querySelector(".hud-progress");
+            if (hudProgressBar) {
+                const healthPercent = Math.max(
+                    0,
+                    Math.min((this.playerCurrentHealth / this.playerMaxHealth) * 100, 100)
+                );
+                hudProgressBar.style.width = `${healthPercent}%`;
+            }
+        }
 
         // Ocultar el contenedor de combate
         const combatContainer = document.getElementById("combat-container");
@@ -800,6 +1147,25 @@ export default class CombatScene extends Phaser.Scene {
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
+    }
+
+    // También debemos asegurarnos de destruir las instancias en shutdown y destroy
+    shutdown() {
+        // Destruir las instancias de animación al cerrar la escena
+        this.destroyAnimationGames();
+        // Llamar a shutdown del padre si existe
+        if (Phaser.Scene.prototype.shutdown) {
+            Phaser.Scene.prototype.shutdown.call(this);
+        }
+    }
+
+    destroy() {
+        // Destruir las instancias de animación al destruir la escena
+        this.destroyAnimationGames();
+        // Llamar a destroy del padre si existe
+        if (Phaser.Scene.prototype.destroy) {
+            Phaser.Scene.prototype.destroy.call(this);
+        }
     }
 
     cleanupListeners() {

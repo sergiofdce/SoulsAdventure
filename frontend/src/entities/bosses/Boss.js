@@ -7,9 +7,9 @@ export class Boss extends CombatEntity {
             scale: scale,
             interactionRadius: 150,
             followSpeed: 180,
-            hitboxWidthRatio: 0.6,
-            hitboxHeightRatio: 0.3,
-            hitboxOffsetYRatio: 0.7,
+            hitboxWidthRatio: 1,
+            hitboxHeightRatio: 0.65,
+            hitboxOffsetYRatio: 0.35,
         };
 
         super(scene, x, y, texture, name, bossOptions);
@@ -20,6 +20,7 @@ export class Boss extends CombatEntity {
         this.scene.scene.launch("BossScene", {
             player: this.scene.player,
             enemy: this,
+            gameStateManager: this.scene.gameStateManager,
         });
     }
 }

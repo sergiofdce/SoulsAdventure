@@ -29,31 +29,32 @@ export class Accessory extends Item {
     }
 }
 
-export class Edible extends Item {
-    constructor(id, name, description, image, effect = "", quantity = 0) {
-        super(id, name, "edible", description, image, quantity, false);
+export class Consumable extends Item {
+    constructor(id, name, description, image, effect = "", quantity = 0, maxQuantity = 3) {
+        super(id, name, "consumable", description, image, quantity, false);
         this.effect = effect;
+        this.equipped = false;
+        this.maxQuantity = maxQuantity;
     }
 }
 
 export class Shield extends Item {
-    constructor(id, name, description, image, defense, blockChance) {
+    constructor(id, name, description, image, defense) {
         super(id, name, "shield", description, image);
-        this.defense = defense || 0;
-        this.blockChance = blockChance || 0;
+        this.defense = defense;
     }
 }
 
 export class Weapon extends Item {
-    constructor(id, name, description, image, damage = 0, quantity = 0, equipped = false) {
-        super(id, name, "weapon", description, image, quantity, equipped);
+    constructor(id, name, description, image, damage) {
+        super(id, name, "weapon", description, image);
         this.damage = damage;
     }
 }
 
 export class Armor extends Item {
-    constructor(id, name, category, description, image, defense = 0, quantity = 0, equipped = false) {
-        super(id, name, category, description, image, quantity, equipped);
+    constructor(id, name, category, description, image, defense) {
+        super(id, name, category, description, image);
         this.defense = defense;
     }
 }

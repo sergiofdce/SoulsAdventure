@@ -1,71 +1,160 @@
-import ItemsDatabase from "./itemsDatabase.js";
+import ItemsDatabase from "./ItemsDatabase.js";
 
 export default class Inventory {
     constructor(inventoryData = null) {
-        // Si se proporciona data de inventario, usarla; de lo contrario, crear un inventario predeterminado
         this.data = inventoryData || {
+            // Inventario con ítems iniciales
             items: {
-                "espada-oscura": {
+                "espada-larga": {
                     quantity: 1,
-                    twoHanded: false,
                     equipped: false,
                 },
-                "escudo-anillos-cristal": {
-                    quantity: 2,
+                "casco-cuero": {
+                    quantity: 1,
                     equipped: false,
                 },
-                "casco-metal": {
+                "pechera-cuero": {
                     quantity: 1,
-                    equipped: true,
-                },
-                "pechera-hierro": {
-                    quantity: 1,
-                    equipped: true,
-                },
-                "guantes-magicos": {
-                    quantity: 1,
-                    twoHanded: false,
-                    equipped: true,
-                },
-                "zapatos-montana": {
-                    quantity: 1,
-                    equipped: true,
-                },
-                "espada-muy-larga": {
-                    quantity: 1,
-                    twoHanded: false,
-                    equipped: true,
-                },
-                "escudo-metal": {
-                    quantity: 1,
-                    equipped: true,
-                },
-                "anillo-oro": {
-                    quantity: 1,
-                    accessory1: false,
-                    accessory2: true,
-                    equipped: true,
-                },
-                "anillo-legendario": {
-                    quantity: 1,
-                    accessory1: true,
-                    accessory2: false,
-                    equipped: true,
-                },
-                "anillo-mitico": {
-                    quantity: 1,
-                    accessory1: false,
-                    accessory2: false,
                     equipped: false,
                 },
-                "anillo-ceremonial": {
+                "guantes-cuero": {
                     quantity: 1,
-                    accessory1: false,
-                    accessory2: false,
+                    equipped: false,
+                },
+                "botas-cuero": {
+                    quantity: 1,
+                    equipped: false,
+                },
+                "pocion-salud": {
+                    quantity: 1,
                     equipped: false,
                 },
             },
         };
+
+        // Referencia al jugador (se establecerá cuando se inicialice el inventario)
+        this.player = null;
+    }
+
+    // Nuevo método para establecer la referencia al jugador
+    setPlayer(player) {
+        this.player = player;
+    }
+
+    // Nuevo método para equipar un ítem
+    equipItem(itemId) {
+        const allItems = ItemsDatabase.getAllItems();
+        const item = allItems[itemId];
+
+        if (!item || !this.data.items[itemId] || this.data.items[itemId].quantity <= 0) {
+            return false;
+        }
+
+        // Si el ítem ya está equipado, no hacemos nada
+        if (this.data.items[itemId].equipped) {
+            return true;
+        }
+
+        // Desequipar otros ítems del mismo tipo si es necesario
+        if (item.category === "weapon") {
+            this.unequipItemsByCategory("weapon");
+
+            // Actualizar daño del jugador
+            if (this.player) {
+                this.player.damage = item.damage || 0;
+            }
+        } else if (item.category === "shield") {
+            this.unequipItemsByCategory("shield");
+
+            // Actualizar defensa del jugador
+            if (this.player) {
+                this.player.defense += item.defense || 0;
+            }
+        } else if (item.slotType) {
+            // Para armaduras, desequipamos el slot específico (helmet, chest, etc)
+            this.unequipItemsBySlot(item.slotType);
+
+            // Actualizar defensa del jugador
+            if (this.player) {
+                this.player.defense += item.defense || 0;
+            }
+        }
+
+        // Equipar el nuevo ítem
+        this.data.items[itemId].equipped = true;
+        return true;
+    }
+
+    // Nuevo método para desequipar un ítem
+    unequipItem(itemId) {
+        const allItems = ItemsDatabase.getAllItems();
+        const item = allItems[itemId];
+
+        if (!item || !this.data.items[itemId] || !this.data.items[itemId].equipped) {
+            return false;
+        }
+
+        // Quitar stats del jugador
+        if (this.player) {
+            if (item.category === "weapon") {
+                this.player.damage = 0; // Volver al daño base
+            } else if (item.category === "shield" || item.slotType) {
+                this.player.defense -= item.defense || 0;
+            }
+        }
+
+        // Desequipar el ítem
+        this.data.items[itemId].equipped = false;
+        return true;
+    }
+
+    // Método auxiliar para desequipar ítems por categoría
+    unequipItemsByCategory(category) {
+        const allItems = ItemsDatabase.getAllItems();
+
+        for (const itemId in this.data.items) {
+            if (this.data.items[itemId].equipped && allItems[itemId].category === category) {
+                this.unequipItem(itemId);
+            }
+        }
+    }
+
+    // Método auxiliar para desequipar ítems por slot
+    unequipItemsBySlot(slotType) {
+        const allItems = ItemsDatabase.getAllItems();
+
+        for (const itemId in this.data.items) {
+            if (this.data.items[itemId].equipped && allItems[itemId].slotType === slotType) {
+                this.unequipItem(itemId);
+            }
+        }
+    }
+
+    // Método para recalcular todos los stats basados en equipamiento
+    recalculatePlayerStats() {
+        if (!this.player) return;
+
+        // Resetear stats - daño es 0 (solo contará equipamiento), defensa es 0
+        this.player.damage = 0;
+        this.player.defense = 0;
+
+        const allItems = ItemsDatabase.getAllItems();
+
+        // Recorrer todos los ítems equipados
+        for (const itemId in this.data.items) {
+            if (this.data.items[itemId].equipped) {
+                const item = allItems[itemId];
+
+                if (item.category === "weapon") {
+                    this.player.damage += item.damage || 0;
+                } else if (item.category === "shield") {
+                    this.player.defense += item.defense || 0;
+                } else if (["helmet", "chest", "glove", "shoes"].includes(item.category)) {
+                    // Verificar si el ítem es una armadura por su categoría
+                    this.player.defense += item.defense || 0;
+                }
+            }
+        }
     }
 
     // Método para obtener información completa de un item
@@ -143,5 +232,17 @@ export default class Inventory {
             return true;
         }
         return false;
+    }
+
+    // Método para listar todos los items disponibles en el juego
+    listAvailableItems() {
+        const allItems = ItemsDatabase.getAllItems();
+        return Object.keys(allItems);
+    }
+
+    // Método para mostrar información detallada de un item
+    showItemDetails(itemId) {
+        const allItems = ItemsDatabase.getAllItems();
+        return allItems[itemId] || null;
     }
 }
