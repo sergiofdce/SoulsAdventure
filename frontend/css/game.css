@@ -815,23 +815,31 @@ MARK: Dialogos
     bottom: var(--spacing-lg);
     left: 50%;
     transform: translateX(-50%);
-    width: 60%;
-    max-width: 400px;
-    padding: var(--spacing-md);
-    background: linear-gradient(135deg, rgba(20, 10, 40, 0.95) 0%, rgba(35, 20, 50, 0.9) 100%);
+    width: 70%;
+    max-width: 500px;
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(15, 5, 30, 0.95) 0%, rgba(40, 20, 60, 0.9) 100%);
     color: var(--color-text);
     border-radius: var(--border-radius-xl);
     text-align: center;
     display: none;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6),
-        inset 0 0 30px rgba(0, 0, 0, 0.4);
-    border: 1px solid;
-    border-image: linear-gradient(to bottom,
-            rgba(147, 51, 234, 0.7),
-            rgba(70, 27, 98, 0.4)) 1;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(0, 0, 0, 0.5);
+    border: 2px solid;
+    border-image: linear-gradient(to bottom, rgba(255, 215, 0, 0.8), rgba(147, 51, 234, 0.6)) 1;
     font-family: "Cinzel", serif;
-    letter-spacing: 0.5px;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 15px rgba(255, 215, 0, 0.5);
+    animation: glow-box 3s infinite alternate;
+}
+
+@keyframes glow-box {
+    0% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.4);
+    }
+
+    100% {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.6);
+    }
 }
 
 #dialogueBox::before {
@@ -843,74 +851,107 @@ MARK: Dialogos
     height: 100%;
     background: url('./assets/ui/parchment-texture.png');
     background-size: cover;
-    opacity: 0.05;
+    opacity: 0.1;
     pointer-events: none;
     mix-blend-mode: overlay;
     border-radius: var(--border-radius-xl);
 }
 
 #dialogueText {
-    font-size: var(--font-size-lg);
-    line-height: 1.4;
+    font-size: var(--font-size-xl);
+    line-height: 1.6;
     margin-bottom: var(--spacing-md);
-    color: #f0e6ff;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7), 0 0 15px rgba(0, 0, 0, 0.8);
 }
 
 #dialogueNext {
-    margin-top: var(--spacing-sm);
-    background: linear-gradient(135deg, #5b21b6, #4c1d95);
+    margin-top: var(--spacing-md);
+    background: linear-gradient(135deg, #9333ea, #6b21a8);
     color: var(--color-text);
-    border: 2px solid rgba(147, 51, 234, 0.6);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 2px solid rgba(255, 215, 0, 0.7);
+    padding: var(--spacing-sm) var(--spacing-md);
     cursor: pointer;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-md);
     font-family: "Cinzel", serif;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     transition: all 0.3s var(--transition-effect);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.4);
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 #dialogueNext:hover {
-    background: linear-gradient(135deg, #6d28d9, #5b21b6);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(147, 51, 234, 0.3);
+    background: linear-gradient(135deg, #a855f7, #9333ea);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+#dialogueNext:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+#nextIndicator {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 6px 12px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #ffd700;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    font-family: "Cinzel", serif;
+    display: none;
+    animation: fadeInOut 1.5s infinite;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+}
+
+@keyframes fadeInOut {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 #choicesContainer {
     display: none;
     flex-direction: row;
     justify-content: center;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-sm);
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
 }
 
 .choice-button {
-    background: linear-gradient(135deg, rgba(30, 20, 40, 0.7) 0%, rgba(20, 15, 30, 0.7) 100%);
+    background: linear-gradient(135deg, rgba(50, 30, 70, 0.8) 0%, rgba(30, 20, 50, 0.8) 100%);
     color: var(--color-text);
-    border: 2px solid rgba(147, 51, 234, 0.3);
-    border-radius: var(--border-radius-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-md);
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-lg);
     cursor: pointer;
     transition: all 0.3s var(--transition-effect);
     font-family: "Cinzel", serif;
-    letter-spacing: 1px;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.5);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.4);
 }
 
 .choice-button:hover {
-    background: linear-gradient(135deg, rgba(40, 30, 50, 0.8) 0%, rgba(30, 25, 40, 0.8) 100%);
-    transform: translateY(-2px);
-    border-color: rgba(147, 51, 234, 0.6);
-    box-shadow: 0 5px 15px rgba(147, 51, 234, 0.3);
+    background: linear-gradient(135deg, rgba(60, 40, 80, 0.9) 0%, rgba(40, 30, 60, 0.9) 100%);
+    transform: translateY(-3px);
+    border-color: rgba(255, 215, 0, 0.7);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 215, 0, 0.6);
 }
 
 .choice-button:active {
     transform: translateY(1px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
-
 /*****************************************************
 MARK: Sistema de Mejora de Entrenamiento
 *****************************************************/
@@ -3190,26 +3231,7 @@ MARK: Combate
     composes: container-base;
 }
 
-/* Estilos específicos para cada contenedor */
-#trainer-container {
-    /* Mantener estilos específicos del entrenador */
-}
 
-#teleport-container {
-    /* Mantener estilos específicos del teletransporte */
-}
-
-#combat-container {
-    /* Mantener estilos específicos del combate */
-}
-
-#inventory-container {
-    /* Mantener estilos específicos del inventario */
-}
-
-#dialogueBox {
-    /* Mantener estilos específicos del diálogo */
-}
 
 /* Estilos para las secciones internas */
 .section-base {
@@ -3606,28 +3628,60 @@ MARK: InfoBox
     left: 20px;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 16px;
-    max-width: 300px;
+    background: linear-gradient(135deg, rgba(20, 10, 40, 0.9), rgba(35, 20, 50, 0.85));
+    color: #ffd700;
+    padding: 20px;
+    border-radius: var(--border-radius-lg);
+    font-size: var(--font-size-md);
+    max-width: 350px;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     z-index: 1000;
     pointer-events: none;
-    /* Para que no interfiera con los clics */
-    border: 1px solid #4b5563;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 215, 0, 0.7);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.5);
+    backdrop-filter: blur(5px);
 }
 
 #infoBox.visible {
     opacity: 1;
+    transform: translateY(-50%) scale(1.05);
 }
 
 #infoText {
     margin: 0;
-    line-height: 1.5;
-    font-family: 'Arial', sans-serif;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    line-height: 1.6;
+    font-family: "Cinzel", serif;
+    color: #ffd700;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.7), 0 0 10px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.5px;
+}
+
+#infoBox::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('./assets/ui/parchment-texture.png');
+    background-size: cover;
+    opacity: 0.1;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    border-radius: var(--border-radius-lg);
+}
+
+#infoBox::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 5px;
+    background: linear-gradient(to right, rgba(255, 215, 0, 0.5), transparent);
+    border-radius: 50%;
+    opacity: 0.8;
 }

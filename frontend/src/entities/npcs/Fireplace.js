@@ -3,7 +3,7 @@ import { NPC } from "./Npc.js";
 export class Fireplace extends NPC {
     constructor(scene, x, y, texture) {
         // Diálogos definidos directamente
-        const initialDialogues = ["Has encontrado una hoguera.", "¿Deseas viajar a otro lugar?"];
+        const initialDialogues = ["Has encontrado una hoguera.", "¿Quieres descansar en la hoguera?"];
 
         super(scene, x, y, texture, "Hoguera", initialDialogues);
 
@@ -22,25 +22,18 @@ export class Fireplace extends NPC {
 
     interact(player) {
         this.player = player;
-        const isDialogOpen = this.dialogManager.isDialogOpen();
 
         // Configurar diálogos según estado de descubrimiento
         if (!this.discovered) {
-            this.registerFireplace();
-            this.dialogConfig.dialogue = [...this.initialDialogue];
-            this.dialogConfig.choiceIndex = 1;
+            this.dialogue = [...this.initialDialogue];
+            this.setDialogChoices(["Sí", "No"], 1);
         } else {
-            this.dialogConfig.dialogue = [...this.discoveredDialogue];
-            this.dialogConfig.choiceIndex = 0;
+            this.dialogue = [...this.discoveredDialogue];
+            this.setDialogChoices(["Sí", "No"], 0);
         }
 
-        // Llamar al método interact de la clase padre (NPC)
+        // Continuar con la interacción normal
         super.interact(player);
-
-        // Mostrar opciones inmediatamente para hogueras ya descubiertas con un solo diálogo
-        if (!isDialogOpen && this.discovered && this.dialogConfig.dialogue.length === 1) {
-            this.showChoicesAfterDelay();
-        }
     }
 
     registerFireplace() {
@@ -50,7 +43,7 @@ export class Fireplace extends NPC {
 
         this.discovered = true;
 
-        // Añadir al Array de GameState
+        // Usar GameStateManager para registrar la hoguera
         if (this.scene.gameStateManager) {
             this.scene.gameStateManager.registerDiscoveredFireplace(this.fireplaceName);
             console.log(`Hoguera "${this.fireplaceName}" registrada usando GameStateManager`);
@@ -68,29 +61,31 @@ export class Fireplace extends NPC {
     }
 
     onChoiceSelected(choice, player) {
-        const dialogText = this.dialogManager.dialogueText.textContent;
         const isYesChoice = choice === "Sí";
+        const currentDialogText = this.dialogManager.dialogueText.textContent;
 
-        if (this.discovered) {
-            if (isYesChoice && dialogText.includes("¿Quieres descansar")) {
+        if (!this.discovered) {
+            this.registerFireplace();
+        }
+
+        if (isYesChoice) {
+            // Verificar el texto específico del diálogo actual para determinar la acción correcta
+            if (currentDialogText.includes("¿Quieres descansar")) {
                 this.handleRestChoice();
-            } else if (isYesChoice && dialogText.includes("¿Deseas viajar")) {
+            } else if (currentDialogText.includes("¿Deseas viajar")) {
                 this.handleTravelChoice();
-            } else {
-                this.handleRejectionChoice();
             }
         } else {
-            // Primer encuentro con la hoguera
-            if (isYesChoice) {
-                this.handleTravelChoice();
-            } else {
-                this.handleRejectionChoice();
-            }
+            this.handleRejectionChoice();
         }
     }
 
     handleRestChoice() {
+        // Actualizar el texto inmediatamente para evitar repeticiones
         this.dialogManager.dialogueText.textContent = `${this.name}: ${this.enemiesResetText}`;
+
+        // Ocultar el indicador "Pulsa E" durante la animación
+        this.dialogManager.nextIndicator.style.display = "none";
 
         // Efectos de descansar
         this.createMistAnimation();
@@ -115,14 +110,24 @@ export class Fireplace extends NPC {
 
         setTimeout(() => {
             this.dialogManager.closeDialog();
-            this.scene.scene.pause("GameScene");
-            this.scene.scene.launch("TeleportScene", { player: this.player });
+
+            // Asegurarse de que la escena de teletransporte se lanza correctamente
+            if (this.scene && this.scene.scene) {
+                this.scene.scene.pause("GameScene");
+                this.scene.scene.launch("TeleportScene", { player: this.player });
+            } else {
+                console.error("No se pudo lanzar la escena de teletransporte. Verifica la configuración de la escena.");
+            }
         }, 1500);
     }
 
     handleRejectionChoice() {
         this.dialogManager.dialogueText.textContent = `${this.name}: ${this.goodbyeText}`;
-        this.dialogManager.closeDialog();
+
+        // Cerrar el diálogo después de mostrar el mensaje de despedida
+        setTimeout(() => {
+            this.dialogManager.closeDialog();
+        }, 1500);
     }
 
     replenishHealthPotions(player) {

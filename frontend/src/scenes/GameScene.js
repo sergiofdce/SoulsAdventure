@@ -628,9 +628,9 @@ export default class GameScene extends Phaser.Scene {
     // Método para mostrar mensajes de ayuda secuenciales
     showHelpMessages() {
         const messages = [
-            "Usa WASD para poder moverte",
-            "Puedes interactuar con la tecla E",
-            "Para abrir tu inventario, usa I",
+            "Usa las teclas WASD para moverte",
+            "Para interactuar o recoger objetos, usa la tecla E",
+            "Abre tu inventario con la tecla I, equipate con lo necesario!",
         ];
 
         const infoText = document.getElementById("infoText");
