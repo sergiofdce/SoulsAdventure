@@ -157,6 +157,44 @@ export default class Inventory {
         }
     }
 
+    // Reiniciar todos los objetos del inventario
+    clearInventory() {
+        this.data = {
+            items: {
+                "espada-larga": {
+                    quantity: 1,
+                    equipped: false,
+                },
+                "casco-cuero": {
+                    quantity: 1,
+                    equipped: false,
+                },
+                "pechera-cuero": {
+                    quantity: 1,
+                    equipped: false,
+                },
+                "guantes-cuero": {
+                    quantity: 1,
+                    equipped: false,
+                },
+                "botas-cuero": {
+                    quantity: 1,
+                    equipped: false,
+                },
+                "pocion-salud": {
+                    quantity: 1,
+                    equipped: false,
+                },
+            },
+        };
+
+        // Recalcular estadísticas del jugador después de limpiar
+        this.recalculatePlayerStats();
+
+        console.log("Inventario reiniciado completamente");
+        return true;
+    }
+
     // Método para obtener información completa de un item
     getItemData(itemId) {
         if (!this.data.items[itemId]) {
