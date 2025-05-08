@@ -11,11 +11,20 @@ import { EnanoEscudo } from "../entities/enemies/EnanoEscudo.js";
 import { EnanoMayor } from "../entities/enemies/EnanoMayor.js";
 import { EnanoObservador } from "../entities/enemies/EnanoObservador.js";
 
-// Enemigos Pantano
+// Enemigos Ruinas
 import { SlimeFuego } from "../entities/enemies/SlimeFuego.js";
 import { SlimeHumano } from "../entities/enemies/SlimeHumano.js";
 import { SlimeNormal } from "../entities/enemies/SlimeNormal.js";
 import { SlimePinchos } from "../entities/enemies/SlimePinchos.js";
+
+// Enemigos Fuego
+import { FuegoCiclope } from "../entities/enemies/FuegoCiclope.js";
+import { FuegoDemonio } from "../entities/enemies/FuegoDemonio.js";
+import { FuegoEsqueleto } from "../entities/enemies/FuegoEsqueleto.js";
+import { FuegoGato } from "../entities/enemies/FuegoGato.js";
+import { FuegoGordo } from "../entities/enemies/FuegoGordo.js";
+import { FuegoSeta } from "../entities/enemies/FuegoSeta.js";
+import { FuegoWither } from "../entities/enemies/FuegoWither.js";
 
 // Bosses
 import { Toro } from "../entities/bosses/Toro.js";
@@ -105,7 +114,7 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 96,
         });
-        // Cargar assets Enemigos
+        // Enemigos Pueblo
         this.load.spritesheet("enemy-EnanoFuego", "./assets/enemies/enemy-EnanoFuego.png", {
             frameWidth: 96,
             frameHeight: 96,
@@ -124,6 +133,8 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 96,
         });
+
+        // Enemigos Ruinas
         this.load.spritesheet("enemy-SlimeFuego", "./assets/enemies/enemy-SlimeFuego.png", {
             frameWidth: 96,
             frameHeight: 96,
@@ -137,6 +148,36 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         this.load.spritesheet("enemy-SlimePinchos", "./assets/enemies/enemy-SlimePinchos.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+
+        // Enemigos Lava
+        this.load.spritesheet("enemy-FuegoCiclope", "./assets/enemies/enemy-FuegoCiclope.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoDemonio", "./assets/enemies/enemy-FuegoDemonio.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoEsqueleto", "./assets/enemies/enemy-FuegoEsqueleto.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoGato", "./assets/enemies/enemy-FuegoGato.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoGordo", "./assets/enemies/enemy-FuegoGordo.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoSeta", "./assets/enemies/enemy-FuegoSeta.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoWither", "./assets/enemies/enemy-FuegoWither.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
@@ -333,9 +374,9 @@ export default class GameScene extends Phaser.Scene {
 
     spawnFireplaces() {
         const fireplaceConfigs = [
-            { x: 630, y: 630, name: "Plaza del Pueblo" },
+            { x: 632, y: 630, name: "Plaza del Pueblo" },
             { x: 1146, y: 2710, name: "Ruinas de Nuevo Londo" },
-            { x: 3291, y: 4276, name: "Izalith perdida" },
+            { x: 3288, y: 4278, name: "Izalith perdida" },
         ];
 
         fireplaceConfigs.forEach((config) => {
@@ -408,7 +449,24 @@ export default class GameScene extends Phaser.Scene {
                     { type: SlimeHumano, x: 2024, y: 4083 },
                 ],
             },
-            // Puedes añadir más zonas aquí siguiendo el mismo patrón
+            {
+                name: "Lava",
+                enemies: [
+                    { type: FuegoCiclope, x: 3751, y: 4089 },
+                    { type: FuegoDemonio, x: 3895, y: 4014 },
+                    { type: FuegoEsqueleto, x: 3901, y: 3909 },
+                    { type: FuegoGato, x: 4001, y: 3781 },
+                    { type: FuegoGordo, x: 4003, y: 3611 },
+                    { type: FuegoSeta, x: 3960, y: 3487 },
+                    { type: FuegoWither, x: 3793, y: 3502 },
+                    { type: FuegoCiclope, x: 3660, y: 3444 },
+                    { type: FuegoDemonio, x: 3496, y: 3464 },
+                    { type: FuegoEsqueleto, x: 3358, y: 3357 },
+                    { type: FuegoGato, x: 3258, y: 3229 },
+                    { type: FuegoGordo, x: 3203, y: 3101 },
+                    { type: FuegoWither, x: 3256, y: 3006 },
+                ],
+            },
         ];
 
         // Generar todos los enemigos de todas las zonas
@@ -475,9 +533,16 @@ export default class GameScene extends Phaser.Scene {
 
         // Definir objetos en el mapa
         const objectsToSpawn = [
+            // Pueblo
             { itemId: "escudo-torre", x: 257, y: 650, texture: "escudo-torre" },
             { itemId: "botas-vigilante", x: 695, y: 281, texture: "botas-vigilante" },
             { itemId: "casco-vigilante", x: 1057, y: 852, texture: "casco-vigilante" },
+            // Ruinas
+            { itemId: "escudo-torre", x: 570, y: 2681, texture: "escudo-torre" },
+            { itemId: "botas-vigilante", x: 1954, y: 2718, texture: "botas-vigilante" },
+            { itemId: "casco-vigilante", x: 1917, y: 3359, texture: "casco-vigilante" },
+            { itemId: "casco-vigilante", x: 2126, y: 3828, texture: "casco-vigilante" },
+            // Lava
         ];
 
         // Filtrar objetos que ya han sido recogidos usando GameStateManager

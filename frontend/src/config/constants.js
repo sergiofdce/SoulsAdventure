@@ -98,7 +98,7 @@ export const ENEMIES = {
         speed: 8,
         souls: 30,
     },
-    // Pantano
+    // Ruinas
     SlimeNormal: {
         name: "Babosa Común",
         scale: 0.7,
@@ -132,6 +132,62 @@ export const ENEMIES = {
         souls: 50,
     },
     // Lava
+    FuegoEsqueleto: {
+        name: "Esqueleto Ardiente",
+        scale: 0.7,
+        health: 15,
+        strength: 7,
+        speed: 6,
+        souls: 55,
+    },
+    FuegoCiclope: {
+        name: "Cíclope Ígneo",
+        scale: 0.6,
+        health: 35,
+        strength: 10,
+        speed: 3,
+        souls: 65,
+    },
+    FuegoDemonio: {
+        name: "Demonio Flamígero",
+        scale: 0.75,
+        health: 28,
+        strength: 11,
+        speed: 5,
+        souls: 75,
+    },
+    FuegoGato: {
+        name: "Felino Ígneo",
+        scale: 0.6,
+        health: 14,
+        strength: 6,
+        speed: 12,
+        souls: 50,
+    },
+    FuegoGordo: {
+        name: "Coloso de Fuego",
+        scale: 0.6,
+        health: 45,
+        strength: 14,
+        speed: 1,
+        souls: 90,
+    },
+    FuegoSeta: {
+        name: "Hongo Incandescente",
+        scale: 0.65,
+        health: 20,
+        strength: 5,
+        speed: 4,
+        souls: 40,
+    },
+    FuegoWither: {
+        name: "Espectro de Llamas",
+        scale: 0.75,
+        health: 25,
+        strength: 10,
+        speed: 8,
+        souls: 70,
+    },
 };
 
 /*****************************************************
