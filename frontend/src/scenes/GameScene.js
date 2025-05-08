@@ -377,6 +377,7 @@ export default class GameScene extends Phaser.Scene {
             { x: 632, y: 630, name: "Plaza del Pueblo" },
             { x: 1146, y: 2710, name: "Ruinas de Nuevo Londo" },
             { x: 3288, y: 4278, name: "Izalith perdida" },
+            { x: 3223, y: 2419, name: "Nueva Era" },
         ];
 
         fireplaceConfigs.forEach((config) => {
