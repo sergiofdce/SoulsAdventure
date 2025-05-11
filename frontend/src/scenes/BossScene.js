@@ -55,6 +55,10 @@ export default class BossScene extends Phaser.Scene {
 
         // Configurar controles de botones
         this.setupButtonListeners();
+
+        if (this.scene.get("GameScene")) {
+            this.scene.get("GameScene").playCombatMusic(true, this.enemy.name);
+        }
     }
 
     createSyncBar() {
@@ -1271,6 +1275,11 @@ export default class BossScene extends Phaser.Scene {
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
+
+        // Pausar musica
+        if (this.scene.get("GameScene")) {
+            this.scene.get("GameScene").stopCombatMusicAndResumeZone();
+        }
     }
 
     // También debemos asegurarnos de destruir las instancias en shutdown y destroy

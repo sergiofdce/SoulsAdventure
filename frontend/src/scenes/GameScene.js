@@ -4,6 +4,7 @@ import Controls from "../managers/Controls.js";
 import Camera from "../managers/Camera.js";
 import Map from "../managers/Map.js";
 import { DialogManager } from "../managers/Dialog.js";
+import Sound from "../managers/Sound.js";
 
 // Enemigos Pueblo
 import { EnanoFuego } from "../entities/enemies/EnanoFuego.js";
@@ -55,6 +56,17 @@ export default class GameScene extends Phaser.Scene {
 
     preload() {
         this.loadAssets();
+
+        // Canciones
+        this.soundManager = new Sound(this);
+        this.soundManager.loadSound("zona1-Music", "zona1-Music.ogg");
+        this.soundManager.loadSound("zona2-Music", "zona2-Music.ogg");
+        this.soundManager.loadSound("zona3-Music", "zona3-Music.ogg");
+        this.soundManager.loadSound("genral-Combat-Music", "genral-Combat-Music.ogg");
+        this.soundManager.loadSound("boss-Toro-Music", "boss-Toro-Music.ogg");
+        this.soundManager.loadSound("boss-Nasus-Music", "boss-Nasus-Music.ogg");
+        this.soundManager.loadSound("boss-Infernal-Music", "boss-Infernal-Music.ogg");
+        this.currentZoneMusic = null;
     }
 
     async create() {
@@ -99,6 +111,8 @@ export default class GameScene extends Phaser.Scene {
 
         // Configurar comandos de consola para el inventario
         this.setupConsoleCommands();
+
+        //
 
         // Activar modo debug
         //this.enableDebugMode();
@@ -202,7 +216,6 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 80,
         });
 
-
         // Cargar assets objetos
         this.load.image("escudo-torre", "./assets/items/shields/escudo-torre.png");
         this.load.image("botas-vigilante", "./assets/items/armor/botas-vigilante.png");
@@ -213,7 +226,6 @@ export default class GameScene extends Phaser.Scene {
         this.load.image("espada-oscura", "./assets/items/weapons/espada-oscura.png");
         this.load.image("escudo-dragon", "./assets/items/shields/escudo-dragon.png");
         // this.load.image("anillo-oro", "./assets/items/accessories/anillo-oro.png");
-
 
         // Cargar assets Mapa
         this.load.tilemapTiledJSON("map", "assets/maps/Map.json");
@@ -451,8 +463,8 @@ export default class GameScene extends Phaser.Scene {
             if (this.gameStateManager.isFireplaceDiscovered(fireplace.fireplaceName)) {
                 fireplace.discovered = true;
                 // Iniciar la animación de hoguera descubierta
-                if (this.anims.exists('fireplace-active')) {
-                    fireplace.sprite.play('fireplace-active');
+                if (this.anims.exists("fireplace-active")) {
+                    fireplace.sprite.play("fireplace-active");
                 }
                 console.log(`Hoguera ${fireplace.fireplaceName} ya descubierta anteriormente`);
             }
@@ -821,5 +833,55 @@ export default class GameScene extends Phaser.Scene {
                 obj.sprite.depth = obj.sprite.y;
             }
         });
+
+        // Control de música por zonas
+        if (this.player && this.soundManager) {
+            const { x, y } = this.player.sprite;
+            let zone = "zona3-Music"; // Por defecto zona3
+
+            if (x >= 0 && x <= 2384 && y >= 0 && y <= 2464) {
+                zone = "zona1-Music";
+            } else if (x >= 0 && x <= 2384 && y > 2464 && y <= 4784) {
+                zone = "zona2-Music";
+            }
+
+            if (this.currentZoneMusic !== zone) {
+                // Detener cualquier música anterior
+                ["zona1-Music", "zona2-Music", "zona3-Music"].forEach((z) => {
+                    if (z !== zone) this.soundManager.stopSound(z);
+                });
+                // Reproducir la música de la zona actual
+                this.soundManager.playSound(zone, { loop: true, volume: 0.5 });
+                this.currentZoneMusic = zone;
+            }
+        }
+    }
+
+    playCombatMusic(isBoss, bossName = null) {
+        // Detener música de zona
+        ["zona1-Music", "zona2-Music", "zona3-Music"].forEach((z) => this.soundManager.stopSound(z));
+        // Detener música de combate anterior
+        this.soundManager.stopSound("genral-Combat-Music");
+        this.soundManager.stopSound("boss-Toro-Music");
+        this.soundManager.stopSound("boss-Nasus-Music");
+        this.soundManager.stopSound("boss-Infernal-Music");
+        // Si tienes más bosses, añade aquí sus canciones
+
+        if (isBoss && bossName) {
+            this.soundManager.playSound(`boss-${bossName}-Music`, { loop: true, volume: 0.3 });
+        } else {
+            this.soundManager.playSound("genral-Combat-Music", { loop: true, volume: 0.3 });
+        }
+    }
+
+    stopCombatMusicAndResumeZone() {
+        // Detener música de combate
+        this.soundManager.stopSound("genral-Combat-Music");
+        this.soundManager.stopSound("boss-Toro-Music");
+        this.soundManager.stopSound("boss-Nasus-Music");
+        this.soundManager.stopSound("boss-Infernal-Music");
+
+        // Reanudar música de zona según la posición del jugador
+        this.currentZoneMusic = null; // Forzar update() a reactivar la música de zona
     }
 }
