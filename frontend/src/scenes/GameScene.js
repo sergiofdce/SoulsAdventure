@@ -58,9 +58,14 @@ export default class GameScene extends Phaser.Scene {
     preload() {
         this.loadAssets();
         this.soundManager = new Sound(this);
-        this.soundManager.loadSound("zona1", "Zona1.ogg");
-        this.soundManager.loadSound("zona2", "Zona2.ogg");
-        this.soundManager.loadSound("zona3", "Zona3.ogg");
+        this.soundManager.loadSound("zona1-Music", "zona1-Music.ogg");
+        this.soundManager.loadSound("zona2-Music", "zona2-Music.ogg");
+        this.soundManager.loadSound("zona3-Music", "zona3-Music.ogg");
+        this.soundManager.loadSound("genral-Combat-Music", "genral-Combat-Music.ogg");
+        this.soundManager.loadSound("boss-Toro-Music", "boss-Toro-Music.ogg");
+        this.soundManager.loadSound("boss-Nasus-Music", "boss-Nasus-Music.ogg");
+        this.soundManager.loadSound("boss-Infernal-Music", "boss-Infernal-Music.ogg");
+        // Si tienes más bosses, añade aquí sus canciones
         this.currentZoneMusic = null;
     }
 
@@ -765,17 +770,17 @@ export default class GameScene extends Phaser.Scene {
         // Control de música por zonas
         if (this.player && this.soundManager) {
             const { x, y } = this.player.sprite;
-            let zone = "zona3"; // Por defecto zona3
+            let zone = "zona3-Music"; // Por defecto zona3
 
             if (x >= 0 && x <= 2384 && y >= 0 && y <= 2464) {
-                zone = "zona1";
+                zone = "zona1-Music";
             } else if (x >= 0 && x <= 2384 && y > 2464 && y <= 4784) {
-                zone = "zona2";
+                zone = "zona2-Music";
             }
 
             if (this.currentZoneMusic !== zone) {
                 // Detener cualquier música anterior
-                ["zona1", "zona2", "zona3"].forEach(z => {
+                ["zona1-Music", "zona2-Music", "zona3-Music"].forEach(z => {
                     if (z !== zone) this.soundManager.stopSound(z);
                 });
                 // Reproducir la música de la zona actual
@@ -783,5 +788,33 @@ export default class GameScene extends Phaser.Scene {
                 this.currentZoneMusic = zone;
             }
         }
+    }
+
+    playCombatMusic(isBoss, bossName) {
+        // Detener música de zona
+        ["zona1-Music", "zona2-Music", "zona3-Music"].forEach(z => this.soundManager.stopSound(z));
+        // Detener música de combate anterior
+        this.soundManager.stopSound("genral-Combat-Music");
+        this.soundManager.stopSound("boss-Toro-Music");
+        this.soundManager.stopSound("boss-Nasus-Music");
+        this.soundManager.stopSound("boss-Infernal-Music");
+        // Si tienes más bosses, añade aquí sus canciones
+
+        if (isBoss && bossName) {
+            this.soundManager.playSound(`boss-${bossName}-Music`, { loop: true, volume: 0.7 });
+        } else {
+            this.soundManager.playSound("genral-Combat-Music", { loop: true, volume: 0.7 });
+        }
+    }
+
+    stopCombatMusicAndResumeZone() {
+        // Detener música de combate
+        this.soundManager.stopSound("genral-Combat-Music");
+        this.soundManager.stopSound("boss-Toro-Music");
+        this.soundManager.stopSound("boss-Nasus-Music");
+        this.soundManager.stopSound("boss-Infernal-Music");
+
+        // Reanudar música de zona según la posición del jugador
+        this.currentZoneMusic = null; // Forzar update() a reactivar la música de zona
     }
 }

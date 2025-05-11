@@ -49,6 +49,10 @@ export default class CombatScene extends Phaser.Scene {
 
         // Configurar controles de botones
         this.setupButtonListeners();
+
+        if (this.scene.get("GameScene")) {
+            this.scene.get("GameScene").playCombatMusic(false);
+        }
     }
 
     startCombat() {
@@ -1144,6 +1148,10 @@ export default class CombatScene extends Phaser.Scene {
 
         // Mostrar HUD
         document.getElementById("hud-container").classList.remove("hidden");
+
+        if (this.scene.get("GameScene")) {
+            this.scene.get("GameScene").stopCombatMusicAndResumeZone();
+        }
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
