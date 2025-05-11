@@ -1109,6 +1109,11 @@ export default class BossScene extends Phaser.Scene {
 
             // Tiempo antes de cerrar escena
             this.time.delayedCall(2500, () => {
+                // Obtener referencia a GameScene y manejar la muerte
+                const gameScene = this.scene.get("GameScene");
+                gameScene.handlePlayerDeath();
+
+                // Cerrar escena de combate
                 this.exitCombat();
             });
 

@@ -100,7 +100,7 @@ export default class GameScene extends Phaser.Scene {
         this.setupConsoleCommands();
 
         // Activar modo debug
-        this.enableDebugMode();
+        //this.enableDebugMode();
     }
 
     loadAssets() {
@@ -110,9 +110,14 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         // Cargar assets NPCs
-        this.load.spritesheet("trainer", "./assets/player/player.png", {
+        this.load.spritesheet("trainer", "./assets/player/trainer.png", {
             frameWidth: 96,
             frameHeight: 96,
+        });
+        // Cargar assets Hogueras
+        this.load.spritesheet("fireplace", "./assets/fireplace/fireplaces.png", {
+            frameWidth: 16,
+            frameHeight: 32,
         });
         // Enemigos Pueblo
         this.load.spritesheet("enemy-EnanoFuego", "./assets/enemies/enemy-EnanoFuego.png", {
@@ -192,11 +197,6 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 80,
         });
 
-        // Cargar asset hoguera
-        this.load.spritesheet("fireplace", "./assets/player/player.png", {
-            frameWidth: 96,
-            frameHeight: 96,
-        });
 
         // Cargar assets objetos
         this.load.image("escudo-torre", "./assets/items/shields/escudo-torre.png");
@@ -284,6 +284,50 @@ export default class GameScene extends Phaser.Scene {
         this.gameState.inventory = this.player.inventory;
     }
 
+    handlePlayerDeath() {
+        // Posición de respawn predeterminada
+        let respawnX = 306;
+        let respawnY = 454;
+
+        // Verificar hogueras descubiertas
+        const discoveredFireplaces = this.gameStateManager.getDiscoveredFireplaces();
+
+        if (discoveredFireplaces && discoveredFireplaces.length > 0) {
+            // Obtener la última hoguera descubierta
+            const lastFireplace = discoveredFireplaces[discoveredFireplaces.length - 1];
+
+            // Buscar las coordenadas de esta hoguera
+            const fireplace = this.fireplaces.find((fp) => fp.fireplaceName === lastFireplace);
+
+            if (fireplace) {
+                respawnX = fireplace.sprite.x;
+                respawnY = fireplace.sprite.y;
+            }
+        }
+
+        // Restaurar la salud del jugador
+        this.player.health = this.player.maxHealth;
+
+        // Teletransportar al jugador a la posición de respawn
+        this.player.sprite.setPosition(respawnX, respawnY);
+
+        // Mostrar un mensaje de muerte
+        const infoText = document.getElementById("infoText");
+        const infoBox = document.getElementById("infoBox");
+
+        if (infoText && infoBox) {
+            infoText.textContent = "Has muerto en combate, has sido curado y llevado a un lugar seguro";
+            infoBox.classList.add("visible");
+
+            setTimeout(() => {
+                infoBox.classList.remove("visible");
+            }, 3000);
+        }
+
+        // Guardar el estado actual después de respawnear
+        this.gameStateManager.saveGame();
+    }
+
     async loadSavedData() {
         try {
             // Usar el GameStateManager para cargar los datos
@@ -317,6 +361,12 @@ export default class GameScene extends Phaser.Scene {
         if (healthElement) {
             // Mostrar la vida actual, no la máxima
             healthElement.textContent = this.player.health;
+
+            // Añadir efecto visual de actualización para la vida
+            healthElement.classList.add("value-changed");
+            setTimeout(() => {
+                healthElement.classList.remove("value-changed");
+            }, 1000);
 
             // Actualizar barra de progreso de vida
             const healthBar = document.querySelector(".hud-progress");
@@ -375,7 +425,7 @@ export default class GameScene extends Phaser.Scene {
     spawnFireplaces() {
         const fireplaceConfigs = [
             { x: 632, y: 630, name: "Plaza del Pueblo" },
-            { x: 1146, y: 2710, name: "Ruinas de Nuevo Londo" },
+            { x: 1144, y: 2710, name: "Ruinas de Nuevo Londo" },
             { x: 3288, y: 4278, name: "Izalith perdida" },
             { x: 3223, y: 2419, name: "Nueva Era" },
         ];
@@ -388,6 +438,10 @@ export default class GameScene extends Phaser.Scene {
             // Verificar si esta hoguera ya está descubierta
             if (this.gameStateManager.isFireplaceDiscovered(fireplace.fireplaceName)) {
                 fireplace.discovered = true;
+                // Iniciar la animación de hoguera descubierta
+                if (this.anims.exists('fireplace-active')) {
+                    fireplace.sprite.play('fireplace-active');
+                }
                 console.log(`Hoguera ${fireplace.fireplaceName} ya descubierta anteriormente`);
             }
 
