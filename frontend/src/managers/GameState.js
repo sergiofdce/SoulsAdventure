@@ -438,4 +438,10 @@ export default class GameStateManager {
 
         console.log(`Aplicado multiplicador de dificultad x${multiplier.toFixed(2)} a todos los enemigos`);
     }
+
+    // Añade este método a tu clase GameStateManager
+    getDiscoveredFireplaces() {
+        // Devuelve la lista de hogueras descubiertas o un array vacío si no hay ninguna
+        return this.gameState?.discoveredFireplaces || [];
+    }
 }

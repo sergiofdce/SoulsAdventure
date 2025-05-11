@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Souls Adventure - Final</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/game.css">
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
+
+    <style>
+        .endgame-screen {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url("assets/images/background-end.jpg");
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .endgame-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--color-background-dark);
+            z-index: 1;
+        }
+
+        .endgame-container {
+            position: relative;
+            width: 90%;
+            width: 97%;
+            max-width: 800px;
+            background: linear-gradient(135deg, rgba(30, 20, 40, 0.9) 0%, rgba(20, 15, 30, 0.85) 100%);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg), 0 0 30px var(--color-border-glow);
+            padding: var(--spacing-xl);
+            color: var(--color-text);
+            text-align: center;
+            z-index: 10;
+            border: 1px solid;
+            border-image: linear-gradient(to bottom, var(--color-border-glow), var(--color-border-glow-secondary)) 1;
+            transform-style: preserve-3d;
+            animation: fadeIn 1s ease-out, float 6s ease-in-out infinite;
+            overflow: hidden;
+        }
+
+        .endgame-title {
+            position: relative;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .endgame-title h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--color-primary);
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5), 0 0 15px rgba(0, 0, 0, 0.7);
+            font-family: 'Cinzel', serif;
+            position: relative;
+            padding-bottom: var(--spacing-md);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .endgame-message {
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--spacing-xl);
+            line-height: 1.8;
+            color: var(--color-text);
+            text-shadow: var(--shadow-text);
+        }
+
+        .victory-message {
+            background: rgba(20, 15, 30, 0.7);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            border-radius: var(--border-radius-md);
+            font-size: var(--font-size-md);
+            color: #ffcc00;
+            text-shadow: 0 0 8px rgba(255, 204, 0, 0.3);
+        }
+
+        .embers-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .ember {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: rgba(255, 140, 0, 0.8);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 160, 0, 0.6);
+            animation: float-ember 8s linear infinite;
+        }
+
+        @keyframes float-ember {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="endgame-screen">
+        <div class="embers-container" id="embers-container"></div>
+        <div class="endgame-container">
+            <div class="endgame-title">
+                <h1>La llama ha sido vinculada</h1>
+            </div>
+            <div class="endgame-message">
+                <p>Tu sacrificio ha asegurado la continuidad del mundo. Las almas de todos los caídos pueden ahora
+                    descansar en paz.</p>
+                <p>La oscuridad ha sido rechazada una vez más, pero el ciclo continuará eventualmente...</p>
+            </div>
+            <div class="victory-message" id="victory-message">
+                Has salvado el pueblo de la maldición, felicidades.
+            </div>
+            <div class="menu-options">
+                <button class="menu-button" id="return-home">Volver al Inicio</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Eliminar token de autenticación al finalizar el juego
+        localStorage.removeItem("authToken");
+
+        // Crear efecto de partículas de brasas/cenizas
+        function createEmbers() {
+            const embersContainer = document.getElementById('embers-container');
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const ember = document.createElement('div');
+                    ember.classList.add('ember');
+
+                    // Posición aleatoria horizontal
+                    const posX = Math.random() * 100;
+                    ember.style.left = `${posX}%`;
+
+                    // Tamaño aleatorio
+                    const size = 2 + Math.random() * 4;
+                    ember.style.width = `${size}px`;
+                    ember.style.height = `${size}px`;
+
+                    // Color aleatorio entre amarillo y naranja
+                    const hue = 20 + Math.random() * 40; // Entre naranja y amarillo
+                    ember.style.backgroundColor = `hsl(${hue}, 100%, 50%, ${0.5 + Math.random() * 0.5})`;
+
+                    // Duración aleatoria de la animación
+                    const duration = 5 + Math.random() * 10;
+                    ember.style.animation = `float-ember ${duration}s linear infinite`;
+
+                    // Retraso inicial aleatorio
+                    ember.style.animationDelay = `${Math.random() * 5}s`;
+
+                    embersContainer.appendChild(ember);
+                }, i * 100);
+            }
+        }
+
+        // Permitir editar el mensaje de victoria
+        document.addEventListener("DOMContentLoaded", function () {
+            // Hacer el mensaje editable con doble clic
+            const victoryMsg = document.getElementById('victory-message');
+            victoryMsg.addEventListener('dblclick', function () {
+                this.contentEditable = true;
+                this.focus();
+            });
+
+            victoryMsg.addEventListener('blur', function () {
+                this.contentEditable = false;
+            });
+
+            // Botón para volver al inicio
+            document.getElementById('return-home').addEventListener('click', function () {
+                window.location.href = '/index.html';
+            });
+
+            // Crear efecto de partículas
+            createEmbers();
+        });
+    </script>
+</body>
+
+</html>

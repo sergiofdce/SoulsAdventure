@@ -51,7 +51,7 @@ export default class CombatScene extends Phaser.Scene {
         this.setupButtonListeners();
 
         if (this.scene.get("GameScene")) {
-            this.scene.get("GameScene").playCombatMusic(false);
+            this.scene.get("GameScene").playCombatMusic(true);
         }
     }
 
@@ -1043,6 +1043,11 @@ export default class CombatScene extends Phaser.Scene {
 
             // Tiempo antes de cerrar escena
             this.time.delayedCall(2500, () => {
+                // Obtener referencia a GameScene y manejar la muerte
+                const gameScene = this.scene.get("GameScene");
+                gameScene.handlePlayerDeath();
+
+                // Cerrar escena de combate
                 this.exitCombat();
             });
 
@@ -1155,6 +1160,29 @@ export default class CombatScene extends Phaser.Scene {
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
+
+        if (this.scene.get("GameScene")) {
+            this.scene.get("GameScene").stopCombatMusicAndResumeZone();
+        }
+    }
+
+    // También debemos asegurarnos de destruir las instancias en shutdown y destroy
+    shutdown() {
+        // Destruir las instancias de animación al cerrar la escena
+        this.destroyAnimationGames();
+        // Llamar a shutdown del padre si existe
+        if (Phaser.Scene.prototype.shutdown) {
+            Phaser.Scene.prototype.shutdown.call(this);
+        }
+    }
+
+    destroy() {
+        // Destruir las instancias de animación al destruir la escena
+        this.destroyAnimationGames();
+        // Llamar a destroy del padre si existe
+        if (Phaser.Scene.prototype.destroy) {
+            Phaser.Scene.prototype.destroy.call(this);
+        }
     }
 
     // También debemos asegurarnos de destruir las instancias en shutdown y destroy

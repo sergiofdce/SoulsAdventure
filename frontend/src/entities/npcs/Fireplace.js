@@ -6,12 +6,31 @@ export class Fireplace extends NPC {
         const initialDialogues = ["Has encontrado una hoguera.", "¿Quieres descansar en la hoguera?"];
 
         super(scene, x, y, texture, "Hoguera", initialDialogues);
-
+        
+        // Frame inicial para hoguera no descubierta
+        this.sprite.setFrame(30);
+        this.sprite.setScale(2);
+        
         this.setDialogChoices(["Sí", "No"], 1);
         this.discovered = false;
         this.discoveredDialogue = ["¿Quieres descansar en la hoguera?"];
         this.initialDialogue = initialDialogues;
         this.player = null;
+
+        // Crear animación para hogueras descubiertas si no existe ya
+        if (!scene.anims.exists('fireplace-active')) {
+            scene.anims.create({
+                key: 'fireplace-active',
+                frames: scene.anims.generateFrameNumbers(texture, { start: 10, end: 13 }),
+                frameRate: 8,
+                repeat: -1
+            });
+        }
+        
+        // Si la hoguera ya está descubierta, reproducir la animación
+        if (this.discovered) {
+            this.sprite.play('fireplace-active');
+        }
 
         // Textos específicos para respuestas y acciones
         this.enemiesResetText = "Los enemigos han reaparecido y tus pociones han sido restablecidas.";
@@ -25,6 +44,8 @@ export class Fireplace extends NPC {
             "La llama primordial que dio forma a este mundo se encuentra aquí.",
             "Has demostrado ser digno al llegar hasta este punto.",
             "Ante ti se presenta una decisión que cambiará el destino de este mundo.",
+            "Vincular la llama para salvar al pueblo ...",
+            "... o abandonar la llama para reiniciar el ciclo",
         ];
 
         // Opciones para la decisión final
@@ -74,6 +95,9 @@ export class Fireplace extends NPC {
         }
 
         this.discovered = true;
+        
+        // Iniciar la animación cuando la hoguera se descubre
+        this.sprite.play('fireplace-active');
 
         // Usar GameStateManager para registrar la hoguera
         if (this.scene.gameStateManager) {
@@ -130,11 +154,8 @@ export class Fireplace extends NPC {
             setTimeout(() => {
                 this.dialogManager.closeDialog();
 
-                // Lanzar la escena EndGame
-                if (this.scene && this.scene.scene) {
-                    this.scene.scene.pause("GameScene");
-                    this.scene.scene.launch("EndGame", { player: this.player, ending: "light" });
-                }
+                // Redirigir directamente a endgame.html en lugar de lanzar la escena EndGame
+                window.location.href = "/endgame.html?ending=light";
             }, 3000);
         } else {
             // Diálogo para abandonar la llama

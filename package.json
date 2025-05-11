@@ -1,16 +1,22 @@
 {
-  "name": "root",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "express": "^4.21.2",
-    "phaser": "^3.87.0"
-  }
+    "name": "souls-adventure",
+    "version": "1.0.0",
+    "description": "Un juego de rol tipo souls-like",
+    "main": "backend/server.js",
+    "scripts": {
+        "start": "node backend/server.js",
+        "dev": "nodemon backend/server.js"
+    },
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5",
+        "dotenv": "^16.5.0",
+        "express": "^4.21.2",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^8.14.1"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1"
+    }
 }

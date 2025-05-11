@@ -243,7 +243,6 @@ export default class BossScene extends Phaser.Scene {
     startCombat() {
         this.combatActive = true;
         this.addCombatLogMessage("¡El combate ha comenzado!", "combat-info");
-        this.addCombatLogMessage("Usa tu escudo cuando el jefe ataque en el momento exacto.", "combat-info");
 
         // Iniciar el ciclo de ataques
         this.scheduleNextAction();
@@ -266,6 +265,7 @@ export default class BossScene extends Phaser.Scene {
         if (!this.combatActive) return;
 
         this.addCombatLogMessage("¡El jefe se prepara para atacar!", "enemy-action");
+        this.addCombatLogMessage("Bloquea en el momento exacto para no recibir daño", "boss-attack");
 
         // Activar ventana de bloqueo
         this.isBlockWindowActive = true;
@@ -1113,6 +1113,11 @@ export default class BossScene extends Phaser.Scene {
 
             // Tiempo antes de cerrar escena
             this.time.delayedCall(2500, () => {
+                // Obtener referencia a GameScene y manejar la muerte
+                const gameScene = this.scene.get("GameScene");
+                gameScene.handlePlayerDeath();
+
+                // Cerrar escena de combate
                 this.exitCombat();
             });
 
@@ -1271,6 +1276,7 @@ export default class BossScene extends Phaser.Scene {
         // Reanudar la escena del juego
         this.scene.resume("GameScene");
 
+        // Pausar musica
         if (this.scene.get("GameScene")) {
             this.scene.get("GameScene").stopCombatMusicAndResumeZone();
         }

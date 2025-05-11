@@ -1,7 +1,7 @@
 import { Boss } from "./Boss.js";
 
-export class Toro extends Boss {
-    constructor(scene, x, y, texture = "boss-Toro", name = "Toro") {
+export class Infernal extends Boss {
+    constructor(scene, x, y, texture = "boss-Infernal", name = "Infernal") {
         // Asignar tamaño del sprite
         const scale = 1.2;
         super(scene, x, y, texture, name, scale);
@@ -14,10 +14,10 @@ export class Toro extends Boss {
         this.strength = 10;
         this.speed = 5;
 
-        this.souls = 200;
+        this.souls= 200;
 
         // Patrón de ataque (0 = ataque, 1 = indefenso)
-        this.attackPattern = [0, 0, 1, 0, 1];
+        this.attackPattern = [0, 1, 0, 0, 1];
         this.currentPatternIndex = 0;
 
         // Intervalo entre ataques (en milisegundos)
@@ -27,11 +27,10 @@ export class Toro extends Boss {
         this.createAnimations(scene);
 
         // Tipo de entidad para animaciones
-        this.type = "toro";
-
+        this.type = "infernal";
 
         // Ruta del spritesheet
-        this.spritesheet = "./assets/bosses/boss-Toro.png";
+        this.spritesheet = "./assets/bosses/boss-Infernal.png";
     }
 
     getNextAction() {
@@ -46,15 +45,15 @@ export class Toro extends Boss {
 
     createAnimations(scene) {
         scene.anims.create({
-            key: "toro-idle",
-            frames: scene.anims.generateFrameNumbers("boss-Toro", { start: 0, end: 5 }),
+            key: "infernal-idle",
+            frames: scene.anims.generateFrameNumbers("boss-Infernal", { start: 0, end: 5 }),
             frameRate: 5,
             repeat: -1,
         });
 
         scene.anims.create({
-            key: "toro-walk",
-            frames: scene.anims.generateFrameNumbers("boss-Toro", { start: 6, end: 11 }),
+            key: "infernal-walk",
+            frames: scene.anims.generateFrameNumbers("boss-Infernal", { start: 6, end: 11 }),
             frameRate: 10,
             repeat: -1,
         });
@@ -64,9 +63,9 @@ export class Toro extends Boss {
         return {
             idle: { start: 0, end: 5, frameRate: 5, repeat: -1 },
             walk: { start: 6, end: 11, frameRate: 10, repeat: -1 },
-            attack: { start: 18, end: 23, frameRate: 8, repeat: 0 },
-            hit: { start: 24, end: 29, frameRate: 8, repeat: 0 },
-            death: { start: 30, end: 35, frameRate: 5, repeat: 0 },
+            attack: { start: 12, end: 17, frameRate: 8, repeat: 0 },
+            hit: { start: 42, end: 48, frameRate: 8, repeat: 0 },
+            death: { start: 49, end: 54, frameRate: 5, repeat: 0 },
         };
     }
 
