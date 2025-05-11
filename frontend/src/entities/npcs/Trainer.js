@@ -100,5 +100,14 @@ export class Trainer extends NPC {
 
     handleRejectionChoice() {
         this.dialogManager.dialogueText.textContent = `${this.name}: ${this.trainingRejectText}`;
+
+        // Mostrar el indicador "Pulsa 'E' para continuar"
+        this.dialogManager.nextIndicator.style.display = "block";
+
+        // Opcional: Si deseas cerrar el diálogo automáticamente después de un tiempo, puedes agregar un temporizador
+        // Si no deseas cerrarlo automáticamente, elimina este bloque
+        setTimeout(() => {
+            this.dialogManager.closeDialog();
+        }, 2000);
     }
 }

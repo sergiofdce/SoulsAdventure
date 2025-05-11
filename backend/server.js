@@ -22,7 +22,12 @@ app.use(
 app.use("/api/users", userRoutes); 
 
 // Proteger la ruta del juego pero dejamos que el cliente maneje la redirección
-app.get("/game.html", requireAuth, (req, res) => {
+// app.get("/game.html", requireAuth, (req, res) => {
+//     res.sendFile(path.join(__dirname, "../frontend/game.html"));
+// });
+
+// Permitir acceso libre a game.html
+app.get("/game.html", (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend/game.html"));
 });
 

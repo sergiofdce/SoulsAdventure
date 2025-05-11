@@ -12,11 +12,20 @@ import { EnanoEscudo } from "../entities/enemies/EnanoEscudo.js";
 import { EnanoMayor } from "../entities/enemies/EnanoMayor.js";
 import { EnanoObservador } from "../entities/enemies/EnanoObservador.js";
 
-// Enemigos Pantano
+// Enemigos Ruinas
 import { SlimeFuego } from "../entities/enemies/SlimeFuego.js";
 import { SlimeHumano } from "../entities/enemies/SlimeHumano.js";
 import { SlimeNormal } from "../entities/enemies/SlimeNormal.js";
 import { SlimePinchos } from "../entities/enemies/SlimePinchos.js";
+
+// Enemigos Fuego
+import { FuegoCiclope } from "../entities/enemies/FuegoCiclope.js";
+import { FuegoDemonio } from "../entities/enemies/FuegoDemonio.js";
+import { FuegoEsqueleto } from "../entities/enemies/FuegoEsqueleto.js";
+import { FuegoGato } from "../entities/enemies/FuegoGato.js";
+import { FuegoGordo } from "../entities/enemies/FuegoGordo.js";
+import { FuegoSeta } from "../entities/enemies/FuegoSeta.js";
+import { FuegoWither } from "../entities/enemies/FuegoWither.js";
 
 // Bosses
 import { Toro } from "../entities/bosses/Toro.js";
@@ -42,14 +51,17 @@ export default class GameScene extends Phaser.Scene {
         this.interactableObjects = [];
         this.gameState = {};
         this.gameStateManager = new GameStateManager();
-        this.soundManager = null; // Administrador de sonidos
-        this.zone1SoundKey = "zona1"; // Clave del sonido de la zona1
+        this.soundManager = null;
+        this.isZona1MusicPlaying = false;
     }
 
     preload() {
         this.loadAssets();
-        // Cargar el sonido de la zona1
-        this.load.audio(this.zone1SoundKey, "./assets/audio/Zona1.ogg");
+        this.soundManager = new Sound(this);
+        this.soundManager.loadSound("zona1", "Zona1.ogg");
+        this.soundManager.loadSound("zona2", "Zona2.ogg");
+        this.soundManager.loadSound("zona3", "Zona3.ogg");
+        this.currentZoneMusic = null;
     }
 
     async create() {
@@ -83,6 +95,9 @@ export default class GameScene extends Phaser.Scene {
         // Generar objetos en el mapa
         this.spawnObjects();
 
+        // Dialogo inicial
+        this.showFirstDialog();
+
         // Configurar colisiones entre objetos
         this.setupCollisions();
 
@@ -94,41 +109,6 @@ export default class GameScene extends Phaser.Scene {
 
         // Activar modo debug
         this.enableDebugMode();
-
-        // Inicializar el administrador de sonidos
-        this.soundManager = new Sound(this);
-
-        // Reproducir el sonido de la zona1 en bucle con volumen reducido
-        this.soundManager.playSound(this.zone1SoundKey, { loop: true, volume: 0.5 });
-
-        // Mostrar el diálogo inicial sin detener la música
-        this.showFirstDialog();
-
-        // Configurar un evento para verificar la posición del jugador
-        this.time.addEvent({
-            delay: 100, // Verificar cada 100ms
-            callback: this.checkPlayerPosition,
-            callbackScope: this,
-            loop: true,
-        });
-    }
-
-    checkPlayerPosition() {
-        const playerX = this.player.x; // Posición X del jugador
-        const playerY = this.player.y; // Posición Y del jugador
-
-        // Verificar si el jugador está dentro de los límites
-        if (playerX <= 2464 && playerY <= 2384) {
-            // Reproducir el sonido si no está sonando
-            if (!this.soundManager.sounds[this.zone1SoundKey]?.isPlaying) {
-                this.soundManager.playSound(this.zone1SoundKey, { loop: true });
-            }
-        } else {
-            // Detener el sonido si el jugador está fuera de los límites
-            if (this.soundManager.sounds[this.zone1SoundKey]?.isPlaying) {
-                this.soundManager.stopSound(this.zone1SoundKey);
-            }
-        }
     }
 
     loadAssets() {
@@ -142,7 +122,7 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 96,
         });
-        // Cargar assets Enemigos
+        // Enemigos Pueblo
         this.load.spritesheet("enemy-EnanoFuego", "./assets/enemies/enemy-EnanoFuego.png", {
             frameWidth: 96,
             frameHeight: 96,
@@ -161,6 +141,8 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 96,
         });
+
+        // Enemigos Ruinas
         this.load.spritesheet("enemy-SlimeFuego", "./assets/enemies/enemy-SlimeFuego.png", {
             frameWidth: 96,
             frameHeight: 96,
@@ -174,6 +156,36 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 96,
         });
         this.load.spritesheet("enemy-SlimePinchos", "./assets/enemies/enemy-SlimePinchos.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+
+        // Enemigos Lava
+        this.load.spritesheet("enemy-FuegoCiclope", "./assets/enemies/enemy-FuegoCiclope.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoDemonio", "./assets/enemies/enemy-FuegoDemonio.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoEsqueleto", "./assets/enemies/enemy-FuegoEsqueleto.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoGato", "./assets/enemies/enemy-FuegoGato.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoGordo", "./assets/enemies/enemy-FuegoGordo.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoSeta", "./assets/enemies/enemy-FuegoSeta.png", {
+            frameWidth: 96,
+            frameHeight: 96,
+        });
+        this.load.spritesheet("enemy-FuegoWither", "./assets/enemies/enemy-FuegoWither.png", {
             frameWidth: 96,
             frameHeight: 96,
         });
@@ -370,9 +382,10 @@ export default class GameScene extends Phaser.Scene {
 
     spawnFireplaces() {
         const fireplaceConfigs = [
-            { x: 630, y: 630, name: "Plaza del Pueblo" },
+            { x: 632, y: 630, name: "Plaza del Pueblo" },
             { x: 1146, y: 2710, name: "Ruinas de Nuevo Londo" },
-            { x: 3291, y: 4276, name: "Izalith perdida" },
+            { x: 3288, y: 4278, name: "Izalith perdida" },
+            { x: 3223, y: 2419, name: "Nueva Era" },
         ];
 
         fireplaceConfigs.forEach((config) => {
@@ -445,7 +458,24 @@ export default class GameScene extends Phaser.Scene {
                     { type: SlimeHumano, x: 2024, y: 4083 },
                 ],
             },
-            // Puedes añadir más zonas aquí siguiendo el mismo patrón
+            {
+                name: "Lava",
+                enemies: [
+                    { type: FuegoCiclope, x: 3751, y: 4089 },
+                    { type: FuegoDemonio, x: 3895, y: 4014 },
+                    { type: FuegoEsqueleto, x: 3901, y: 3909 },
+                    { type: FuegoGato, x: 4001, y: 3781 },
+                    { type: FuegoGordo, x: 4003, y: 3611 },
+                    { type: FuegoSeta, x: 3960, y: 3487 },
+                    { type: FuegoWither, x: 3793, y: 3502 },
+                    { type: FuegoCiclope, x: 3660, y: 3444 },
+                    { type: FuegoDemonio, x: 3496, y: 3464 },
+                    { type: FuegoEsqueleto, x: 3358, y: 3357 },
+                    { type: FuegoGato, x: 3258, y: 3229 },
+                    { type: FuegoGordo, x: 3203, y: 3101 },
+                    { type: FuegoWither, x: 3256, y: 3006 },
+                ],
+            },
         ];
 
         // Generar todos los enemigos de todas las zonas
@@ -512,9 +542,16 @@ export default class GameScene extends Phaser.Scene {
 
         // Definir objetos en el mapa
         const objectsToSpawn = [
+            // Pueblo
             { itemId: "escudo-torre", x: 257, y: 650, texture: "escudo-torre" },
             { itemId: "botas-vigilante", x: 695, y: 281, texture: "botas-vigilante" },
             { itemId: "casco-vigilante", x: 1057, y: 852, texture: "casco-vigilante" },
+            // Ruinas
+            { itemId: "escudo-torre", x: 570, y: 2681, texture: "escudo-torre" },
+            { itemId: "botas-vigilante", x: 1954, y: 2718, texture: "botas-vigilante" },
+            { itemId: "casco-vigilante", x: 1917, y: 3359, texture: "casco-vigilante" },
+            { itemId: "casco-vigilante", x: 2126, y: 3828, texture: "casco-vigilante" },
+            // Lava
         ];
 
         // Filtrar objetos que ya han sido recogidos usando GameStateManager
@@ -639,7 +676,7 @@ export default class GameScene extends Phaser.Scene {
         // Inicializar el gestor de diálogos si no existe
         const dialogManager = DialogManager.getInstance();
 
-        // Mostrar diálogo sin detener la música
+        // Mostrar diálogo
         dialogManager.startDialog(narrator, this.player);
 
         // Mostrar ayuda
@@ -665,9 +702,9 @@ export default class GameScene extends Phaser.Scene {
     // Método para mostrar mensajes de ayuda secuenciales
     showHelpMessages() {
         const messages = [
-            "Usa WASD para poder moverte",
-            "Puedes interactuar con la tecla E",
-            "Para abrir tu inventario, usa I",
+            "Usa las teclas WASD para moverte",
+            "Para interactuar o recoger objetos, usa la tecla E",
+            "Abre tu inventario con la tecla I, equipate con lo necesario!",
         ];
 
         const infoText = document.getElementById("infoText");
@@ -724,5 +761,27 @@ export default class GameScene extends Phaser.Scene {
                 obj.sprite.depth = obj.sprite.y;
             }
         });
+
+        // Control de música por zonas
+        if (this.player && this.soundManager) {
+            const { x, y } = this.player.sprite;
+            let zone = "zona3"; // Por defecto zona3
+
+            if (x >= 0 && x <= 2384 && y >= 0 && y <= 2464) {
+                zone = "zona1";
+            } else if (x >= 0 && x <= 2384 && y > 2464 && y <= 4784) {
+                zone = "zona2";
+            }
+
+            if (this.currentZoneMusic !== zone) {
+                // Detener cualquier música anterior
+                ["zona1", "zona2", "zona3"].forEach(z => {
+                    if (z !== zone) this.soundManager.stopSound(z);
+                });
+                // Reproducir la música de la zona actual
+                this.soundManager.playSound(zone, { loop: true, volume: 0.5 });
+                this.currentZoneMusic = zone;
+            }
+        }
     }
 }

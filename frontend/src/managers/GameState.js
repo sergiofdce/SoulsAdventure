@@ -9,6 +9,8 @@ export default class GameStateManager {
                 discoveredNPCs: [],
                 discoveredItems: [],
                 completedIntroDialog: false,
+                difficultyMultiplier: 1.0, // Multiplicador de dificultad inicial
+                cycleCount: 0, // Número de ciclos completados
             },
             inventory: null,
             lastSaveTime: null,
@@ -88,6 +90,8 @@ export default class GameStateManager {
                 discoveredNPCs: this.gameState.worldState.discoveredNPCs,
                 discoveredItems: this.gameState.worldState.discoveredItems,
                 completedIntroDialog: this.gameState.worldState.completedIntroDialog,
+                difficultyMultiplier: this.gameState.worldState.difficultyMultiplier,
+                cycleCount: this.gameState.worldState.cycleCount,
             },
             // Posición
             lastPosition: {
@@ -158,6 +162,8 @@ export default class GameStateManager {
                 this.gameState.worldState.discoveredNPCs = data.progress.discoveredNPCs || [];
                 this.gameState.worldState.discoveredItems = data.progress.discoveredItems || [];
                 this.gameState.worldState.completedIntroDialog = data.progress.completedIntroDialog || false;
+                this.gameState.worldState.difficultyMultiplier = data.progress.difficultyMultiplier || 1.0;
+                this.gameState.worldState.cycleCount = data.progress.cycleCount || 0;
 
                 // Sincronizar con el jugador
                 this.syncToPlayer();
@@ -324,5 +330,112 @@ export default class GameStateManager {
         // Sincronizar con el jugador para mantener compatibilidad
         this.syncToPlayer();
         return true;
+    }
+
+    // Método para obtener el multiplicador de dificultad actual
+    getDifficultyMultiplier() {
+        return this.gameState.worldState.difficultyMultiplier || 1.0;
+    }
+
+    // Método para incrementar la dificultad
+    increaseDifficulty(multiplier = 1.5) {
+        this.gameState.worldState.difficultyMultiplier =
+            (this.gameState.worldState.difficultyMultiplier || 1.0) * multiplier;
+
+        // Incrementar contador de ciclos
+        this.gameState.worldState.cycleCount = (this.gameState.worldState.cycleCount || 0) + 1;
+
+        console.log(
+            `Dificultad aumentada a x${this.gameState.worldState.difficultyMultiplier.toFixed(2)} (Ciclo ${
+                this.gameState.worldState.cycleCount
+            })`
+        );
+
+        return this.gameState.worldState.difficultyMultiplier;
+    }
+
+    // Método para reiniciar el juego pero conservando la dificultad
+    resetGameButKeepDifficulty() {
+        // Guardar dificultad actual y ciclo
+        const currentDifficulty = this.gameState.worldState.difficultyMultiplier;
+        const currentCycle = this.gameState.worldState.cycleCount;
+
+        // Reiniciar estado del mundo
+        this.gameState.worldState = {
+            defeatedBosses: [],
+            discoveredFireplaces: [],
+            discoveredNPCs: [],
+            discoveredItems: [],
+            completedIntroDialog: false, // Cambiar a false para que vuelva a aparecer el diálogo de intro
+            difficultyMultiplier: currentDifficulty,
+            cycleCount: currentCycle,
+        };
+
+        // Si hay un jugador, reiniciar su estado pero conservar el nivel y algunos atributos
+        if (this.gameState.player) {
+            // Guardar el nivel actual y almas
+            const playerLevel = this.gameState.player.level;
+            const playerSouls = this.gameState.player.souls;
+
+            // Posicionar al jugador en el punto inicial
+            this.gameState.player.setPosition(306, 454);
+
+            // Mantener el nivel y las almas
+            this.gameState.player.level = playerLevel;
+            this.gameState.player.souls = playerSouls;
+
+            // Reiniciar inventario del jugador
+            if (this.gameState.inventory) {
+                this.gameState.inventory.clearInventory();
+                console.log("Inventario del jugador reiniciado");
+            }
+
+            // Actualizar las estadísticas para reflejar el nuevo nivel de dificultad
+            this.applyDifficultyToEnemies();
+        }
+
+        // Sincronizar con el jugador
+        this.syncToPlayer();
+
+        console.log(`Juego reiniciado manteniendo dificultad x${currentDifficulty.toFixed(2)} (Ciclo ${currentCycle})`);
+
+        return true;
+    }
+
+    // Método para aplicar la dificultad a los enemigos
+    applyDifficultyToEnemies() {
+        if (!this.scene) return;
+
+        const multiplier = this.getDifficultyMultiplier();
+
+        // Aplicar a todos los enemigos
+        this.scene.enemies.forEach((enemy) => {
+            // Aumentar estadísticas de enemigos
+            enemy.maxHealth *= multiplier;
+            enemy.health = enemy.maxHealth;
+            enemy.damage *= multiplier;
+            enemy.defense *= multiplier;
+            enemy.soulsReward = Math.floor(enemy.soulsReward * multiplier);
+
+            // Actualizar barra de vida si existe
+            if (enemy.healthBar) {
+                enemy.updateHealthBar();
+            }
+        });
+
+        // Aplicar a todos los jefes
+        this.scene.bosses.forEach((boss) => {
+            boss.maxHealth *= multiplier;
+            boss.health = boss.maxHealth;
+            boss.damage *= multiplier;
+            boss.defense *= multiplier;
+            boss.soulsReward = Math.floor(boss.soulsReward * multiplier);
+
+            if (boss.healthBar) {
+                boss.updateHealthBar();
+            }
+        });
+
+        console.log(`Aplicado multiplicador de dificultad x${multiplier.toFixed(2)} a todos los enemigos`);
     }
 }

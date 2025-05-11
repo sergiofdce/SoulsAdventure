@@ -3,7 +3,7 @@ import { NPC } from "./Npc.js";
 export class Fireplace extends NPC {
     constructor(scene, x, y, texture) {
         // Diálogos definidos directamente
-        const initialDialogues = ["Has encontrado una hoguera.", "¿Deseas viajar a otro lugar?"];
+        const initialDialogues = ["Has encontrado una hoguera.", "¿Quieres descansar en la hoguera?"];
 
         super(scene, x, y, texture, "Hoguera", initialDialogues);
 
@@ -18,29 +18,54 @@ export class Fireplace extends NPC {
         this.preparingTeleportText = "Preparando teletransporte...";
         this.goodbyeText = "Las llamas seguirán ardiendo para cuando las necesites.";
         this.travelQuestionText = "¿Deseas viajar a otro lugar?";
+
+        // Diálogos especiales para la hoguera "Nueva Era"
+        this.finalFireplaceDialogues = [
+            "Esta no es una hoguera común...",
+            "La llama primordial que dio forma a este mundo se encuentra aquí.",
+            "Has demostrado ser digno al llegar hasta este punto.",
+            "Ante ti se presenta una decisión que cambiará el destino de este mundo.",
+        ];
+
+        // Opciones para la decisión final
+        this.finalChoiceQuestion = "¿Qué deseas hacer con la llama primordial?";
+        this.finalChoices = ["Vincular la llama", "Abandonar la llama"];
     }
 
     interact(player) {
         this.player = player;
-        const isDialogOpen = this.dialogManager.isDialogOpen();
+
+        // Comprobar si es la hoguera final "Nueva Era"
+        if (this.fireplaceName === "Nueva Era") {
+            this.handleFinalFireplace();
+            return;
+        }
 
         // Configurar diálogos según estado de descubrimiento
         if (!this.discovered) {
-            this.registerFireplace();
-            this.dialogConfig.dialogue = [...this.initialDialogue];
-            this.dialogConfig.choiceIndex = 1;
+            this.dialogue = [...this.initialDialogue];
+            this.setDialogChoices(["Sí", "No"], 1);
         } else {
-            this.dialogConfig.dialogue = [...this.discoveredDialogue];
-            this.dialogConfig.choiceIndex = 0;
+            this.dialogue = [...this.discoveredDialogue];
+            this.setDialogChoices(["Sí", "No"], 0);
         }
 
-        // Llamar al método interact de la clase padre (NPC)
+        // Continuar con la interacción normal
         super.interact(player);
+    }
 
-        // Mostrar opciones inmediatamente para hogueras ya descubiertas con un solo diálogo
-        if (!isDialogOpen && this.discovered && this.dialogConfig.dialogue.length === 1) {
-            this.showChoicesAfterDelay();
+    handleFinalFireplace() {
+        // Siempre mostrar la secuencia completa de diálogos
+        this.dialogue = [...this.finalFireplaceDialogues, this.finalChoiceQuestion];
+        // Configurar para mostrar opciones después del último diálogo
+        this.setDialogChoices(this.finalChoices, this.dialogue.length - 1);
+
+        // Registrar la hoguera como descubierta si es la primera vez
+        if (!this.discovered) {
+            this.registerFireplace();
         }
+
+        super.interact(this.player);
     }
 
     registerFireplace() {
@@ -50,7 +75,7 @@ export class Fireplace extends NPC {
 
         this.discovered = true;
 
-        // Añadir al Array de GameState
+        // Usar GameStateManager para registrar la hoguera
         if (this.scene.gameStateManager) {
             this.scene.gameStateManager.registerDiscoveredFireplace(this.fireplaceName);
             console.log(`Hoguera "${this.fireplaceName}" registrada usando GameStateManager`);
@@ -68,29 +93,113 @@ export class Fireplace extends NPC {
     }
 
     onChoiceSelected(choice, player) {
-        const dialogText = this.dialogManager.dialogueText.textContent;
         const isYesChoice = choice === "Sí";
+        const currentDialogText = this.dialogManager.dialogueText.textContent;
 
-        if (this.discovered) {
-            if (isYesChoice && dialogText.includes("¿Quieres descansar")) {
+        // Comprobar si estamos en la hoguera final y procesando elecciones específicas
+        if (this.fireplaceName === "Nueva Era" && (choice === "Vincular la llama" || choice === "Abandonar la llama")) {
+            this.handleFinalChoice(choice);
+            return;
+        }
+
+        if (!this.discovered) {
+            this.registerFireplace();
+        }
+
+        if (isYesChoice) {
+            // Verificar el texto específico del diálogo actual para determinar la acción correcta
+            if (currentDialogText.includes("¿Quieres descansar")) {
                 this.handleRestChoice();
-            } else if (isYesChoice && dialogText.includes("¿Deseas viajar")) {
+            } else if (currentDialogText.includes("¿Deseas viajar")) {
                 this.handleTravelChoice();
-            } else {
-                this.handleRejectionChoice();
             }
         } else {
-            // Primer encuentro con la hoguera
-            if (isYesChoice) {
-                this.handleTravelChoice();
-            } else {
-                this.handleRejectionChoice();
-            }
+            this.handleRejectionChoice();
         }
     }
 
+    handleFinalChoice(choice) {
+        if (choice === "Vincular la llama") {
+            // Diálogo para vincular la llama
+            this.dialogManager.dialogueText.textContent = `${this.name}: Has elegido mantener viva la Edad del Fuego. Tu sacrificio no será olvidado.`;
+
+            // Crear efecto visual antes de cambiar de escena
+            this.createBrightLightEffect();
+
+            // Cambiar a la escena final después de un tiempo
+            setTimeout(() => {
+                this.dialogManager.closeDialog();
+
+                // Lanzar la escena EndGame
+                if (this.scene && this.scene.scene) {
+                    this.scene.scene.pause("GameScene");
+                    this.scene.scene.launch("EndGame", { player: this.player, ending: "light" });
+                }
+            }, 3000);
+        } else {
+            // Diálogo para abandonar la llama
+            this.dialogManager.dialogueText.textContent = `${this.name}: Has elegido dejar morir la llama y abrazar la oscuridad. Un nuevo ciclo comienza.`;
+
+            // Crear efecto visual de oscuridad
+            this.createDarkEffect();
+
+            // Reiniciar el juego con dificultad aumentada
+            setTimeout(() => {
+                this.dialogManager.closeDialog();
+
+                // Incrementar la dificultad y reiniciar
+                if (this.scene.gameStateManager) {
+                    this.scene.gameStateManager.increaseDifficulty(1.5);
+                    this.scene.gameStateManager.resetGameButKeepDifficulty();
+
+                    // Guardar la partida antes de reiniciar
+                    this.scene.gameStateManager.saveGame().then(() => {
+                        console.log("Partida guardada antes de reiniciar el ciclo");
+
+                        // Reiniciar la escena después de guardar
+                        this.scene.scene.restart();
+                    });
+                }
+            }, 3000);
+        }
+    }
+
+    createBrightLightEffect() {
+        const light = this.scene.add.graphics();
+        light.fillStyle(0xffffff, 0);
+        light.fillRect(0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height);
+        light.setScrollFactor(0);
+        light.setDepth(999);
+
+        this.scene.tweens.add({
+            targets: light,
+            fillAlpha: 1,
+            duration: 3000,
+            ease: "Linear",
+        });
+    }
+
+    createDarkEffect() {
+        const darkness = this.scene.add.graphics();
+        darkness.fillStyle(0x000000, 0);
+        darkness.fillRect(0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height);
+        darkness.setScrollFactor(0);
+        darkness.setDepth(999);
+
+        this.scene.tweens.add({
+            targets: darkness,
+            fillAlpha: 1,
+            duration: 3000,
+            ease: "Linear",
+        });
+    }
+
     handleRestChoice() {
+        // Actualizar el texto inmediatamente para evitar repeticiones
         this.dialogManager.dialogueText.textContent = `${this.name}: ${this.enemiesResetText}`;
+
+        // Ocultar el indicador "Pulsa E" durante la animación
+        this.dialogManager.nextIndicator.style.display = "none";
 
         // Efectos de descansar
         this.createMistAnimation();
@@ -115,14 +224,24 @@ export class Fireplace extends NPC {
 
         setTimeout(() => {
             this.dialogManager.closeDialog();
-            this.scene.scene.pause("GameScene");
-            this.scene.scene.launch("TeleportScene", { player: this.player });
+
+            // Asegurarse de que la escena de teletransporte se lanza correctamente
+            if (this.scene && this.scene.scene) {
+                this.scene.scene.pause("GameScene");
+                this.scene.scene.launch("TeleportScene", { player: this.player });
+            } else {
+                console.error("No se pudo lanzar la escena de teletransporte. Verifica la configuración de la escena.");
+            }
         }, 1500);
     }
 
     handleRejectionChoice() {
         this.dialogManager.dialogueText.textContent = `${this.name}: ${this.goodbyeText}`;
-        this.dialogManager.closeDialog();
+
+        // Cerrar el diálogo después de mostrar el mensaje de despedida
+        setTimeout(() => {
+            this.dialogManager.closeDialog();
+        }, 1500);
     }
 
     replenishHealthPotions(player) {

@@ -12,6 +12,12 @@ export class DialogManager {
         this.dialogueText = document.getElementById("dialogueText");
         this.choicesContainer = document.getElementById("choicesContainer");
 
+        this.nextIndicator = document.createElement("div");
+        this.nextIndicator.id = "nextIndicator";
+        this.nextIndicator.textContent = "[Pulsa E]";
+        this.nextIndicator.style.display = "none";
+        this.dialogueBox.appendChild(this.nextIndicator);
+
         this.currentEntity = null;
         this.currentPlayer = null;
         this.currentDialogueIndex = 0;
@@ -39,6 +45,11 @@ export class DialogManager {
             this.choicesContainer.style.display = "none";
         }
 
+        // Mostrar el indicador si hay más diálogos disponibles
+        if (this.currentDialogueIndex < entity.dialogue.length - 1) {
+            this.nextIndicator.style.display = "block";
+        }
+
         // Si solo hay un diálogo y debe mostrar opciones en el índice 0
         if (entity.dialogue.length === 1 && entity.hasChoices && entity.choiceIndex === 0) {
             this.showChoices();
@@ -64,8 +75,14 @@ export class DialogManager {
                 this.currentEntity.dialogue[this.currentDialogueIndex]
             }`;
 
+            // Mostrar el indicador de pulsar E
+            if (this.currentDialogueIndex < this.currentEntity.dialogue.length - 1) {
+                this.nextIndicator.style.display = "block";
+            }
+
             // Si es el diálogo que debe mostrar opciones
             if (this.currentEntity.hasChoices && this.currentDialogueIndex === this.currentEntity.choiceIndex) {
+                this.nextIndicator.style.display = "none";
                 this.showChoices();
             }
         } else {
@@ -102,6 +119,7 @@ export class DialogManager {
         if (this.choicesContainer) {
             this.choicesContainer.style.display = "none";
         }
+        this.nextIndicator.style.display = "none";
         this.currentDialogueIndex = 0;
         this.stopDistanceCheck();
         this.currentEntity = null;

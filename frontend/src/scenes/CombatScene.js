@@ -412,12 +412,12 @@ export default class CombatScene extends Phaser.Scene {
                     // Ajustar el sprite al centro de la escala actual
                     this.enemySprite = this.add.sprite(
                         this.cameras.main.width / 2,
-                        this.cameras.main.height / 2,
+                        this.cameras.main.height / 2 - 10,
                         "enemy-combat"
                     );
 
                     // Hacer el sprite considerablemente más grande
-                    this.enemySprite.setScale(1.5);
+                    this.enemySprite.setScale(1.75);
 
                     // Voltear el sprite horizontalmente (efecto espejo)
                     this.enemySprite.flipX = true;
