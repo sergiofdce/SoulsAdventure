@@ -59,7 +59,7 @@ export class CombatEntity extends Entity {
             }
 
             // Intentar seguir al jugador
-            this.follow(this.scene.player);
+            // this.follow(this.scene.player);
 
             // Comprobar distancia para iniciar combate
             if (this.playerRef && !this.isDestroyed) {

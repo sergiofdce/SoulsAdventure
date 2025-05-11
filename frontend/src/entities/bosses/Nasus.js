@@ -21,7 +21,7 @@ export class Nasus extends Boss {
         this.currentPatternIndex = 0;
 
         // Intervalo entre ataques (en milisegundos)
-        this.attackInterval = 2000;
+        this.attackInterval = 3000;
 
         // Crear animaciones
         this.createAnimations(scene);
@@ -53,7 +53,7 @@ export class Nasus extends Boss {
 
         scene.anims.create({
             key: "nasus-walk",
-            frames: scene.anims.generateFrameNumbers("boss-Nasus", { start: 6, end: 11 }),
+            frames: scene.anims.generateFrameNumbers("boss-Nasus", { start: 6, end: 17 }),
             frameRate: 10,
             repeat: -1,
         });
@@ -62,10 +62,10 @@ export class Nasus extends Boss {
     getAnimationConfigs() {
         return {
             idle: { start: 0, end: 5, frameRate: 5, repeat: -1 },
-            walk: { start: 6, end: 11, frameRate: 10, repeat: -1 },
+            walk: { start: 6, end: 17, frameRate: 10, repeat: -1 },
             attack: { start: 18, end: 23, frameRate: 8, repeat: 0 },
-            hit: { start: 24, end: 29, frameRate: 8, repeat: 0 },
-            death: { start: 30, end: 35, frameRate: 5, repeat: 0 },
+            hit: { start: 30, end: 35, frameRate: 8, repeat: 0 },
+            death: { start: 36, end: 42, frameRate: 5, repeat: 0 },
         };
     }
 

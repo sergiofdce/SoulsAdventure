@@ -2,11 +2,11 @@
 Atributos de Player
 *****************************************************/
 export const PLAYER_BASE_STATS = {
-    maxHealth: 99,
-    health: 99,
-    resistance: 99,
-    strength: 99,
-    speed: 99,
+    maxHealth: 25,
+    health: 25,
+    resistance: 5,
+    strength: 7,
+    speed: 3,
 };
 
 /*****************************************************

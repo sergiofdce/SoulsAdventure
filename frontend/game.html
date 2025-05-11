@@ -8,8 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://unpkg.com/spritespin@4.0.11/release/spritespin.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
     <!-- Comprobar token -->
-    <!-- <script src="js/validateToken.js"></script>
+    <script src="js/validateToken.js"></script>
     <script>
         async function checkAuth() {
             const token = localStorage.getItem("authToken");
@@ -30,7 +32,7 @@
 
         // Ejecutar la validación al cargar
         checkAuth();
-    </script> -->
+    </script>
     <link rel="stylesheet" type="text/css" href="css/game.css">
     <link rel="stylesheet" type="text/css" href="css/reset.css">
 
@@ -42,7 +44,7 @@
 
     <div id="hud-container">
         <div class="hud-player-icon">
-            <img src="." alt="player icon">
+            <img src="assets/player/player-icon.png" alt="player icon">
         </div>
         <div id="hud-player-display">
             <div class="hud-item">
@@ -131,9 +133,6 @@
                     </div>
                 </div>
             </div>
-            <div class="accesibility-buttons">
-                <div>Botones de accesibilidad</div>
-            </div>
         </div>
     </div>
 
@@ -167,12 +166,12 @@
                                 <li id="shield">
                                     <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
-                                <li id="accessory1">
+                                <!-- <li id="accessory1">
                                     <img src="./assets/items/placeholder.png" alt="Slot vacío">
                                 </li>
                                 <li id="accessory2">
                                     <img src="./assets/items/placeholder.png" alt="Slot vacío">
-                                </li>
+                                </li> -->
                             </ul>
                         </div>
                     </div>
@@ -240,7 +239,8 @@
 
             </div>
             <div class="accesibility-buttons">
-                <div>Botones de accesibilidad</div>
+                <p>Pulsa la tecla <span class="key">I</span> para Salir</p>
+                <p>Pulsa <span class="key">Clic izquierdo</span> para Equipar/Desequipar</p>
             </div>
         </div>
     </div>
@@ -343,14 +343,19 @@
                         Mantén el cursor encima de alguna Estadística
                         para mostrar información
                     </p>
-                    <p class="stats-info-message hidden" id="health-message">La Salud es blablabla</p>
-                    <p class="stats-info-message hidden" id="resistance-message">La Resistencia es blablabla</p>
-                    <p class="stats-info-message hidden" id="strength-message">La Fuerza es blablabla</p>
-                    <p class="stats-info-message hidden" id="speed-message">La Velocidad es blablabla</p>
+                    <p class="stats-info-message hidden" id="health-message">La Salud determina cuánto daño puedes
+                        recibir antes de ser derrotado. Cada punto invertido aumenta tu salud máxima en un 12%,
+                        mejorando significativamente tu supervivencia en combate.</p>
+                    <p class="stats-info-message hidden" id="resistance-message">La Resistencia mejora tu capacidad de
+                        bloqueo y reduce el daño recibido al defenderte. Mayor resistencia te permite sobrevivir más
+                        tiempo en combate y aumenta las probabilidades de realizar un bloqueo perfecto.</p>
+                    <p class="stats-info-message hidden" id="strength-message">La Fuerza determina el daño base que
+                        causas con tus ataques. Afecta directamente al daño de ataques ligeros y pesados, siendo crucial
+                        para derrotar enemigos más rápidamente.</p>
+                    <p class="stats-info-message hidden" id="speed-message">La Velocidad determina quién ataca primero
+                        en combate. Un personaje más rápido puede tomar la iniciativa, obteniendo ventaja táctica.
+                        También afecta a la probabilidad de esquivar ataques enemigos.</p>
                 </div>
-            </div>
-            <div class="accesibility-buttons">
-                <div>Botones de accesibilidad</div>
             </div>
         </div>
         <script>
@@ -390,9 +395,6 @@
 
                     <button id="teleport-cancel" class="cancel-button hidden">Cancelar</button>
                 </div>
-            </div>
-            <div class="accesibility-buttons">
-                <div>Botones de accesibilidad</div>
             </div>
         </div>
     </div>
