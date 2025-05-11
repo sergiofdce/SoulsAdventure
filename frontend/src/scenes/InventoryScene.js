@@ -314,12 +314,22 @@ export default class InventoryScene extends Phaser.Scene {
         statsContainer.innerHTML = `
             <div id="inventory-stats-player" class="stats-grid">
 
-            <div class="stats-label">Fuerza:</div>
-            <div class="stats-value">${strength} + (${weaponDamage}) = ${totalDamage}</div>
+            <div class="stats-section">
+                <p>Aquí se verán los atributos finales que se calculan con los atributos base + los complementos de los objetos:</p>
+            </div>
             
-            <div class="stats-label">Resistencia:</div>
-            <div class="stats-value">${resistance} + (${defense}) = ${totalResistance}</div>
-            `;
+            <div class="stats-section">
+                <div class="stats-label">Daño Total: ${totalDamage} puntos </div>
+                <div class="stats-value"></div>
+                <div class="stats-detail">Fuerza base: ${strength} + Armas: ${weaponDamage}</div>
+            </div>
+            
+            <div class="stats-section">
+                <div class="stats-label">Defensa Total: ${totalResistance} puntos</div>
+                <div class="stats-detail">Resistencia base: ${resistance} + Armadura: ${defense}</div>
+            </div>
+            </div>
+        `;
     }
 
     /**

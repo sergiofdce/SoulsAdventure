@@ -29,6 +29,7 @@ import { FuegoWither } from "../entities/enemies/FuegoWither.js";
 // Bosses
 import { Toro } from "../entities/bosses/Toro.js";
 import { Nasus } from "../entities/bosses/Nasus.js";
+import { Infernal } from "../entities/bosses/Infernal.js";
 
 // Entidades
 import { Trainer } from "../entities/npcs/Trainer.js";
@@ -196,12 +197,23 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 80,
             frameHeight: 80,
         });
+        this.load.spritesheet("boss-Infernal", "./assets/bosses/boss-Infernal.png", {
+            frameWidth: 80,
+            frameHeight: 80,
+        });
 
 
         // Cargar assets objetos
         this.load.image("escudo-torre", "./assets/items/shields/escudo-torre.png");
         this.load.image("botas-vigilante", "./assets/items/armor/botas-vigilante.png");
         this.load.image("casco-vigilante", "./assets/items/armor/casco-vigilante.png");
+        this.load.image("guantes-vigilante", "./assets/items/armor/guantes-vigilante.png");
+        this.load.image("pechera-vigilante", "./assets/items/armor/pechera-vigilante.png");
+        this.load.image("pocion-salud", "./assets/items/consumables/pocion-salud.png");
+        this.load.image("espada-oscura", "./assets/items/weapons/espada-oscura.png");
+        this.load.image("escudo-dragon", "./assets/items/shields/escudo-dragon.png");
+        // this.load.image("anillo-oro", "./assets/items/accessories/anillo-oro.png");
+
 
         // Cargar assets Mapa
         this.load.tilemapTiledJSON("map", "assets/maps/Map.json");
@@ -566,6 +578,7 @@ export default class GameScene extends Phaser.Scene {
         const bossConfigs = [
             { type: Toro, name: "Toro", x: 1100, y: 2307 },
             { type: Nasus, name: "Nasus", x: 2028, y: 4356 },
+            { type: Infernal, name: "Infernal", x: 3221, y: 2541 },
         ];
 
         bossConfigs.forEach((config) => {
@@ -593,11 +606,12 @@ export default class GameScene extends Phaser.Scene {
             { itemId: "botas-vigilante", x: 695, y: 281, texture: "botas-vigilante" },
             { itemId: "casco-vigilante", x: 1057, y: 852, texture: "casco-vigilante" },
             // Ruinas
-            { itemId: "escudo-torre", x: 570, y: 2681, texture: "escudo-torre" },
-            { itemId: "botas-vigilante", x: 1954, y: 2718, texture: "botas-vigilante" },
-            { itemId: "casco-vigilante", x: 1917, y: 3359, texture: "casco-vigilante" },
-            { itemId: "casco-vigilante", x: 2126, y: 3828, texture: "casco-vigilante" },
+            { itemId: "pechera-vigilante", x: 570, y: 2681, texture: "pechera-vigilante" },
+            { itemId: "pocion-salud", x: 1954, y: 2718, texture: "pocion-salud" },
+            { itemId: "guantes-vigilante", x: 1917, y: 3359, texture: "guantes-vigilante" },
             // Lava
+            { itemId: "espada-oscura", x: 3159, y: 4161, texture: "espada-oscura" },
+            { itemId: "escudo-dragon", x: 3258, y: 4407, texture: "escudo-dragon" },
         ];
 
         // Filtrar objetos que ya han sido recogidos usando GameStateManager

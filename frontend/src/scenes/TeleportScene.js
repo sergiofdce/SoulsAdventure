@@ -48,7 +48,7 @@ export default class TeleportScene extends Phaser.Scene {
 
             // Actualizar cualquier seguimiento interno de posición en la clase Player
             if (typeof gameScene.player.setPosition === "function") {
-                gameScene.player.setPosition(targetX, targetY);
+                gameScene.player.setPosition(targetX + 20, targetY);
             }
 
             // Asegurar que la cámara se actualiza para seguir al jugador en su nueva posición
@@ -66,6 +66,8 @@ export default class TeleportScene extends Phaser.Scene {
         if (container) {
             container.classList.add("hidden");
         }
+
+        document.getElementById("hud-container").classList.remove("hidden");
 
         // Primero reanudar GameScene para asegurar que está activa
         this.scene.resume("GameScene");

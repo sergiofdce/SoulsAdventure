@@ -1,7 +1,7 @@
 import { Boss } from "./Boss.js";
 
-export class Nasus extends Boss {
-    constructor(scene, x, y, texture = "boss-Nasus", name = "Nasus") {
+export class Infernal extends Boss {
+    constructor(scene, x, y, texture = "boss-Infernal", name = "Infernal") {
         // Asignar tamaño del sprite
         const scale = 1.2;
         super(scene, x, y, texture, name, scale);
@@ -27,10 +27,10 @@ export class Nasus extends Boss {
         this.createAnimations(scene);
 
         // Tipo de entidad para animaciones
-        this.type = "nasus";
+        this.type = "infernal";
 
         // Ruta del spritesheet
-        this.spritesheet = "./assets/bosses/boss-Nasus.png";
+        this.spritesheet = "./assets/bosses/boss-Infernal.png";
     }
 
     getNextAction() {
@@ -45,15 +45,15 @@ export class Nasus extends Boss {
 
     createAnimations(scene) {
         scene.anims.create({
-            key: "nasus-idle",
-            frames: scene.anims.generateFrameNumbers("boss-Nasus", { start: 0, end: 5 }),
+            key: "infernal-idle",
+            frames: scene.anims.generateFrameNumbers("boss-Infernal", { start: 0, end: 5 }),
             frameRate: 5,
             repeat: -1,
         });
 
         scene.anims.create({
-            key: "nasus-walk",
-            frames: scene.anims.generateFrameNumbers("boss-Nasus", { start: 6, end: 17 }),
+            key: "infernal-walk",
+            frames: scene.anims.generateFrameNumbers("boss-Infernal", { start: 6, end: 11 }),
             frameRate: 10,
             repeat: -1,
         });
@@ -62,10 +62,10 @@ export class Nasus extends Boss {
     getAnimationConfigs() {
         return {
             idle: { start: 0, end: 5, frameRate: 5, repeat: -1 },
-            walk: { start: 6, end: 17, frameRate: 10, repeat: -1 },
-            attack: { start: 18, end: 23, frameRate: 8, repeat: 0 },
-            hit: { start: 30, end: 35, frameRate: 8, repeat: 0 },
-            death: { start: 36, end: 42, frameRate: 5, repeat: 0 },
+            walk: { start: 6, end: 11, frameRate: 10, repeat: -1 },
+            attack: { start: 12, end: 17, frameRate: 8, repeat: 0 },
+            hit: { start: 42, end: 48, frameRate: 8, repeat: 0 },
+            death: { start: 49, end: 54, frameRate: 5, repeat: 0 },
         };
     }
 

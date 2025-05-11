@@ -21,7 +21,7 @@ export class Toro extends Boss {
         this.currentPatternIndex = 0;
 
         // Intervalo entre ataques (en milisegundos)
-        this.attackInterval = 2000;
+        this.attackInterval = 3000;
 
         // Crear animaciones
         this.createAnimations(scene);

@@ -45,7 +45,7 @@ export class Fireplace extends NPC {
             "Has demostrado ser digno al llegar hasta este punto.",
             "Ante ti se presenta una decisión que cambiará el destino de este mundo.",
             "Vincular la llama para salvar al pueblo ...",
-            "... o Abandonar la llama para reiniciar el ciclo",
+            "... o abandonar la llama para reiniciar el ciclo",
         ];
 
         // Opciones para la decisión final
