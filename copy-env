@@ -1,0 +1,11 @@
+# MongoDB Atlas
+MONGODB_URL=
+JWT_SECRET=pX7Vr9T$kLmN3s5v8y/A?DG+KbPeShVmYq3t6w9z$C&FJ@McQfTjWnZr4u7x!
+
+# Cookies production / development
+NODE_ENV=development
+
+# Dominio
+BASE_API=http://localhost:3000
+
+
