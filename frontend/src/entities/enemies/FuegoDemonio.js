@@ -44,10 +44,10 @@ export class FuegoDemonio extends Enemy {
     getAnimationConfigs() {
         return {
             idle: { start: 0, end: 5, frameRate: 6, repeat: -1 },
-            walk: { start: 0, end: 5, frameRate: 10, repeat: -1 },
-            hit: { start: 18, end: 23, frameRate: 10, repeat: 0 },
-            attack: { start: 12, end: 17, frameRate: 12, repeat: 0 },
-            death: { start: 24, end: 29, frameRate: 7, repeat: 0 },
+            walk: { start: 6, end: 11, frameRate: 10, repeat: -1 },
+            hit: { start: 30, end: 35, frameRate: 10, repeat: 0 },
+            attack: { start: 24, end: 29, frameRate: 12, repeat: 0 },
+            death: { start: 36, end: 41, frameRate: 7, repeat: 0 },
         };
     }
 

@@ -12,6 +12,20 @@
     --color-border-glow: rgba(147, 51, 234, 0.7);
     --color-border-glow-secondary: rgba(70, 27, 98, 0.4);
 
+    /* Tipografía */
+    --font-primary: 'Press Start 2P', monospace;
+    --font-secondary: 'Cinzel', serif;
+    --font-text: 'Quicksand', 'Segoe UI', sans-serif;
+    --font-accent: 'MedievalSharp', cursive;
+
+    /* Tamaños de fuente */
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 20px;
+    --font-size-xxl: 24px;
+
     /* Bordes y radios */
     --border-radius-sm: 4px;
     --border-radius-md: 6px;
@@ -33,17 +47,37 @@
     --spacing-lg: 20px;
     --spacing-xl: 30px;
 
-    /* Fuentes */
-    --font-size-xs: 12px;
-    --font-size-sm: 14px;
-    --font-size-md: 16px;
-    --font-size-lg: 18px;
-    --font-size-xl: 20px;
-    --font-size-xxl: 24px;
-
     /* Transiciones */
     --transition-speed: 0.2s;
     --transition-effect: ease;
+}
+
+/* Personalización de la barra de desplazamiento */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-background-dark);
+    border-radius: var(--border-radius-md);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #5b21b6, #4c1d95);
+    border-radius: var(--border-radius-md);
+    border: 2px solid rgba(147, 51, 234, 0.3);
+    box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #6d28d9, #5b21b6);
+}
+
+/* Compatibilidad con Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #5b21b6 var(--color-background-dark);
 }
 
 /* Estilos globales */
@@ -56,7 +90,7 @@
 
 body {
     cursor: url('../assets/cursor/normal.cur'), default;
-    font-family: 'Press Start 2P';
+    font-family: var(--font-text);
     background-color: #000;
     color: var(--color-text);
     overflow-x: hidden;
@@ -67,11 +101,26 @@ a {
     cursor: url('../assets/cursor/link.cur'), pointer;
 }
 
-/* Aplica el cursor personalizado a todos los tipos de input */
+h1,
+h2,
+h3 {
+    font-family: var(--font-secondary);
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+h4,
+h5,
+h6 {
+    font-family: var(--font-accent);
+    letter-spacing: 0.5px;
+}
+
 input,
 input:focus {
     cursor: url('../assets/cursor/text.cur'), text;
 }
+
 button {
     cursor: url('../assets/cursor/handwriting.cur'), pointer;
 }
@@ -250,7 +299,7 @@ label {
     color: var(--color-primary);
     text-shadow: 0 0 10px rgba(255, 204, 0, 0.5),
         0 0 15px rgba(0, 0, 0, 0.7);
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-secondary);
     position: relative;
     padding-bottom: var(--spacing-md);
     animation: glow 2s ease-in-out infinite alternate;
@@ -317,7 +366,8 @@ label {
     color: var(--color-text);
     border: 2px solid rgba(147, 51, 234, 0.6);
     border-radius: var(--border-radius-md);
-    font-size: var(--font-size-lg);
+    font-size: 14px;
+    font-family: var(--font-primary);
     transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     letter-spacing: 1px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
@@ -411,7 +461,7 @@ label {
     text-shadow: 0 0 10px rgba(255, 204, 0, 0.5),
         0 0 15px rgba(0, 0, 0, 0.7);
     padding-bottom: var(--spacing-md);
-    font-family: "Cinzel", serif;
+    font-family: var(--font-secondary);
     letter-spacing: 2px;
 }
 
@@ -476,8 +526,9 @@ label {
     color: var(--color-text);
     border: 2px solid rgba(147, 51, 234, 0.6);
     border-radius: var(--border-radius-md);
+    font-size: 14px;
+    font-family: var(--font-primary);
     transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-    font-size: var(--font-size-md);
     letter-spacing: 1px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
         inset 0 0 10px rgba(255, 255, 255, 0.15);
@@ -573,6 +624,8 @@ label {
     max-width: 800px;
     margin: 0 auto;
     border-radius: var(--border-radius-md);
+    overflow: hidden;
+    /* Asegura que no se vea contenido fuera del contenedor */
 }
 
 .carousel-slides {
@@ -584,11 +637,29 @@ label {
 
 .carousel-slide {
     min-width: 100%;
-    padding: 20px;
+    padding: 30px;
     height: 100%;
     overflow-y: auto;
     max-height: 400px;
     box-sizing: border-box;
+    scroll-snap-align: start;
+    /* Mejora el comportamiento del scroll */
+    /* Añadir bordes y sombras para mejor separación visual */
+    border: 1px solid rgba(147, 51, 234, 0.3);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    background: rgba(20, 15, 30, 0.5);
+    margin-right: 50px;
+    /* Añade espacio visible entre slides */
+}
+
+/* El último slide no necesita margen derecho */
+.carousel-slide:last-child {
+    margin-right: 0;
+}
+/* Aumentar separación entre elementos dentro del slide */
+.carousel-slide h3 {
+    margin-bottom: 25px;
+    /* Aumentado desde 15px */
 }
 
 .carousel-slide ul {
@@ -600,6 +671,8 @@ label {
     margin-bottom: var(--spacing-md);
     position: relative;
     line-height: 1.4;
+    font-family: var(--font-text);
+    font-size: var(--font-size-md);
 }
 
 .carousel-slide li::before {
@@ -611,6 +684,7 @@ label {
 }
 
 .carousel-title {
+    font-family: var(--font-secondary);
     font-size: var(--font-size-lg);
     margin-bottom: 15px;
     color: var(--color-primary);
@@ -623,6 +697,7 @@ label {
     justify-content: center;
     gap: 8px;
     margin-top: var(--spacing-md);
+    padding-bottom: 20px;
 }
 
 .carousel-dot {
@@ -676,13 +751,17 @@ label {
 }
 
 .instruction-list {
-    text-align: left;
-    margin: 15px 0 0 20px;
+    margin: 20px 0 0 20px;
+    /* Aumentado desde 15px */
+    padding-left: 10px;
+    /* Añadido */
 }
 
 .instruction-list li {
-    margin-bottom: 8px;
-    line-height: 1.4;
+    margin-bottom: 12px;
+    /* Aumentado desde 8px */
+    line-height: 1.6;
+    /* Aumentado desde 1.4 */
 }
 
 .instruction-image-container {
@@ -700,20 +779,31 @@ label {
 .controls-grid,
 .progression-grid,
 .combat-explanation {
-    gap: 15px;
-    margin-top: 15px;
+    gap: 25px;
+    /* Aumentado desde 15px */
+    margin-top: 25px;
+    /* Aumentado desde 15px */
 }
 
 .combat-point p {
     margin-bottom: 1px;
+    font-family: var(--font-text);
+    font-size: var(--font-size-md);
+    line-height: 1.5;
 }
 
 .control-group,
 .combat-point,
 .progression-point {
     background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-    padding: 10px;
+    border-radius: 8px;
+    /* Aumentado desde 5px */
+    padding: 15px;
+    /* Aumentado desde 10px */
+    margin-bottom: 15px;
+    /* Añadido para separación adicional */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    /* Añadido para mejor separación visual */
 }
 
 .progression-point {
@@ -723,8 +813,12 @@ label {
 .control-group h4,
 .combat-point h4,
 .progression-point h4 {
-    margin-bottom: 8px;
+    font-family: var(--font-accent);
+    margin-bottom: 12px;
+    /* Aumentado desde 8px */
     color: #ffd700;
+    font-size: 18px;
+    /* Añadido para mejor jerarquía */
 }
 
 .key {

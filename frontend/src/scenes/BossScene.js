@@ -247,7 +247,7 @@ export default class BossScene extends Phaser.Scene {
             });
         } else {
             // Bloqueo fallido - recibe el daño completo
-            this.addCombatLogMessage("¡Bloqueo fallido! Has recibido el daño completo.", "enemy-action");
+            this.addCombatLogMessage("¡Bloqueo fallido!.", "enemy-action");
             this.applyDamageToPlayer();
         }
     }
@@ -296,7 +296,7 @@ export default class BossScene extends Phaser.Scene {
     handleBossDodge() {
         if (!this.combatActive) return;
 
-        this.addCombatLogMessage("¡El enemigo se encuentra cansado, ataca ahora!", "enemy-action");
+        this.addCombatLogMessage("¡El enemigo se encuentra cansado, ataca ahora!", "handle-attack");
         this.playEnemyAnimation("walk");
 
         // Establecer el estado de enemigo cansado

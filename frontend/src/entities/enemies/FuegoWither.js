@@ -44,10 +44,10 @@ export class FuegoWither extends Enemy {
     getAnimationConfigs() {
         return {
             idle: { start: 0, end: 5, frameRate: 5, repeat: -1 },
-            walk: { start: 0, end: 5, frameRate: 10, repeat: -1 },
-            hit: { start: 18, end: 23, frameRate: 9, repeat: 0 },
+            walk: { start: 6, end: 11, frameRate: 10, repeat: -1 },
+            hit: { start: 24, end: 29, frameRate: 9, repeat: 0 },
             attack: { start: 12, end: 17, frameRate: 11, repeat: 0 },
-            death: { start: 24, end: 29, frameRate: 6, repeat: 0 },
+            death: { start: 30, end: 35, frameRate: 6, repeat: 0 },
         };
     }
 

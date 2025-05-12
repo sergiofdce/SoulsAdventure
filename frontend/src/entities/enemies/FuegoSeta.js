@@ -35,7 +35,7 @@ export class FuegoSeta extends Enemy {
 
         scene.anims.create({
             key: "FuegoSeta-walk",
-            frames: scene.anims.generateFrameNumbers("enemy-FuegoSeta", { start: 0, end: 5 }),
+            frames: scene.anims.generateFrameNumbers("enemy-FuegoSeta", { start: 6, end: 11 }),
             frameRate: 7,
             repeat: -1,
         });
@@ -44,10 +44,10 @@ export class FuegoSeta extends Enemy {
     getAnimationConfigs() {
         return {
             idle: { start: 0, end: 5, frameRate: 4, repeat: -1 },
-            walk: { start: 0, end: 5, frameRate: 7, repeat: -1 },
-            hit: { start: 18, end: 23, frameRate: 7, repeat: 0 },
-            attack: { start: 12, end: 17, frameRate: 9, repeat: 0 },
-            death: { start: 24, end: 29, frameRate: 5, repeat: 0 },
+            walk: { start: 6, end: 11, frameRate: 7, repeat: -1 },
+            hit: { start: 30, end: 35, frameRate: 7, repeat: 0 },
+            attack: { start: 24, end: 29, frameRate: 9, repeat: 0 },
+            death: { start: 36, end: 41, frameRate: 5, repeat: 0 },
         };
     }
 

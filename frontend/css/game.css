@@ -3150,6 +3150,11 @@ MARK: Combate
     text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
 }
 
+.handle-attack {
+    color: rgba(155, 246, 8, 0.9);
+    text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+}
+
 .heal-action {
     color: rgba(96, 165, 250, 0.9);
     text-shadow: 0 0 5px rgba(96, 165, 250, 0.5);

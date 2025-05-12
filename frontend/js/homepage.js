@@ -167,8 +167,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateCarousel() {
-        // Actualizar posición del carrusel
-        slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+        // Calcular la posición con espacio adicional
+        const slideWidth = 100; // porcentaje
+        const gapWidth = 50; // píxeles convertidos a un porcentaje aproximado del ancho del contenedor
+        const containerWidth = slidesContainer.offsetWidth;
+        const gapPercentage = (gapWidth / containerWidth) * 100;
+
+        // La nueva transformación incluye el ancho del slide más el espacio
+        const position = currentSlide * (slideWidth + gapPercentage);
+        slidesContainer.style.transform = `translateX(-${position}%)`;
 
         // Actualizar dots
         const dots = dotsContainer.querySelectorAll(".carousel-dot");

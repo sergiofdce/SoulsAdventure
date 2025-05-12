@@ -215,18 +215,6 @@ export default class TrainingScene extends Phaser.Scene {
     }
 
     updateHUD() {
-        // Actualizar vida en el HUD
-        const healthElement = document.getElementById("health-amount");
-        if (healthElement) {
-            healthElement.textContent = this.player.maxHealth;
-
-            // Actualizar barra de progreso de vida si existe
-            const healthBar = document.querySelector(".hud-progress");
-            if (healthBar) {
-                // Asumimos que el jugador está con vida completa después de entrenar
-                healthBar.style.width = "100%";
-            }
-        }
 
         // Actualizar almas en el HUD
         const soulsElement = document.getElementById("souls-amount");

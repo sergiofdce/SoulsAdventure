@@ -893,8 +893,8 @@ export default class CombatScene extends Phaser.Scene {
                         // ¡Bloqueo total exitoso!
                         this.addCombatLogMessage("¡Has bloqueado completamente el ataque!", "critical-hit");
 
-                        // No reproducir animación de daño para el jugador
-                        // En su lugar, preparar el contraataque
+                        gameScene.soundManager.playSound("strong-attack-sound", { volume: 0.3 });
+
                         this.time.delayedCall(500, () => {
                             this.handleCounterAttack();
                         });

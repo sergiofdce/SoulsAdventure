@@ -408,6 +408,28 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         }
+
+        // Actualizar almas en el HUD
+        const soulsElement = document.getElementById("souls-amount");
+        if (soulsElement) {
+            // Mostrar las almas actuales
+            soulsElement.textContent = this.player.souls;
+
+            // Añadir efecto visual de actualización para las almas
+            soulsElement.classList.add("value-changed");
+            setTimeout(() => {
+                soulsElement.classList.remove("value-changed");
+            }, 1000);
+
+            // Opcional: Efecto de brillo en el elemento souls-glow cuando aumentan las almas
+            const soulsGlow = document.querySelector(".hud-souls-glow");
+            if (soulsGlow) {
+                soulsGlow.classList.add("active");
+                setTimeout(() => {
+                    soulsGlow.classList.remove("active");
+                }, 1000);
+            }
+        }
     }
 
     async loadSavedData() {

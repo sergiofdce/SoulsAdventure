@@ -188,7 +188,7 @@ const ItemsDatabase = {
             "Poción de Salud",
             "Restaura puntos de vida durante el combate.",
             "./assets/items/consumables/pocion-salud.png",
-            "restore-health"
+            "Poción Curativa"
         ),
     },
 

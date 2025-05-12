@@ -45,9 +45,9 @@ export class FuegoGordo extends Enemy {
         return {
             idle: { start: 0, end: 5, frameRate: 3, repeat: -1 },
             walk: { start: 0, end: 5, frameRate: 5, repeat: -1 },
-            hit: { start: 18, end: 23, frameRate: 5, repeat: 0 },
-            attack: { start: 12, end: 17, frameRate: 7, repeat: 0 },
-            death: { start: 24, end: 29, frameRate: 4, repeat: 0 },
+            hit: { start: 24, end: 29, frameRate: 5, repeat: 0 },
+            attack: { start: 30, end: 35, frameRate: 7, repeat: 0 },
+            death: { start: 36, end: 41, frameRate: 4, repeat: 0 },
         };
     }
 

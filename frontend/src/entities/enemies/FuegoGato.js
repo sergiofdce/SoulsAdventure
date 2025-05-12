@@ -44,7 +44,7 @@ export class FuegoGato extends Enemy {
     getAnimationConfigs() {
         return {
             idle: { start: 0, end: 5, frameRate: 8, repeat: -1 },
-            walk: { start: 0, end: 5, frameRate: 15, repeat: -1 },
+            walk: { start: 6, end: 11, frameRate: 15, repeat: -1 },
             hit: { start: 18, end: 23, frameRate: 10, repeat: 0 },
             attack: { start: 12, end: 17, frameRate: 16, repeat: 0 },
             death: { start: 24, end: 29, frameRate: 8, repeat: 0 },
