@@ -390,8 +390,6 @@ export default class GameStateManager {
                 console.log("Inventario del jugador reiniciado");
             }
 
-            // Actualizar las estadísticas para reflejar el nuevo nivel de dificultad
-            this.applyDifficultyToEnemies();
         }
 
         // Sincronizar con el jugador
@@ -402,42 +400,6 @@ export default class GameStateManager {
         return true;
     }
 
-    // Método para aplicar la dificultad a los enemigos
-    applyDifficultyToEnemies() {
-        if (!this.scene) return;
-
-        const multiplier = this.getDifficultyMultiplier();
-
-        // Aplicar a todos los enemigos
-        this.scene.enemies.forEach((enemy) => {
-            // Aumentar estadísticas de enemigos
-            enemy.maxHealth *= multiplier;
-            enemy.health = enemy.maxHealth;
-            enemy.damage *= multiplier;
-            enemy.defense *= multiplier;
-            enemy.soulsReward = Math.floor(enemy.soulsReward * multiplier);
-
-            // Actualizar barra de vida si existe
-            if (enemy.healthBar) {
-                enemy.updateHealthBar();
-            }
-        });
-
-        // Aplicar a todos los jefes
-        this.scene.bosses.forEach((boss) => {
-            boss.maxHealth *= multiplier;
-            boss.health = boss.maxHealth;
-            boss.damage *= multiplier;
-            boss.defense *= multiplier;
-            boss.soulsReward = Math.floor(boss.soulsReward * multiplier);
-
-            if (boss.healthBar) {
-                boss.updateHealthBar();
-            }
-        });
-
-        console.log(`Aplicado multiplicador de dificultad x${multiplier.toFixed(2)} a todos los enemigos`);
-    }
 
     // Añade este método a tu clase GameStateManager
     getDiscoveredFireplaces() {

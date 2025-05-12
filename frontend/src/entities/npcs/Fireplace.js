@@ -164,24 +164,33 @@ export class Fireplace extends NPC {
             // Crear efecto visual de oscuridad
             this.createDarkEffect();
 
-            // Reiniciar el juego con dificultad aumentada
+            // Detener TODAS las pistas de música antes de reiniciar
+            if (this.scene.soundManager) {
+                // Detener música de zonas
+                ["zona1-Music", "zona2-Music", "zona3-Music"].forEach((music) =>
+                    this.scene.soundManager.stopSound(music)
+                );
+                // Detener música de combate
+                ["genral-Combat-Music", "boss-Toro-Music", "boss-Nasus-Music", "boss-Infernal-Music"].forEach((music) =>
+                    this.scene.soundManager.stopSound(music)
+                );
+                // Invalidar la música de zona actual
+                this.scene.currentZoneMusic = null;
+            }
+
+            // Aumentar la dificultad
+            this.scene.gameStateManager.increaseDifficulty(1.5);
+
+            // Guardar la partida con la nueva dificultad
+            this.scene.gameStateManager.saveGame();
+
+            // Reiniciar el juego pero mantener dificultad y nivel
             setTimeout(() => {
-                this.dialogManager.closeDialog();
+                this.scene.gameStateManager.resetGameButKeepDifficulty();
 
-                // Incrementar la dificultad y reiniciar
-                if (this.scene.gameStateManager) {
-                    this.scene.gameStateManager.increaseDifficulty(1.5);
-                    this.scene.gameStateManager.resetGameButKeepDifficulty();
-
-                    // Guardar la partida antes de reiniciar
-                    this.scene.gameStateManager.saveGame().then(() => {
-                        console.log("Partida guardada antes de reiniciar el ciclo");
-
-                        // Reiniciar la escena después de guardar
-                        this.scene.scene.restart();
-                    });
-                }
-            }, 3000);
+                // Reiniciar la escena completa después de un tiempo
+                this.scene.scene.restart();
+            }, 2000);
         }
     }
 

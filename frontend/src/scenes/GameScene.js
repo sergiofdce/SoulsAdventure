@@ -565,6 +565,46 @@ export default class GameScene extends Phaser.Scene {
             });
         });
 
+        // Aplicar multiplicador de dificultad si estamos en un ciclo
+        if (this.gameStateManager && this.gameStateManager.getDifficultyMultiplier() > 1.0) {
+            const multiplier = this.gameStateManager.getDifficultyMultiplier();
+            console.log(
+                `Aplicando multiplicador de dificultad x${multiplier.toFixed(2)} a ${this.enemies.length} enemigos`
+            );
+
+            this.enemies.forEach((enemy) => {
+                // Asegurar que todas las propiedades están definidas antes de multiplicar
+                enemy.maxHealth = enemy.maxHealth || enemy.health;
+                enemy.maxHealth *= multiplier;
+                enemy.health = enemy.maxHealth;
+
+                if (enemy.strength) {
+                    enemy.strength = Math.floor(enemy.strength * multiplier);
+                }
+
+                if (enemy.speed) {
+                    // Aumentar velocidad con un límite para que no sea excesiva
+                    enemy.speed = Math.min(enemy.speed * 1.1, enemy.speed + 2);
+                }
+
+                if (enemy.souls) {
+                    enemy.souls = Math.floor(enemy.souls * multiplier);
+                }
+
+                // Asignar damage basado en strength si no existe
+                if (!enemy.damage && enemy.strength) {
+                    enemy.damage = enemy.strength * multiplier;
+                } else if (enemy.damage) {
+                    enemy.damage *= multiplier;
+                }
+
+                // Actualizar barra de vida si existe
+                if (enemy.healthBar && typeof enemy.updateHealthBar === "function") {
+                    enemy.updateHealthBar();
+                }
+            });
+        }
+
         // Configurar colisiones con el mapa
         this.setupEnemyMapCollisions();
 
@@ -609,6 +649,42 @@ export default class GameScene extends Phaser.Scene {
                 console.log(`Boss ${config.name} already defeated, not spawning`);
             }
         });
+
+        // Aplicar multiplicador de dificultad a los bosses si estamos en un ciclo
+        if (this.gameStateManager && this.gameStateManager.getDifficultyMultiplier() > 1.0) {
+            const multiplier = this.gameStateManager.getDifficultyMultiplier();
+            console.log(
+                `Aplicando multiplicador de dificultad x${multiplier.toFixed(2)} a ${this.bosses.length} bosses`
+            );
+
+            this.bosses.forEach((boss) => {
+                // Asegurar que todas las propiedades están definidas
+                boss.maxHealth = boss.maxHealth || boss.health;
+                boss.maxHealth *= multiplier;
+                boss.health = boss.maxHealth;
+
+                if (boss.strength) {
+                    boss.strength = Math.floor(boss.strength * multiplier);
+                    // Asignar damage basado en strength si no existe
+                    if (!boss.damage) {
+                        boss.damage = boss.strength;
+                    }
+                }
+
+                if (boss.damage) {
+                    boss.damage *= multiplier;
+                }
+
+                if (boss.souls) {
+                    boss.souls = Math.floor(boss.souls * multiplier);
+                }
+
+                // Actualizar barra de vida si existe
+                if (boss.healthBar && typeof boss.updateHealthBar === "function") {
+                    boss.updateHealthBar();
+                }
+            });
+        }
     }
 
     spawnObjects() {
