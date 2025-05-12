@@ -344,8 +344,7 @@ export default class CombatScene extends Phaser.Scene {
                         idle: `${enemyType}-idle`,
                         walk: `${enemyType}-walk`,
                         hit: `${enemyType}-hit`,
-                        "light-attack": `${enemyType}-light-attack`,
-                        "heavy-attack": `${enemyType}-heavy-attack`,
+                        attack: `${enemyType}-attack`,
                         death: `${enemyType}-death`,
                     };
 
@@ -392,14 +391,7 @@ export default class CombatScene extends Phaser.Scene {
                         });
 
                         this.anims.create({
-                            key: "light-attack",
-                            frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
-                            frameRate: 8,
-                            repeat: 0,
-                        });
-
-                        this.anims.create({
-                            key: "heavy-attack",
+                            key: "attack",
                             frames: this.anims.generateFrameNumbers("enemy-combat", { start: 12, end: 17 }),
                             frameRate: 8,
                             repeat: 0,
@@ -468,7 +460,7 @@ export default class CombatScene extends Phaser.Scene {
         }
 
         // Reproducir la animación solicitada o la animación por defecto si el tipo no existe
-        const validTypes = ["hit", "idle", "light-attack", "heavy-attack", "death"];
+        const validTypes = ["hit", "idle", "attack", "death"];
         const animationType = validTypes.includes(animType) ? animType : "idle"; // Usar idle como fallback
 
         scene.enemySprite.play(animationType);

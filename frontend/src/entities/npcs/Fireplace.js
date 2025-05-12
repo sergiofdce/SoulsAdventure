@@ -241,6 +241,16 @@ export class Fireplace extends NPC {
         this.scene.spawnEnemies();
         this.replenishHealthPotions(this.player);
 
+        // Curar completamente al jugador
+        if (this.player) {
+            this.player.health = this.player.maxHealth;
+
+            // Actualizar el HUD para mostrar la nueva salud
+            if (this.scene.updateHUD) {
+                this.scene.updateHUD();
+            }
+        }
+
         // Guardar partida
         if (this.scene.gameStateManager) {
             this.scene.gameStateManager.saveGame();
