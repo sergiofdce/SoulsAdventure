@@ -316,6 +316,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     handlePlayerDeath() {
+
         // Posición de respawn predeterminada
         let respawnX = 306;
         let respawnY = 454;
@@ -336,27 +337,74 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // Restaurar la salud del jugador
-        this.player.health = this.player.maxHealth;
-
         // Teletransportar al jugador a la posición de respawn
         this.player.sprite.setPosition(respawnX, respawnY);
 
-        // Mostrar un mensaje de muerte
-        const infoText = document.getElementById("infoText");
-        const infoBox = document.getElementById("infoBox");
+        // IMPORTANTE: Utilizamos setTimeout para asegurar que la restauración
+        // de salud ocurra DESPUÉS de que CombatScene se haya cerrado completamente
+        setTimeout(() => {
+            // Restaurar la salud del jugador
+            this.player.health = this.player.maxHealth;
 
-        if (infoText && infoBox) {
-            infoText.textContent = "Has muerto en combate, has sido curado y llevado a un lugar seguro";
-            infoBox.classList.add("visible");
+            // ACTUALIZACIÓN FORZADA DEL HUD
+            const healthElement = document.getElementById("health-amount");
+            if (healthElement) {
+                healthElement.textContent = this.player.maxHealth;
 
+                // Efecto visual de actualización
+                healthElement.classList.add("value-changed");
+                setTimeout(() => {
+                    healthElement.classList.remove("value-changed");
+                }, 1000);
+
+                // Actualizar barra de progreso directamente
+                const healthBar = document.querySelector(".hud-progress");
+                if (healthBar) {
+                    healthBar.style.width = "100%";
+                    healthBar.style.backgroundColor = "#4ade80"; // Verde
+                }
+            }
+
+            // Actualizar el HUD para reflejar la vida restaurada
+            this.updateHUD();
+        }, 200); // Un pequeño retraso para asegurar que CombatScene se ha cerrado completamente
+    }
+
+    // También agrega logs en updateHUD para ver si se está llamando correctamente
+    updateHUD() {
+
+        // Actualizar vida en el HUD
+        const healthElement = document.getElementById("health-amount");
+
+        if (healthElement) {
+            // Mostrar la vida actual, no la máxima
+            healthElement.textContent = this.player.health;
+
+            // Añadir efecto visual de actualización para la vida
+            healthElement.classList.add("value-changed");
             setTimeout(() => {
-                infoBox.classList.remove("visible");
-            }, 3000);
+                healthElement.classList.remove("value-changed");
+            }, 1000);
+
+            // Actualizar barra de progreso de vida
+            const healthBar = document.querySelector(".hud-progress");
+            if (healthBar) {
+                // Calcular porcentaje de vida actual respecto al máximo
+                const healthPercentage = Math.max(0, Math.min((this.player.health / this.player.maxHealth) * 100, 100));
+
+                healthBar.style.width = `${healthPercentage}%`;
+
+                // Cambiar color según el porcentaje de vida
+                if (healthPercentage > 60) {
+                    healthBar.style.backgroundColor = "#4ade80"; // Verde
+                } else if (healthPercentage > 30) {
+                    healthBar.style.backgroundColor = "#facc15"; // Amarillo
+                } else {
+                    healthBar.style.backgroundColor = "#ef4444"; // Rojo
+                }
+            }
         }
 
-        // Guardar el estado actual después de respawnear
-        this.gameStateManager.saveGame();
     }
 
     async loadSavedData() {
@@ -383,56 +431,6 @@ export default class GameScene extends Phaser.Scene {
         } catch (error) {
             console.error("Error al cargar datos:", error);
             return false;
-        }
-    }
-
-    updateHUD() {
-        // Actualizar vida en el HUD
-        const healthElement = document.getElementById("health-amount");
-        if (healthElement) {
-            // Mostrar la vida actual, no la máxima
-            healthElement.textContent = this.player.health;
-
-            // Añadir efecto visual de actualización para la vida
-            healthElement.classList.add("value-changed");
-            setTimeout(() => {
-                healthElement.classList.remove("value-changed");
-            }, 1000);
-
-            // Actualizar barra de progreso de vida
-            const healthBar = document.querySelector(".hud-progress");
-            if (healthBar) {
-                // Calcular porcentaje de vida actual respecto al máximo
-                const healthPercentage = Math.max(0, Math.min((this.player.health / this.player.maxHealth) * 100, 100));
-                healthBar.style.width = `${healthPercentage}%`;
-
-                // Cambiar color según el porcentaje de vida
-                if (healthPercentage > 60) {
-                    healthBar.style.backgroundColor = "#4ade80"; // Verde
-                } else if (healthPercentage > 30) {
-                    healthBar.style.backgroundColor = "#facc15"; // Amarillo
-                } else {
-                    healthBar.style.backgroundColor = "#ef4444"; // Rojo
-                }
-            }
-        }
-
-        // Actualizar almas en el HUD
-        const soulsElement = document.getElementById("souls-amount");
-        if (soulsElement) {
-            soulsElement.textContent = this.player.souls;
-
-            // Efecto visual de actualización
-            soulsElement.classList.add("value-changed");
-            setTimeout(() => {
-                soulsElement.classList.remove("value-changed");
-            }, 1000);
-        }
-
-        // Actualizar nombre del jugador en el HUD
-        const nameElement = document.getElementById("hud-player-name");
-        if (nameElement && this.player.name) {
-            nameElement.textContent = this.player.name;
         }
     }
 
@@ -940,9 +938,9 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    playCombatMusic(isBoss, bossName=null) {
+    playCombatMusic(isBoss, bossName = null) {
         // Detener música de zona
-        ["zona1-Music", "zona2-Music", "zona3-Music"].forEach(z => this.soundManager.stopSound(z));
+        ["zona1-Music", "zona2-Music", "zona3-Music"].forEach((z) => this.soundManager.stopSound(z));
         // Detener música de combate anterior
         this.soundManager.stopSound("genral-Combat-Music");
         this.soundManager.stopSound("boss-Toro-Music");
