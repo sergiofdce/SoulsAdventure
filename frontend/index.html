@@ -162,9 +162,22 @@
         </div>
     </div>
 
-
+    <audio id="index-music" src="assets/audio/index-music.ogg" autoplay loop hidden></audio>
     <script src="js/homepage.js"></script>
     <script type="module" src="js/startScreen.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('index-music');
+            audio.volume = 0.3;
+            function startMusic() {
+                audio.play();
+                window.removeEventListener('pointerdown', startMusic);
+                window.removeEventListener('keydown', startMusic);
+            }
+            window.addEventListener('pointerdown', startMusic);
+            window.addEventListener('keydown', startMusic);
+        });
+    </script>
 </body>
 
 </html>

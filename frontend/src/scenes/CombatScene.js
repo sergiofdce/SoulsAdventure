@@ -510,11 +510,15 @@ export default class CombatScene extends Phaser.Scene {
     }
 
     setupButtonListeners() {
+        const gameScene = this.scene.get("GameScene");
+
         // Ataque ligero
         const attackLightBtn = document.querySelector(".combat-button.attack-light");
         if (attackLightBtn) {
             attackLightBtn.addEventListener("click", () => {
-                // Verificar explícitamente si es el turno del jugador antes de procesar
+                if (gameScene && gameScene.soundManager) {
+                    gameScene.soundManager.playSound("weak-attack-sound", { volume: 0.3 });
+                }
                 if (this.isPlayerTurn && this.combatActive && !attackLightBtn.disabled) {
                     this.handleAttackLight();
                 }
@@ -525,7 +529,9 @@ export default class CombatScene extends Phaser.Scene {
         const attackHeavyBtn = document.querySelector(".combat-button.attack-heavy");
         if (attackHeavyBtn) {
             attackHeavyBtn.addEventListener("click", () => {
-                // Verificar explícitamente si es el turno del jugador antes de procesar
+                if (gameScene && gameScene.soundManager) {
+                    gameScene.soundManager.playSound("strong-attack-sound", { volume: 0.3 });
+                }
                 if (this.isPlayerTurn && this.combatActive && !attackHeavyBtn.disabled) {
                     this.handleAttackHeavy();
                 }
@@ -536,7 +542,9 @@ export default class CombatScene extends Phaser.Scene {
         const healBtn = document.querySelector(".combat-button.heal");
         if (healBtn) {
             healBtn.addEventListener("click", () => {
-                // Verificar explícitamente si es el turno del jugador antes de procesar
+                if (gameScene && gameScene.soundManager) {
+                    gameScene.soundManager.playSound("heal-sound", { volume: 0.3 });
+                }
                 if (this.isPlayerTurn && this.combatActive && !healBtn.disabled) {
                     this.handleHeal();
                 }
@@ -547,7 +555,9 @@ export default class CombatScene extends Phaser.Scene {
         const blockBtn = document.querySelector(".combat-button.dodge");
         if (blockBtn) {
             blockBtn.addEventListener("click", () => {
-                // Verificar explícitamente si es el turno del jugador antes de procesar
+                if (gameScene && gameScene.soundManager) {
+                    gameScene.soundManager.playSound("block-sound", { volume: 0.3 });
+                }
                 if (this.isPlayerTurn && this.combatActive && !blockBtn.disabled) {
                     this.handleBlock();
                 }
@@ -837,6 +847,8 @@ export default class CombatScene extends Phaser.Scene {
     enemyAction() {
         if (!this.combatActive) return;
 
+        const gameScene = this.scene.get("GameScene");
+
         // Añadir retraso para mejorar la legibilidad
         this.time.delayedCall(1000, () => {
             this.addCombatLogMessage("Turno del enemigo...", "enemy-turn");
@@ -910,6 +922,7 @@ export default class CombatScene extends Phaser.Scene {
                         const finalDamage = Math.max(1, Math.floor(baseDamage * (1 - damageReduction)));
 
                         // Mostrar animación de daño para el jugador (menos intensa)
+                        gameScene.soundManager.playSound("damage-sound", { volume: 0.3 });
                         this.playPlayerAnimation("hit");
 
                         // Aplicar daño reducido
@@ -947,6 +960,11 @@ export default class CombatScene extends Phaser.Scene {
                 } else {
                     // El jugador no está bloqueando, aplicar daño normal
                     const damage = this.enemy.strength;
+
+                    // --- SONIDO DE DAÑO ---
+                    if (gameScene && gameScene.soundManager) {
+                        gameScene.soundManager.playSound("damage-sound", { volume: 0.3 });
+                    }
 
                     // Mostrar animación de jugador recibiendo daño
                     this.playPlayerAnimation("hit");

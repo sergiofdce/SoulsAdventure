@@ -56,6 +56,11 @@ export default class TeleportScene extends Phaser.Scene {
                 gameScene.camera.follow(gameScene.player.sprite);
             }
 
+            // --- REPRODUCIR SONIDO DE TELETRANSPORTE ---
+            if (gameScene.soundManager) {
+                gameScene.soundManager.playSound("tp-sound", { volume: 0.3 });
+            }
+
             console.log("Jugador teletransportado con éxito a", targetX, targetY);
         } else {
             console.error("No se puede acceder a GameScene o al jugador");

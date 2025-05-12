@@ -216,6 +216,11 @@ export class Fireplace extends NPC {
     }
 
     handleRestChoice() {
+        // SONIDO DE DESCANSAR
+        if (this.scene.soundManager) {
+            this.scene.soundManager.playSound("recovery-sound", { volume: 0.5 });
+        }
+
         // Actualizar el texto inmediatamente para evitar repeticiones
         this.dialogManager.dialogueText.textContent = `${this.name}: ${this.enemiesResetText}`;
 

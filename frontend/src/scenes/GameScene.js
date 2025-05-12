@@ -66,6 +66,13 @@ export default class GameScene extends Phaser.Scene {
         this.soundManager.loadSound("boss-Toro-Music", "boss-Toro-Music.ogg");
         this.soundManager.loadSound("boss-Nasus-Music", "boss-Nasus-Music.ogg");
         this.soundManager.loadSound("boss-Infernal-Music", "boss-Infernal-Music.ogg");
+        this.soundManager.loadSound("tp-sound", "tp-sound.ogg");
+        this.soundManager.loadSound("recovery-sound", "recovery-sound.ogg");
+        this.soundManager.loadSound("weak-attack-sound", "weak-attack-sound.ogg");
+        this.soundManager.loadSound("strong-attack-sound", "strong-attack-sound.ogg");
+        this.soundManager.loadSound("block-sound", "block-sound.ogg");
+        this.soundManager.loadSound("heal-sound", "heal-sound.ogg");
+        this.soundManager.loadSound("damage-sound", "damage-sound.ogg");
         this.currentZoneMusic = null;
     }
 
@@ -851,21 +858,20 @@ export default class GameScene extends Phaser.Scene {
                     if (z !== zone) this.soundManager.stopSound(z);
                 });
                 // Reproducir la música de la zona actual
-                this.soundManager.playSound(zone, { loop: true, volume: 0.5 });
+                this.soundManager.playSound(zone, { loop: true, volume: 0.3 });
                 this.currentZoneMusic = zone;
             }
         }
     }
 
-    playCombatMusic(isBoss, bossName = null) {
+    playCombatMusic(isBoss, bossName=null) {
         // Detener música de zona
-        ["zona1-Music", "zona2-Music", "zona3-Music"].forEach((z) => this.soundManager.stopSound(z));
+        ["zona1-Music", "zona2-Music", "zona3-Music"].forEach(z => this.soundManager.stopSound(z));
         // Detener música de combate anterior
         this.soundManager.stopSound("genral-Combat-Music");
         this.soundManager.stopSound("boss-Toro-Music");
         this.soundManager.stopSound("boss-Nasus-Music");
         this.soundManager.stopSound("boss-Infernal-Music");
-        // Si tienes más bosses, añade aquí sus canciones
 
         if (isBoss && bossName) {
             this.soundManager.playSound(`boss-${bossName}-Music`, { loop: true, volume: 0.3 });
@@ -882,6 +888,6 @@ export default class GameScene extends Phaser.Scene {
         this.soundManager.stopSound("boss-Infernal-Music");
 
         // Reanudar música de zona según la posición del jugador
-        this.currentZoneMusic = null; // Forzar update() a reactivar la música de zona
+        this.currentZoneMusic = null;
     }
 }

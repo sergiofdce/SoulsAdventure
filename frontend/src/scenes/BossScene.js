@@ -619,7 +619,10 @@ export default class BossScene extends Phaser.Scene {
         const attackLightBtn = document.querySelector(".combat-button.attack-light");
         if (attackLightBtn) {
             attackLightBtn.addEventListener("click", () => {
-                if (this.combatActive) {
+                if (gameScene && gameScene.soundManager) {
+                    gameScene.soundManager.playSound("weak-attack-sound", { volume: 0.3 });
+                }
+                if (this.isPlayerTurn && this.combatActive && !attackLightBtn.disabled) {
                     this.handleAttackLight();
                 }
             });
@@ -629,7 +632,10 @@ export default class BossScene extends Phaser.Scene {
         const blockBtn = document.querySelector(".combat-button.dodge");
         if (blockBtn) {
             blockBtn.addEventListener("click", () => {
-                if (this.combatActive) {
+                if (gameScene && gameScene.soundManager) {
+                    gameScene.soundManager.playSound("block-sound", { volume: 0.3 });
+                }
+                if (this.isPlayerTurn && this.combatActive && !blockBtn.disabled) {
                     this.handleBlock();
                 }
             });
@@ -639,7 +645,10 @@ export default class BossScene extends Phaser.Scene {
         const attackHeavyBtn = document.querySelector(".combat-button.attack-heavy");
         if (attackHeavyBtn) {
             attackHeavyBtn.addEventListener("click", () => {
-                if (this.combatActive) {
+                if (gameScene && gameScene.soundManager) {
+                    gameScene.soundManager.playSound("strong-attack-sound", { volume: 0.3 });
+                }
+                if (this.isPlayerTurn && this.combatActive && !attackHeavyBtn.disabled) {
                     this.handleAttackHeavy();
                 }
             });
@@ -649,7 +658,10 @@ export default class BossScene extends Phaser.Scene {
         const healBtn = document.querySelector(".combat-button.heal");
         if (healBtn) {
             healBtn.addEventListener("click", () => {
-                if (this.combatActive) {
+                if (gameScene && gameScene.soundManager) {
+                    gameScene.soundManager.playSound("heal-sound", { volume: 0.3 });
+                }
+                if (this.isPlayerTurn && this.combatActive && !healBtn.disabled) {
                     this.handleHeal();
                 }
             });
@@ -1046,6 +1058,8 @@ export default class BossScene extends Phaser.Scene {
     enemyAction() {
         if (!this.combatActive) return;
 
+        const gameScene = this.scene.get("GameScene");
+
         // Añadir retraso para mejorar la legibilidad
         this.time.delayedCall(1000, () => {
             this.addCombatLogMessage("El enemigo ataca...", "enemy-turn");
@@ -1065,6 +1079,9 @@ export default class BossScene extends Phaser.Scene {
                     const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
                     const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
                     const damage = Math.ceil(baseDamage * enemyStrengthMultiplier * resistanceMultiplier);
+                    // --- SONIDO DE DAÑO ---
+                    const gameScene = this.scene.get("GameScene");
+                    gameScene.soundManager.playSound("damage-sound", { volume: 0.3 });
                     // Mostrar animación de jugador recibiendo daño
                     this.playPlayerAnimation("hit");
                     // Aplicar daño
@@ -1081,10 +1098,13 @@ export default class BossScene extends Phaser.Scene {
                     const enemyStrengthMultiplier = 1 + Math.max(0, (this.enemy.strength - 3) * 0.1);
                     const resistanceMultiplier = Math.max(0.5, 1 - Math.max(0, (this.player.resistance - 10) * 0.05));
                     const damage = Math.ceil(baseDamage * enemyStrengthMultiplier * resistanceMultiplier);
-
+                    // --- SONIDO DE DAÑO ---
+                    const gameScene = this.scene.get("GameScene");
+                    if (gameScene && gameScene.soundManager) {
+                        gameScene.soundManager.playSound("damage-sound", { volume: 0.3 });
+                    }
                     // Mostrar animación de jugador recibiendo daño
                     this.playPlayerAnimation("hit");
-
                     // Aplicar daño
                     this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
                     this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
