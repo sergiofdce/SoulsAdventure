@@ -316,7 +316,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
     handlePlayerDeath() {
-
         // Posición de respawn predeterminada
         let respawnX = 306;
         let respawnY = 454;
@@ -372,6 +371,11 @@ export default class GameScene extends Phaser.Scene {
 
     // También agrega logs en updateHUD para ver si se está llamando correctamente
     updateHUD() {
+        // Actualizar nombre
+        const playerName = document.getElementById("hud-player-name");
+        if (playerName) {
+            playerName.innerHTML = this.player.name;
+        }
 
         // Actualizar vida en el HUD
         const healthElement = document.getElementById("health-amount");
@@ -404,7 +408,6 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         }
-
     }
 
     async loadSavedData() {
