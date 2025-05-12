@@ -22,7 +22,7 @@ export const STAT_UPGRADE_MULTIPLIERS = {
 };
 
 // Incremento de coste de almas por nivel
-export const LEVEL_UPGRADE_COST_MULTIPLIER = 1.8; // +180% más de costo por nivel
+export const LEVEL_UPGRADE_COST_MULTIPLIER = 1.2; // +120% más de costo por nivel
 
 /*****************************************************
 Sistema de Combate
@@ -72,7 +72,7 @@ export const ENEMIES = {
         health: 18,
         strength: 3,
         speed: 2,
-        souls: 15,
+        souls: 70,
     },
     EnanoMayor: {
         name: "Nublocular",
@@ -80,7 +80,7 @@ export const ENEMIES = {
         health: 15,
         strength: 4,
         speed: 3,
-        souls: 25,
+        souls: 80,
     },
     EnanoFuego: {
         name: "Tenebrillo ",
@@ -88,7 +88,7 @@ export const ENEMIES = {
         health: 10,
         strength: 3,
         speed: 5,
-        souls: 20,
+        souls: 90,
     },
     EnanoEscudo: {
         name: "Pupistral",
@@ -96,7 +96,7 @@ export const ENEMIES = {
         health: 8,
         strength: 2,
         speed: 8,
-        souls: 30,
+        souls: 100,
     },
     // Ruinas
     SlimeNormal: {
@@ -105,7 +105,7 @@ export const ENEMIES = {
         health: 20,
         strength: 4,
         speed: 3,
-        souls: 25,
+        souls: 130,
     },
     SlimeFuego: {
         name: "Babosa de Fuego",
@@ -113,7 +113,7 @@ export const ENEMIES = {
         health: 18,
         strength: 6,
         speed: 4,
-        souls: 35,
+        souls: 160,
     },
     SlimePinchos: {
         name: "Babosa Espinosa",
@@ -121,7 +121,7 @@ export const ENEMIES = {
         health: 25,
         strength: 5,
         speed: 2,
-        souls: 40,
+        souls: 180,
     },
     SlimeHumano: {
         name: "Babosa Humanoide",
@@ -129,7 +129,7 @@ export const ENEMIES = {
         health: 22,
         strength: 7,
         speed: 5,
-        souls: 50,
+        souls: 200,
     },
     // Lava
     FuegoEsqueleto: {
@@ -138,23 +138,23 @@ export const ENEMIES = {
         health: 15,
         strength: 7,
         speed: 6,
-        souls: 55,
+        souls: 300,
     },
     FuegoCiclope: {
         name: "Cíclope Ígneo",
         scale: 0.6,
-        health: 35,
+        health: 25,
         strength: 10,
         speed: 3,
-        souls: 65,
+        souls: 350,
     },
     FuegoDemonio: {
         name: "Demonio Flamígero",
         scale: 0.75,
-        health: 28,
+        health: 20,
         strength: 11,
         speed: 5,
-        souls: 75,
+        souls: 370,
     },
     FuegoGato: {
         name: "Felino Ígneo",
@@ -162,15 +162,15 @@ export const ENEMIES = {
         health: 14,
         strength: 6,
         speed: 12,
-        souls: 50,
+        souls: 380,
     },
     FuegoGordo: {
         name: "Coloso de Fuego",
         scale: 0.6,
-        health: 45,
+        health: 20,
         strength: 14,
         speed: 1,
-        souls: 90,
+        souls: 380,
     },
     FuegoSeta: {
         name: "Hongo Incandescente",
@@ -178,7 +178,7 @@ export const ENEMIES = {
         health: 20,
         strength: 5,
         speed: 4,
-        souls: 40,
+        souls: 400,
     },
     FuegoWither: {
         name: "Espectro de Llamas",
@@ -186,7 +186,7 @@ export const ENEMIES = {
         health: 25,
         strength: 10,
         speed: 8,
-        souls: 70,
+        souls: 380,
     },
 };
 

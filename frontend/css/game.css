@@ -1014,15 +1014,17 @@ MARK: Sistema de Mejora de Entrenamiento
 }
 
 .stat-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 100px auto;
+    /* ajusta 100px según tu necesidad */
     align-items: center;
-    justify-content: space-between;
     padding: var(--spacing-sm);
     background: var(--color-background-light);
     border-radius: var(--border-radius-sm);
 }
 
 .stat-row span:first-child {
+    text-align: right;
     font-weight: bold;
 }
 
@@ -1383,7 +1385,6 @@ MARK: Sistema de Mejora de Entrenamiento - Mejorado
 
 .costs-display::before {
     content: "✨";
-    position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
@@ -1556,6 +1557,7 @@ MARK: Sistema de Mejora de Entrenamiento - Mejorado
 }
 
 .stats-info-message:not(.hidden) {
+    font-weight: bold;
     animation: glow-subtle 2s infinite alternate;
 }
 
@@ -1741,7 +1743,7 @@ MARK: Estadísticas del Jugador
     text-align: center;
 }
 
-.upgrade-stats .stat-row {
+.upgrade-stats .stat-row-flex {
     display: flex;
     justify-content: space-between;
 }
