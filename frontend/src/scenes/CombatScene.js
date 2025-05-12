@@ -90,6 +90,7 @@ export default class CombatScene extends Phaser.Scene {
     showCombatContainer() {
         // Ocultar HUD
         document.getElementById("hud-container").classList.add("hidden");
+        document.getElementById("hud-key-container").classList.add("hidden");
 
         // Mostrar el contenedor HTML de combate
         document.getElementById("combat-container").classList.remove("hidden");
@@ -1163,6 +1164,7 @@ export default class CombatScene extends Phaser.Scene {
 
         // Mostrar HUD
         document.getElementById("hud-container").classList.remove("hidden");
+        document.getElementById("hud-key-container").classList.remove("hidden");
 
         // Reanudar la escena del juego
         this.scene.resume("GameScene");

@@ -3724,3 +3724,49 @@ MARK: InfoBox
     border-radius: 50%;
     opacity: 0.8;
 }
+
+/*****************************************************
+MARK: Key Indicator
+*****************************************************/
+
+/* Estilos para el contenedor de teclas */
+#hud-key-container {
+    position: absolute;
+    top: 80%;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 100;
+}
+
+.key-hint {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 0 5px 5px 0;
+    display: flex;
+    align-items: center;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8em;
+    margin: 5px 0;
+    border-left: 3px solid #ffd700;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.key {
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-right: 10px;
+    box-shadow: 0 2px 0 #222;
+    font-weight: bold;
+    min-width: 15px;
+    text-align: center;
+    display: inline-block;
+    border: 1px solid #555;
+}
+
+.key-text {
+    font-size: 0.9em;
+    color: #ffd700;
+}

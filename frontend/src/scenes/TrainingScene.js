@@ -38,6 +38,7 @@ export default class TrainingScene extends Phaser.Scene {
     create() {
         // Ocultar HUD
         document.getElementById("hud-container").classList.add("hidden");
+        document.getElementById("hud-key-container").classList.add("hidden");
 
         // Mostrar HTML
         document.getElementById("trainer-container").classList.remove("hidden");
@@ -482,6 +483,7 @@ export default class TrainingScene extends Phaser.Scene {
 
         // Mostrar HUD
         document.getElementById("hud-container").classList.remove("hidden");
+        document.getElementById("hud-key-container").classList.remove("hidden");
 
         // Actualizar el HUD con los valores actuales antes de volver a la escena principal
         this.updateHUD();

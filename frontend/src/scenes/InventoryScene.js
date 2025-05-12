@@ -14,6 +14,7 @@ export default class InventoryScene extends Phaser.Scene {
     create() {
         // Ocultar HUD
         document.getElementById("hud-container").classList.add("hidden");
+        document.getElementById("hud-key-container").classList.add("hidden");
 
         // Mostrar el inventario en HTML
         const inventoryDiv = document.getElementById("inventory-container");
@@ -34,6 +35,7 @@ export default class InventoryScene extends Phaser.Scene {
             inventoryDiv.classList.add("hidden");
             // Mostrar HUD
             document.getElementById("hud-container").classList.remove("hidden");
+            document.getElementById("hud-key-container").classList.remove("hidden");
             // Limpiar el juego Phaser del jugador si existe
             if (this.playerAnimGame) {
                 this.playerAnimGame.destroy(true);
