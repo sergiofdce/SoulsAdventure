@@ -1,20 +1,20 @@
 import { Boss } from "./Boss.js";
+import { BOSSES } from "../../config/constants.js";
 
 export class Toro extends Boss {
     constructor(scene, x, y, texture = "boss-Toro", name = "Toro") {
         // Asignar tamaño del sprite
-        const scale = 1.2;
+        const scale = BOSSES.Toro.scale;
         super(scene, x, y, texture, name, scale);
 
         // Guardar el scale como atributo
         this.scale = scale;
 
-        // Atributos específicos
-        this.health = 10;
-        this.strength = 10;
-        this.speed = 5;
-
-        this.souls = 200;
+        // Atributos específicos desde constants.js
+        this.health = BOSSES.Toro.health;
+        this.strength = BOSSES.Toro.strength;
+        this.speed = BOSSES.Toro.speed;
+        this.souls = BOSSES.Toro.souls;
 
         // Patrón de ataque (0 = ataque, 1 = indefenso)
         this.attackPattern = [0, 0, 1, 0, 1];
@@ -28,7 +28,6 @@ export class Toro extends Boss {
 
         // Tipo de entidad para animaciones
         this.type = "toro";
-
 
         // Ruta del spritesheet
         this.spritesheet = "./assets/bosses/boss-Toro.png";

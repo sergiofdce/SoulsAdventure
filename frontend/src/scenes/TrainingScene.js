@@ -11,6 +11,9 @@ export default class TrainingScene extends Phaser.Scene {
         this.showPotentialLevel = true;
         this.showCosts = false;
         this.MAX_PLAYER_LEVEL = 50; // Nivel máximo del jugador
+
+        // Añadir flag para seguimiento de mejoras confirmadas
+        this.upgradesConfirmed = false;
     }
 
     // Enviar objeto Player
@@ -194,6 +197,9 @@ export default class TrainingScene extends Phaser.Scene {
 
         // Aplicar todas las mejoras al jugador de una vez
         this.player.applyPlayerStats(this.pendingUpgrades, levelIncrease);
+
+        // Marcar las mejoras como confirmadas para evitar reembolsos
+        this.upgradesConfirmed = true;
 
         // Reiniciar mejoras pendientes
         this.pendingUpgrades = {
@@ -448,11 +454,14 @@ export default class TrainingScene extends Phaser.Scene {
     }
 
     closeTraining() {
-        // Cancelar mejoras pendientes y devolver almas
-        this.cancelUpgrades();
+        // Cancelar mejoras pendientes y devolver almas SOLO si no se han confirmado
+        if (!this.upgradesConfirmed) {
+            this.cancelUpgrades();
+        }
 
-        // Reiniciar contador de mejoras
+        // Reiniciar contador de mejoras y flag de confirmación
         this.totalUpgradesApplied = 0;
+        this.upgradesConfirmed = false;
 
         // Ocultar interfaz y volver al juego
         document.getElementById("trainer-container").classList.add("hidden");

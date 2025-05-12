@@ -6,7 +6,7 @@ export class Boss extends CombatEntity {
         const bossOptions = {
             scale: scale,
             interactionRadius: 150,
-            followSpeed: 180,
+            followSpeed: 80,
             hitboxWidthRatio: 1,
             hitboxHeightRatio: 0.65,
             hitboxOffsetYRatio: 0.35,

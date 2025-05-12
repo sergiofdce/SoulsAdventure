@@ -197,7 +197,7 @@ export const BOSSES = {
     Toro: {
         name: "Toro",
         scale: 1.2,
-        health: 10,
+        health: 100,
         strength: 10,
         speed: 5,
         souls: 200,
@@ -205,9 +205,17 @@ export const BOSSES = {
     Nasus: {
         name: "Nasus",
         scale: 1.2,
-        health: 10,
+        health: 150,
         strength: 10,
         speed: 5,
         souls: 200,
+    },
+    Infernal: {
+        name: "Infernal",
+        scale: 1.2,
+        health: 200,
+        strength: 20,
+        speed: 6,
+        souls: 500,
     },
 };

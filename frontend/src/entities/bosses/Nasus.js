@@ -1,20 +1,20 @@
 import { Boss } from "./Boss.js";
+import { BOSSES } from "../../config/constants.js";
 
 export class Nasus extends Boss {
     constructor(scene, x, y, texture = "boss-Nasus", name = "Nasus") {
         // Asignar tamaño del sprite
-        const scale = 1.2;
+        const scale = BOSSES.Nasus.scale;
         super(scene, x, y, texture, name, scale);
 
         // Guardar el scale como atributo
         this.scale = scale;
 
-        // Atributos específicos
-        this.health = 10;
-        this.strength = 10;
-        this.speed = 5;
-
-        this.souls= 200;
+        // Atributos específicos desde constants.js
+        this.health = BOSSES.Nasus.health;
+        this.strength = BOSSES.Nasus.strength;
+        this.speed = BOSSES.Nasus.speed;
+        this.souls = BOSSES.Nasus.souls;
 
         // Patrón de ataque (0 = ataque, 1 = indefenso)
         this.attackPattern = [0, 1, 0, 0, 1];
