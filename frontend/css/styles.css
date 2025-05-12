@@ -51,14 +51,33 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    cursor: url('../assets/cursor/normal.cur'), default;
 }
 
 body {
+    cursor: url('../assets/cursor/normal.cur'), default;
     font-family: 'Press Start 2P';
     background-color: #000;
     color: var(--color-text);
     overflow-x: hidden;
     line-height: 1.6;
+}
+
+a {
+    cursor: url('../assets/cursor/link.cur'), pointer;
+}
+
+/* Aplica el cursor personalizado a todos los tipos de input */
+input,
+input:focus {
+    cursor: url('../assets/cursor/text.cur'), text;
+}
+button {
+    cursor: url('../assets/cursor/handwriting.cur'), pointer;
+}
+
+label {
+    cursor: url('../assets/cursor/handwriting.cur'), pointer;
 }
 
 /* Estilos para la pantalla de inicio */
@@ -299,7 +318,6 @@ body {
     border: 2px solid rgba(147, 51, 234, 0.6);
     border-radius: var(--border-radius-md);
     font-size: var(--font-size-lg);
-    cursor: pointer;
     transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     letter-spacing: 1px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
@@ -458,7 +476,6 @@ body {
     color: var(--color-text);
     border: 2px solid rgba(147, 51, 234, 0.6);
     border-radius: var(--border-radius-md);
-    cursor: pointer;
     transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     font-size: var(--font-size-md);
     letter-spacing: 1px;
@@ -613,7 +630,6 @@ body {
     height: 12px;
     border-radius: 50%;
     background-color: rgba(147, 51, 234, 0.3);
-    cursor: pointer;
     transition: all 0.3s ease;
 }
 
@@ -634,7 +650,6 @@ body {
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-    cursor: pointer;
     font-size: 20px;
     z-index: 10;
     transition: all 0.3s ease;

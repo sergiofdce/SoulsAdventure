@@ -101,11 +101,31 @@ MARK: General
 */
 * {
     user-select: none;
+    cursor: url('../assets/cursor/normal.cur'), default;
+}
+
+a {
+    cursor: url('../assets/cursor/link.cur'), pointer;
+}
+
+/* Aplica el cursor personalizado a todos los tipos de input */
+input,
+input:focus {
+    cursor: url('../assets/cursor/text.cur'), text;
+}
+
+button {
+    cursor: url('../assets/cursor/handwriting.cur'), pointer;
+}
+
+label {
+    cursor: url('../assets/cursor/handwriting.cur'), pointer;
 }
 
 body {
     display: flex;
     overflow: hidden;
+    cursor: url('../assets/cursor/normal.cur'), default;
 
 }
 
