@@ -40,6 +40,15 @@ export default class BossScene extends Phaser.Scene {
         this.enemyCurrentHealth = this.enemy.health;
     }
 
+    // Nuevo método para reproducir sonidos
+    playSound(key, config = {}) {
+        // Obtener la escena del juego principal que tiene el soundManager
+        const gameScene = this.scene.get("GameScene");
+        if (gameScene && gameScene.soundManager) {
+            gameScene.soundManager.playSound(key, config);
+        }
+    }
+
     create() {
         // Mostrar el contenedor de combate HTML
         this.showCombatContainer();
@@ -221,6 +230,9 @@ export default class BossScene extends Phaser.Scene {
         // Desactivar la ventana de bloqueo para evitar múltiples intentos
         this.isBlockWindowActive = false;
 
+        // Reproducir sonido de bloqueo
+        this.playSound("block-sound", { volume: 0.3 });
+
         // Animacion ataque Boss
         this.playEnemyAnimation("attack");
 
@@ -307,6 +319,9 @@ export default class BossScene extends Phaser.Scene {
         if (!this.combatActive) return;
 
         this.playPlayerAnimation("light-attack");
+
+        // Reproducir sonido de ataque ligero
+        this.playSound("weak-attack-sound", { volume: 0.3 });
 
         // Verificar si hay una ventana de bloqueo activa
         if (this.isBlockWindowActive) {
@@ -416,6 +431,9 @@ export default class BossScene extends Phaser.Scene {
         if (!this.combatActive) return;
 
         this.playPlayerAnimation("heavy-attack");
+
+        // Reproducir sonido de ataque pesado
+        this.playSound("strong-attack-sound", { volume: 0.3 });
 
         // Verificar si hay una ventana de bloqueo activa
         if (this.isBlockWindowActive) {
@@ -553,6 +571,9 @@ export default class BossScene extends Phaser.Scene {
             return;
         }
 
+        // Reproducir sonido de curación
+        this.playSound("heal-sound", { volume: 0.3 });
+
         // Aplicar curación usando las constantes definidas en COMBAT.POTION
         const healAmount = Math.ceil(
             this.playerMaxHealth * COMBAT.POTION.BASE_PERCENTAGE +
@@ -602,6 +623,10 @@ export default class BossScene extends Phaser.Scene {
         const damage = Math.ceil(10 * (1 + Math.max(0, (this.enemy.strength - 10) * 0.1)));
         this.playerCurrentHealth = Math.max(0, this.playerCurrentHealth - damage);
         this.updateHealthBar("player", this.playerCurrentHealth, this.playerMaxHealth);
+
+        // Reproducir sonido de daño
+        this.playSound("damage-sound", { volume: 0.3 });
+
         this.playPlayerAnimation("hit");
         this.checkCombatEnd();
     }
