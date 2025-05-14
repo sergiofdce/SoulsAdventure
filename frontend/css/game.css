@@ -2499,7 +2499,7 @@ MARK: Teleport Scene - Mejorado
 }
 
 .exit-button::before {
-    content: "⮌";
+    content: "↩";
     margin-right: var(--spacing-sm);
 }
 
