@@ -16,7 +16,7 @@ export default class Controls {
         this.isMoving = false;
         this.direction = { x: 0, y: 0 };
 
-        this.movementSpeed = 100;
+        this.movementSpeed = 200;
 
         // Mantener referencia de las teclas para ataques
         this.attackKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);

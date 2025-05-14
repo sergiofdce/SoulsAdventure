@@ -377,8 +377,15 @@ export default class GameStateManager {
             const playerLevel = this.gameState.player.level;
             const playerSouls = this.gameState.player.souls;
 
+            // PUNTO INICIAL DEL JUEGO - coordenadas fijas
+            const initialX = 306;
+            const initialY = 454;
+
             // Posicionar al jugador en el punto inicial
-            this.gameState.player.setPosition(306, 454);
+            this.gameState.player.setPosition(initialX, initialY);
+
+            // IMPORTANTE: Actualizar la posición en los datos que se guardarán
+            this.savePlayerPosition(initialX, initialY);
 
             // Mantener el nivel y las almas
             this.gameState.player.level = playerLevel;
@@ -389,17 +396,34 @@ export default class GameStateManager {
                 this.gameState.inventory.clearInventory();
                 console.log("Inventario del jugador reiniciado");
             }
-
         }
 
         // Sincronizar con el jugador
         this.syncToPlayer();
+
+        // Guardar inmediatamente para preservar la posición inicial
+        this.saveGame();
 
         console.log(`Juego reiniciado manteniendo dificultad x${currentDifficulty.toFixed(2)} (Ciclo ${currentCycle})`);
 
         return true;
     }
 
+    // Agregar este método si no existe
+    savePlayerPosition(x, y) {
+        if (!this.gameState) return;
+
+        // Crear lastPosition si no existe
+        if (!this.gameState.lastPosition) {
+            this.gameState.lastPosition = {};
+        }
+
+        // Actualizar las coordenadas
+        this.gameState.lastPosition.x = x;
+        this.gameState.lastPosition.y = y;
+
+        console.log(`Posición del jugador guardada: (${x}, ${y})`);
+    }
 
     // Añade este método a tu clase GameStateManager
     getDiscoveredFireplaces() {
