@@ -1,7 +1,7 @@
-import { getPlayerData } from '../../backend/db/controllers/userController';
-import { auth } from '../../backend/db/middleware/auth';
+const { getPlayerData } = require('../../backend/db/controllers/userController');
+const { auth } = require('../../backend/db/middleware/auth');
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method === 'GET') {
     await auth(req, res, async () => {
       await getPlayerData(req, res);
@@ -9,4 +9,4 @@ export default async function handler(req, res) {
   } else {
     res.status(405).json({ message: 'Método no permitido' });
   }
-}
+};
